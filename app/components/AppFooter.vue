@@ -1,13 +1,16 @@
 <template>
   <footer class="bg-ink text-cream">
-    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 lg:py-16 xl:py-20">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 xl:py-16">
       
       <!-- گرید اصلی: موبایل=۱ ستون | sm=۲ ستون | md=۴ ستون | lg=۱۲ ستون -->
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-12 gap-8 sm:gap-10 lg:gap-8 xl:gap-10">
 
         <!-- درباره برند -->
         <div class="sm:col-span-2 md:col-span-4 lg:col-span-4">
-          <span class="font-display text-xl sm:text-2xl text-cream">ماهلین اسکین‌کر</span>
+          <div class="flex items-center gap-2">
+            <img class="w-12" src="/logo/logo.png" alt="">
+            <span class="font-display text-xl sm:text-2xl text-cream">ماهلین اسکین‌کر</span>
+          </div>
           <p class="mt-3 sm:mt-4 text-sm text-cream/60 max-w-full sm:max-w-[36ch] lg:max-w-[32ch] leading-relaxed">
             مراقبت پوست علمی، با معیار پزشکی. محصولاتی که با پشتوانه‌ی تحقیقات درماتولوژیک تولید شده‌اند.
           </p>

@@ -10,7 +10,19 @@ export default {
         inkSoft: '#6B635A',
         accent: '#6E523A',
         accentHover: '#4A2E16',
-        gold: '#A28466'
+        gold: '#A28466',
+
+        // رنگ‌های اضافه‌شده برای طراوت و تنوع بصری
+        blush: '#F3B4B0',
+        blushLight: '#FCE4E2',
+        sage: '#9CBFA0',
+        sageLight: '#E3EFE4',
+        lilac: '#B9A6DE',
+        lilacLight: '#EDE6F8',
+        peach: '#F2A868',
+        peachLight: '#FBE4CD',
+        sky: '#8FC1D9',
+        skyLight: '#DFF0F5'
       },
       fontFamily: {
         body: ['Vazirmatn', 'system-ui', 'sans-serif'],

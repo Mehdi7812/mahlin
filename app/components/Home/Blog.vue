@@ -1,8 +1,11 @@
 <template>
-  <section class="max-w-[1280px] mx-auto px-4 md:px-6 py-12 md:py-20">
+  <section class="relative max-w-[1280px] mx-auto px-4 md:px-6 py-12 md:py-20 overflow-hidden">
+    <div class="absolute -bottom-20 -start-20 w-80 h-80 bg-lilac/[0.06] blur-[110px] rounded-full pointer-events-none"></div>
     
-    <!-- هدر بخش (لوکس و دوطرفه در دسکتاپ) -->
-    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10 md:mb-12">
+    <div class="absolute top-10 -end-10 w-60 h-60 bg-sage/[0.05] blur-[90px] rounded-full pointer-events-none"></div>
+    
+    <!-- هدر بخش -->
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10 md:mb-12 relative">
       <div class="text-center md:text-start">
         <div class="flex items-center justify-center md:justify-start gap-2 mb-2.5">
           <span class="w-6 h-px bg-gold/60"></span>
@@ -28,9 +31,22 @@
       </NuxtLink>
     </div>
 
-    <!-- شبکه مقالات (پیش‌فرض ۱ ستونه در موبایل، ۲ ستونه در تبلت و ۳ ستونه در دسکتاپ) -->
-    <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
-      <BlogCard v-for="b in BLOG.slice(0,3)" :key="b.slug" :blog="b" />
+    <!-- شبکه مقالات -->
+    <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 relative">
+      <div
+        v-for="(b, i) in BLOG.slice(0, 3)"
+        :key="b.slug"
+        class="relative animate-fade-in-up hover:-translate-y-1 transition-transform duration-300"
+        :style="{ animationDelay: i * 0.1 + 's' }"
+      >
+        <span 
+          v-if="blogBadges[i]" 
+          :class="['absolute top-3 start-3 z-10 text-white text-[10px] font-bold px-3 py-1.5 rounded-full', blogBadges[i].color]"
+        >
+          {{ blogBadges[i].label }}
+        </span>
+        <BlogCard :blog="b" />
+      </div>
     </div>
 
     <!-- دکمه مشاهده همه مقالات (موبایل) -->
@@ -51,4 +67,21 @@
 
 <script setup>
 import { BLOG } from '~/data/products';
+
+const blogBadges = [
+  { label: 'جدیدترین', color: 'bg-sky' },
+  { label: 'پرطرفدار', color: 'bg-peach' },
+  null,
+];
 </script>
+
+<style scoped>
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fadeInUp 0.65s ease-out forwards;
+}
+</style>

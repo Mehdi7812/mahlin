@@ -1,16 +1,19 @@
 <template>
-  <section class="max-w-[1280px] mx-auto px-4 md:px-6 py-12 md:py-18 overflow-x-hidden">
+  <section class="relative max-w-[1280px] mx-auto px-4 md:px-6 py-12 md:py-18 overflow-x-hidden">
+    <div class="absolute -top-10 -end-20 w-72 h-72 bg-peach/[0.08] blur-[110px] rounded-full pointer-events-none"></div>
+    <div class="absolute bottom-0 -start-10 w-60 h-60 bg-sky/[0.06] blur-[100px] rounded-full pointer-events-none"></div>
     
     <!-- هدر بخش -->
-    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10 md:mb-12">
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10 md:mb-12 relative">
       <div class="text-center md:text-start">
         <div class="flex items-center justify-center md:justify-start gap-2 mb-2.5">
           <span class="w-6 h-px bg-gold/60"></span>
           <span class="text-[10px] sm:text-xs uppercase tracking-[0.15em] text-gold font-bold">پيشنهاد متخصصین پوست</span>
         </div>
-        <h2 class="text-2xl md:text-3xl font-display text-ink font-bold">
+        <h2 class="text-2xl md:text-3xl font-display text-ink font-bold mb-1.5">
           محبوب‌ترین‌های ماهلین
         </h2>
+        <p class="text-ink/45 text-xs sm:text-sm">بر اساس بیشترین بازخورد مثبت مشتریان</p>
       </div>
 
       <!-- دکمه مشاهده همه + کنترل‌های ناوبری (دسکتاپ) -->
@@ -58,11 +61,9 @@
     </div>
 
     <!-- اسلایدر محصولات -->
-    <!-- توجه: overflow-hidden همیشه فعال است، هیچ‌وقت visible نمی‌شود -->
-    <!-- pt/pb به‌جای overflow-visible برای جا دادن سایه/هاور کارت -->
     <div class="relative overflow-hidden -mx-1 px-1 pt-2 pb-4">
       <Swiper
-        dir="rtl"
+        dir="rtl" style="padding-top: 7px;"
         :modules="[Pagination]"
         :slides-per-view="1.6"
         :space-between="12"
@@ -77,17 +78,22 @@
         @swiper="onSwiperInit"
         @slide-change="onSlideChange"
       >
-        <SwiperSlide v-for="p in featured" :key="p.id" class="!h-auto">
-          <ProductCard
-            :product="p"
-            class="h-full hover:-translate-y-1 transition-transform duration-300 transform-gpu"
-          />
+        <SwiperSlide v-for="(p, i) in featured" :key="p.id" class="!h-auto">
+          <div class="relative h-full">
+            <span
+              v-if="badges[i]"
+              :class="['absolute top-3 start-3 z-10 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-md', badges[i].color]"
+            >
+              {{ badges[i].label }}
+            </span>
+            <ProductCard
+              :product="p"
+              class="h-full hover:-translate-y-1.5 hover:shadow-[0_1px_5px_rgba(0,0,0,0.08)] transition-all duration-300 transform-gpu"
+            />
+          </div>
         </SwiperSlide>
       </Swiper>
     </div>
-
-    <!-- Pagination موبایل -->
-    <!-- <div ref="paginationEl" class="flex md:hidden justify-center mt-6 [&_.swiper-pagination-bullet]:bg-ink/20 [&_.swiper-pagination-bullet-active]:bg-gold [&_.swiper-pagination-bullet]:transition-colors"></div> -->
 
     <!-- دکمه مشاهده همه برای موبایل -->
     <div class="flex justify-center mt-6 md:hidden">
@@ -101,7 +107,6 @@
         </svg>
       </NuxtLink>
     </div>
-
   </section>
 </template>
 
@@ -118,6 +123,13 @@ const swiperInstance = shallowRef(null);
 const isBeginning = ref(true);
 const isEnd = ref(false);
 const paginationEl = ref(null);
+
+const badges = [
+  { label: 'پرفروش‌ترین', color: 'bg-gold' },
+  { label: 'جدید', color: 'bg-sage' },
+  { label: 'پیشنهاد ویژه', color: 'bg-blush' },
+  null,
+];
 
 function onSwiperInit(swiper) {
   swiperInstance.value = swiper;

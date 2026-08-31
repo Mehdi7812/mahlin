@@ -1,6 +1,8 @@
 <template>
     <HomeHero />
 
+    <HomeTrustStrip />
+
     <HomeCategory /> 
     
     <HomeReccommendProduct />
