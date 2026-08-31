@@ -1,5 +1,5 @@
 <template>
-  <footer class="bg-ink text-cream mt-16 sm:mt-20 lg:mt-24">
+  <footer class="bg-ink text-cream">
     <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 lg:py-16 xl:py-20">
       
       <!-- گرید اصلی: موبایل=۱ ستون | sm=۲ ستون | md=۴ ستون | lg=۱۲ ستون -->

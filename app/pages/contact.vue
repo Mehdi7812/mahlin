@@ -1,6 +1,5 @@
 <template>
   <div class="max-w-[1280px] mx-auto px-4 md:px-6 py-16 md:py-24">
-    
     <!-- هدر صفحه (مینیمال و مجلل) -->
     <div class="text-center mb-16 md:mb-20">
       <div class="flex items-center justify-center gap-2.5 mb-3">
@@ -16,7 +15,6 @@
 
     <!-- گرید اصلی دو ستونه (دسکتاپ: دو ستونه / موبایل: تک ستونه) -->
     <div class="grid lg:grid-cols-[1.2fr_1fr] gap-10 lg:gap-16 items-start">
-      
       <!-- ستون اول: فرم تماس لوکس و تعاملی -->
       <div class="bg-card border border-ink/[0.03] rounded-[32px] p-6 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] relative overflow-hidden">
         <div class="absolute -top-24 -start-24 w-48 h-48 rounded-full bg-gold/5 blur-3xl pointer-events-none" />
@@ -132,9 +130,10 @@
                 <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
+
             <div>
               <span class="block text-xs font-bold text-ink/40 mb-1">شماره تماس پشتیبانی</span>
-              <a href="tel:02191000000" class="text-sm font-bold text-ink hover:text-gold transition-colors font-latin">021 - 91000000</a>
+              <a dir="ltr" href="tel:02191000000" class="text-sm font-bold text-ink hover:text-gold transition-colors font-latin">021 - 91000000</a>
             </div>
           </div>
 
@@ -185,7 +184,6 @@
 
         </div>
       </div>
-
     </div>
   </div>
 </template>
