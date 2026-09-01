@@ -1,7 +1,6 @@
 <template>
   <section class="relative max-w-[1280px] mx-auto px-4 md:px-6 py-12 md:py-20 overflow-hidden">
     <div class="absolute -bottom-20 -start-20 w-80 h-80 bg-lilac/[0.06] blur-[110px] rounded-full pointer-events-none"></div>
-    
     <div class="absolute top-10 -end-10 w-60 h-60 bg-sage/[0.05] blur-[90px] rounded-full pointer-events-none"></div>
     
     <!-- هدر بخش -->
@@ -32,25 +31,24 @@
     </div>
 
     <!-- شبکه مقالات -->
-    <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 relative">
+    <div v-if="displayedBlogs.length" class="grid sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 relative">
       <div
-        v-for="(b, i) in BLOG.slice(0, 3)"
+        v-for="(b, i) in displayedBlogs"
         :key="b.slug"
-        class="relative animate-fade-in-up hover:-translate-y-1 transition-transform duration-300"
+        class="animate-fade-in-up"
         :style="{ animationDelay: i * 0.1 + 's' }"
       >
-        <span 
-          v-if="blogBadges[i]" 
-          :class="['absolute top-3 start-3 z-10 text-white text-[10px] font-bold px-3 py-1.5 rounded-full', blogBadges[i].color]"
-        >
-          {{ blogBadges[i].label }}
-        </span>
-        <BlogCard :blog="b" />
+        <BlogCard :blog="b" :badge="blogBadges[i]" class="h-full" />
       </div>
     </div>
 
+    <!-- حالت خالی (اگه هنوز مقاله‌ای منتشر نشده) -->
+    <div v-else class="text-center py-16 text-ink/40 text-sm">
+      به‌زودی مقالات تخصصی ماهلین اینجا منتشر می‌شود.
+    </div>
+
     <!-- دکمه مشاهده همه مقالات (موبایل) -->
-    <div class="flex justify-center mt-10 md:hidden">
+    <div v-if="displayedBlogs.length" class="flex justify-center mt-10 md:hidden">
       <NuxtLink 
         to="/journal" 
         class="flex items-center gap-2 bg-ink/5 hover:bg-ink/10 text-ink text-xs font-bold px-6 py-3.5 rounded-full transition-colors duration-300"
@@ -66,11 +64,15 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { BLOG } from '~/data/products';
 
+const displayedBlogs = computed(() => BLOG?.slice(0, 3) ?? []);
+
+// بج‌های ویژه (مستقل از دسته‌بندی مقاله) — به BlogCard پاس داده می‌شن
 const blogBadges = [
-  { label: 'جدیدترین', color: 'bg-sky' },
-  { label: 'پرطرفدار', color: 'bg-peach' },
+  { label: 'جدیدترین', color: '#8FC1D9' },
+  { label: 'پرطرفدار', color: '#F2A868' },
   null,
 ];
 </script>
