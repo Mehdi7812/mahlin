@@ -127,7 +127,7 @@ export const REVIEWS = [
   { name: 'نگار ا.', stars: '★★★★★', date: '۹ تیر ۱۴۰۵', body: 'پوست حساسی دارم و معمولاً با سرم‌ها قرمز می‌شوم. این یکی را از هفته اول بدون مشکل تحمل کردم.' }
 ];
 
-export const PLACEHOLDER_IMG = "data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%20100%20100%27%3E%3Crect%20width=%27100%27%20height=%27100%27%20fill=%27%23FDFCFA%27/%3E%3Cpath%20d=%27M21%2042%20Q22.4%2048.6%2029%2050%20Q22.4%2051.4%2021%2058%20Q19.6%2051.4%2013%2050%20Q19.6%2048.6%2021%2042%20Z%27%20fill=%27%23A28466%27/%3E%3C/svg%3E";
+export const PLACEHOLDER_IMG = "/assets/founder-portrait.png";
 
 export const DEFAULT_CART = [{ pid: 'p1', qty: 1 }, { pid: 'p2', qty: 1 }, { pid: 'p11', qty: 1 }];
 export const FREE_AT = 2000000;
