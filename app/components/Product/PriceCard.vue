@@ -15,7 +15,7 @@
 </template>
 
 <script setup>
-import { money } from '~/utils/format';
+import { money } from '~/utils/format.ts';
 
 defineProps({
   price: { type: [Number, String], required: true },

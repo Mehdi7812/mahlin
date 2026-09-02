@@ -253,7 +253,7 @@
 
 <script setup>
 import { ref, watch, onUnmounted } from 'vue';
-import { fa } from '~/utils/format';
+import { fa } from '~/utils/format.ts';
 
 const { count } = useCart();
 const open = ref(false);

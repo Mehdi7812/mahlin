@@ -1,93 +1,124 @@
 <template>
   <div class="space-y-1">
-    <!-- ۱. توضیحات تکمیلی -->
-    <ProductAccordionItem
-      v-if="item.long"
-      title="توضیحات و فواید محصول"
-      :is-open="activeTab === 'long'"
-      @toggle="toggleTab('long')"
-    >
-      <div class="text-xs sm:text-sm text-ink/60 leading-loose space-y-3">
-        <p>{{ item.long }}</p>
-        <p v-if="item.suited" class="pt-2"><b class="text-ink">مناسب برای نوع پوست:</b> {{ item.suited }}</p>
-      </div>
-    </ProductAccordionItem>
 
-    <!-- ۲. ترکیبات کلیدی -->
-    <ProductAccordionItem
-      v-if="item.inci"
-      title="ترکیبات کلیدی و علمی (Inci)"
-      :is-open="activeTab === 'inci'"
-      @toggle="toggleTab('inci')"
-    >
-      <div class="py-2 grid sm:grid-cols-2 gap-3">
-        <div v-for="i in item.inci" :key="i.latin" class="p-3.5 bg-cardLight rounded-xl border border-ink/[0.02]">
-          <span class="block font-latin font-bold text-xs text-ink mb-0.5">{{ i.latin }}</span>
-          <span class="block text-xs text-ink/50">{{ i.fa }}</span>
+    <!-- توضیحات کامل -->
+    <div v-if="item.long" class="border-b border-ink/[0.06] py-3">
+      <button
+        @click="toggleTab('long')"
+        :aria-expanded="modelValue === 'long'"
+        class="w-full flex items-center justify-between text-sm sm:text-base font-bold text-ink hover:text-gold py-2.5 transition-colors group"
+      >
+        <span>توضیحات و جزئیات محصول</span>
+        <span class="relative flex items-center justify-center w-5 h-5 shrink-0">
+          <span class="absolute w-3.5 h-[1.5px] bg-gold rounded transition-transform duration-300" :class="modelValue === 'long' ? 'rotate-180' : ''"></span>
+          <span class="absolute w-[1.5px] h-3.5 bg-gold rounded transition-transform duration-300" :class="modelValue === 'long' ? 'rotate-90 opacity-0' : 'rotate-0'"></span>
+        </span>
+      </button>
+      <div class="grid transition-[grid-template-rows,opacity,padding] duration-300 ease-out transform-gpu will-change-[grid-template-rows,opacity]" :class="modelValue === 'long' ? 'grid-rows-[1fr] opacity-100 pt-1 pb-3' : 'grid-rows-[0fr] opacity-0 pt-0 pb-0'">
+        <div class="overflow-hidden">
+          <div class="prose-product text-xs sm:text-sm text-ink/60 leading-loose" v-html="item.long"></div>
         </div>
       </div>
-    </ProductAccordionItem>
+    </div>
 
-    <!-- ۳. روش استفاده (همیشه نمایش داده می‌شود، با fallback) -->
-    <ProductAccordionItem
-      title="راهنمای و روش استفاده"
-      :is-open="activeTab === 'usage'"
-      @toggle="toggleTab('usage')"
-    >
-      <div class="py-2">
-        <ol class="space-y-3">
-          <li v-for="(u, i) in usageSteps" :key="i" class="flex items-start gap-3.5 text-xs sm:text-sm text-ink/70 leading-relaxed">
-            <span class="min-w-5 min-h-5 rounded-full bg-gold/10 text-gold text-[11px] font-bold font-latin grid place-items-center mt-0.5 shrink-0">
-              {{ fa(i + 1) }}
-            </span>
-            <p class="pt-0.5">{{ u }}</p>
-          </li>
-        </ol>
+    <!-- مشخصات و ویژگی‌ها -->
+    <div v-if="item.attributes?.length" class="border-b border-ink/[0.06] py-3">
+      <button
+        @click="toggleTab('attrs')"
+        :aria-expanded="modelValue === 'attrs'"
+        class="w-full flex items-center justify-between text-sm sm:text-base font-bold text-ink hover:text-gold py-2.5 transition-colors group"
+      >
+        <span>مشخصات و ویژگی‌ها</span>
+        <span class="relative flex items-center justify-center w-5 h-5 shrink-0">
+          <span class="absolute w-3.5 h-[1.5px] bg-gold rounded transition-transform duration-300" :class="modelValue === 'attrs' ? 'rotate-180' : ''"></span>
+          <span class="absolute w-[1.5px] h-3.5 bg-gold rounded transition-transform duration-300" :class="modelValue === 'attrs' ? 'rotate-90 opacity-0' : 'rotate-0'"></span>
+        </span>
+      </button>
+      <div class="grid transition-[grid-template-rows,opacity,padding] duration-300 ease-out transform-gpu will-change-[grid-template-rows,opacity]" :class="modelValue === 'attrs' ? 'grid-rows-[1fr] opacity-100 pt-1 pb-3' : 'grid-rows-[0fr] opacity-0 pt-0 pb-0'">
+        <div class="overflow-hidden">
+          <div class="py-2 grid sm:grid-cols-2 gap-3">
+            <div v-for="(a, i) in item.attributes" :key="i" class="p-3.5 bg-cardLight rounded-xl border border-ink/[0.02]">
+              <span class="block font-bold text-xs text-ink mb-0.5">{{ a.title }}</span>
+              <span class="block text-xs text-ink/50">{{ a.value }}</span>
+            </div>
+          </div>
+        </div>
       </div>
-    </ProductAccordionItem>
+    </div>
 
-    <!-- ۴. احتیاط‌ها -->
-    <ProductAccordionItem
-      v-if="item.caution"
-      title="احتیاط‌ها و هشدارهای پوستی"
-      danger
-      :is-open="activeTab === 'caution'"
-      @toggle="toggleTab('caution')"
-    >
-      <div class="py-2">
-        <ul class="space-y-2 list-disc pr-4 text-xs sm:text-sm text-ink/60 leading-relaxed">
-          <li v-for="(c, i) in item.caution" :key="i">{{ c }}</li>
-        </ul>
+    <!-- خرید اقساطی -->
+    <div v-if="item.installmentPlans?.length" class="border-b border-ink/[0.06] py-3">
+      <button
+        @click="toggleTab('installment')"
+        :aria-expanded="modelValue === 'installment'"
+        class="w-full flex items-center justify-between text-sm sm:text-base font-bold text-ink hover:text-gold py-2.5 transition-colors group"
+      >
+        <span>امکان خرید اقساطی</span>
+        <span class="relative flex items-center justify-center w-5 h-5 shrink-0">
+          <span class="absolute w-3.5 h-[1.5px] bg-gold rounded transition-transform duration-300" :class="modelValue === 'installment' ? 'rotate-180' : ''"></span>
+          <span class="absolute w-[1.5px] h-3.5 bg-gold rounded transition-transform duration-300" :class="modelValue === 'installment' ? 'rotate-90 opacity-0' : 'rotate-0'"></span>
+        </span>
+      </button>
+      <div class="grid transition-[grid-template-rows,opacity,padding] duration-300 ease-out transform-gpu will-change-[grid-template-rows,opacity]" :class="modelValue === 'installment' ? 'grid-rows-[1fr] opacity-100 pt-1 pb-3' : 'grid-rows-[0fr] opacity-0 pt-0 pb-0'">
+        <div class="overflow-hidden">
+          <div class="py-2 space-y-3">
+            <div
+              v-for="plan in item.installmentPlans"
+              :key="plan.id"
+              class="p-4 rounded-xl border border-ink/[0.06] bg-cardLight flex items-center justify-between flex-wrap gap-2"
+            >
+              <div>
+                <span class="block text-xs font-bold text-ink">{{ plan.title }}</span>
+                <span class="block text-[11px] text-ink/40 mt-0.5">{{ fa(plan.number_of_installments) }} قسط</span>
+              </div>
+              <div class="text-left">
+                <span class="block text-[10px] text-ink/40">پیش‌پرداخت</span>
+                <span class="block text-sm font-bold font-latin" :style="{ color: catInfo.accent }">
+                  {{ money(plan.prepayment) }} تومان
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </ProductAccordionItem>
+    </div>
+
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { fa } from '~/utils/format';
+import { fa, money } from '~/utils/format.ts';
 
 const props = defineProps({
+  modelValue: { type: String, default: '' },
   item: { type: Object, required: true },
+  catInfo: { type: Object, required: true },
 });
 
-const activeTab = ref('long');
+const emit = defineEmits(['update:modelValue']);
 
-function toggleTab(tabName) {
-  activeTab.value = activeTab.value === tabName ? '' : tabName;
+function toggleTab(tab) {
+  emit('update:modelValue', props.modelValue === tab ? '' : tab);
 }
-
-const DEFAULT_USAGE = [
-  'پوست صورت را با یک شوینده‌ی ملایم بشویید و خشک کنید.',
-  'مقدار کمی از محصول (به‌اندازه‌ی یک نخود) را روی نوک انگشتان بردارید.',
-  'به‌آرامی با حرکات دایره‌ای رو به بالا روی صورت و گردن ماساژ دهید.',
-  'اجازه دهید محصول کاملاً جذب پوست شود، سپس مراحل بعدی مراقبتی یا ضدآفتاب را انجام دهید.',
-];
-
-const usageSteps = computed(() => {
-  if (Array.isArray(props.item.usage) && props.item.usage.length > 0) {
-    return props.item.usage;
-  }
-  return DEFAULT_USAGE;
-});
 </script>
+
+<style scoped>
+.prose-product :deep(h1),
+.prose-product :deep(h2),
+.prose-product :deep(h3),
+.prose-product :deep(h4) {
+  font-weight: 700;
+  line-height: 1.5;
+  margin-top: 1.25rem;
+  margin-bottom: 0.75rem;
+  color: rgb(var(--color-ink));
+}
+.prose-product :deep(h2) { font-size: 1.05rem; }
+.prose-product :deep(h3) { font-size: 0.95rem; }
+.prose-product :deep(p)  { margin-bottom: 1rem; }
+.prose-product :deep(ul),
+.prose-product :deep(ol) { padding-right: 1.25rem; margin-bottom: 1rem; }
+.prose-product :deep(li) { margin-bottom: 0.4rem; }
+.prose-product :deep(a)  { color: v-bind('catInfo.accent'); text-decoration: underline; text-underline-offset: 3px; }
+.prose-product :deep(strong) { color: rgb(var(--color-ink)); font-weight: 700; }
+</style>

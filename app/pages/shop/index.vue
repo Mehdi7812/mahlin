@@ -24,8 +24,8 @@
       <div class="flex flex-col md:flex-row gap-3 w-full">
 
         <!-- جستجو -->
-        <div class="relative flex-1 w-full">
-          <svg class="absolute start-4 top-1/2 -translate-y-1/2 text-ink/40 pointer-events-none" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <div class="relative flex-1 w-full" ref="searchContainerRef">
+          <svg class="absolute start-4 top-1/2 -translate-y-1/2 text-ink/40 pointer-events-none z-[1]" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <circle cx="11" cy="11" r="6.5"/>
             <path d="M20 20 L16 16" stroke-linecap="round"/>
           </svg>
@@ -34,7 +34,82 @@
             type="search"
             placeholder="جستجو در محصولات ماهلین..."
             class="w-full bg-card border border-ink/[0.05] rounded-full ps-11 pe-4 h-11 text-sm text-ink placeholder:text-ink/40 focus:outline-none focus:border-gold/40 transition-colors"
+            @focus="onSearchFocus"
           />
+
+          <!-- ─── دراپ‌داون نتایج جستجوی سریع ─── -->
+          <Transition
+            enter-active-class="transition-all duration-200 ease-out"
+            enter-from-class="opacity-0 translate-y-1.5 scale-95"
+            enter-to-class="opacity-100 translate-y-0 scale-100"
+            leave-active-class="transition-all duration-150 ease-in"
+            leave-from-class="opacity-100 translate-y-0 scale-100"
+            leave-to-class="opacity-0 translate-y-1.5 scale-95"
+          >
+            <div
+              v-if="showSearchDropdown"
+              class="absolute inset-x-0 mt-2 bg-card border border-ink/[0.06] rounded-2xl shadow-[0_16px_40px_rgba(0,0,0,0.08)] z-50 overflow-hidden transform-gpu"
+            >
+              <!-- لودینگ -->
+              <div v-if="searchLoading" class="p-4 space-y-3">
+                <div v-for="n in 3" :key="n" class="flex items-center gap-3 animate-pulse">
+                  <div class="w-12 h-12 rounded-xl bg-ink/[0.06] shrink-0"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="h-3 w-3/4 bg-ink/[0.06] rounded-full"></div>
+                    <div class="h-2.5 w-1/3 bg-ink/[0.06] rounded-full"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- نتایج -->
+              <div v-else-if="searchResults.length" class="max-h-[420px] overflow-y-auto">
+                <button
+                  v-for="r in searchResults"
+                  :key="r.id"
+                  type="button"
+                  class="w-full flex items-center gap-3 px-4 py-3 hover:bg-cardLight transition-colors text-right border-b border-ink/[0.04] last:border-b-0"
+                  @click="goToSearchResult(r)"
+                >
+                  <img
+                    :src="r.cover_image"
+                    :alt="r.title_fa"
+                    class="w-12 h-12 rounded-xl object-cover shrink-0 bg-ink/[0.04]"
+                    @error="(e) => e.target.style.opacity = '0.3'"
+                  />
+                  <div class="flex-1 min-w-0">
+                    <p class="text-xs sm:text-sm font-bold text-ink truncate">{{ r.title_fa }}</p>
+                    <p class="text-[10px] text-ink/40 mt-0.5">{{ r.category_title_fa }}</p>
+                  </div>
+                  <div class="text-left shrink-0">
+                    <div v-if="r.discount > 0" class="text-[10px] text-ink/35 line-through font-latin">
+                      {{ money(r.price) }}
+                    </div>
+                    <div class="text-xs font-bold font-latin text-gold">
+                      {{ money(r.final_price) }} <span class="text-[9px] text-ink/40 font-sans">تومان</span>
+                    </div>
+                  </div>
+                </button>
+
+                <!-- مشاهده همه نتایج -->
+                <button
+                  type="button"
+                  class="w-full text-center py-3 text-xs font-bold text-gold hover:bg-cardLight transition-colors"
+                  @click="submitFullSearch"
+                >
+                  مشاهده همه نتایج برای «{{ searchQuery }}» ←
+                </button>
+              </div>
+
+              <!-- بدون نتیجه -->
+              <div v-else class="flex flex-col items-center justify-center text-center py-8 px-4">
+                <svg class="w-8 h-8 text-ink/20 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <circle cx="11" cy="11" r="7"/>
+                  <path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
+                </svg>
+                <p class="text-xs text-ink/45">نتیجه‌ای برای «{{ searchQuery }}» یافت نشد</p>
+              </div>
+            </div>
+          </Transition>
         </div>
 
         <!-- دکمه‌ها -->
@@ -94,14 +169,14 @@
               >
                 <button
                   v-for="opt in sortOptions"
-                  :key="opt.value"
+                  :key="opt.value + opt.direction"
                   type="button"
                   @click="selectSort(opt)"
                   class="w-full text-right px-4 py-3 text-xs sm:text-sm transition-colors flex items-center justify-between"
-                  :class="sortBy === opt.value ? 'text-gold font-bold bg-gold/5' : 'text-ink/70 hover:bg-cardLight hover:text-ink'"
+                  :class="sortBy === opt.value && sortDirection === opt.direction ? 'text-gold font-bold bg-gold/5' : 'text-ink/70 hover:bg-cardLight hover:text-ink'"
                 >
                   <span>{{ opt.label }}</span>
-                  <svg v-if="sortBy === opt.value" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-gold">
+                  <svg v-if="sortBy === opt.value && sortDirection === opt.direction" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-gold">
                     <path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round" />
                   </svg>
                 </button>
@@ -119,6 +194,7 @@
       <!-- سایدبار -->
       <aside class="w-[260px] hidden md:block shrink-0">
         <ShopFilterPanel
+          :debounce-delay="2000"
           :cats="categories"
           :active-cat-id="activeCatId"
           :price-range="priceRange"
@@ -193,8 +269,8 @@
             </button>
 
             <button
-              v-for="p in visiblePages"
-              :key="p"
+              v-for="(p, i) in visiblePages"
+              :key="`${p}-${i}`"
               @click="typeof p === 'number' && goToPage(p)"
               class="w-9 h-9 grid place-items-center rounded-full text-xs font-bold transition-colors"
               :class="p === currentPage
@@ -240,6 +316,7 @@
 
           <div class="overflow-y-auto p-5 flex-1">
             <ShopFilterPanel
+              :debounce-delay="2000"
               :cats="categories"
               :active-cat-id="activeCatId"
               :price-range="priceRange"
@@ -267,12 +344,12 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { fa } from '~/utils/format';
+import { fa, money } from '~/utils/format.ts';
 
 const route  = useRoute();
 const router = useRouter();
 
-// ─── Swiper / Sort ────────────────────────────────────────
+// ─── Sort ────────────────────────────────────────────────
 const isSortOpen      = ref(false);
 const sortDropdownRef = ref(null);
 
@@ -301,22 +378,81 @@ function selectSort(opt) {
 }
 
 function handleClickOutside(e) {
-  if (sortDropdownRef.value && !sortDropdownRef.value.contains(e.target))
+  if (sortDropdownRef.value && !sortDropdownRef.value.contains(e.target)) {
     isSortOpen.value = false;
+  }
+  if (searchContainerRef.value && !searchContainerRef.value.contains(e.target)) {
+    showSearchDropdown.value = false;
+  }
 }
 
 onMounted(() => { if (import.meta.client) window.addEventListener('click', handleClickOutside); });
 onUnmounted(() => { if (import.meta.client) window.removeEventListener('click', handleClickOutside); });
 
 // ─── State ────────────────────────────────────────────────
-const searchQuery    = ref('');
-const mobileFilterOpen = ref(false);
-const priceRange     = ref([0, 50000000]);
-const maxPrice       = ref(50000000);
+const searchQuery       = ref('');
+const mobileFilterOpen  = ref(false);
+const priceRange        = ref([0, 50000000]);
+const maxPrice          = ref(50000000);
+
+// ─── جستجوی سریع (Quick Search Dropdown) ───────────────────
+const searchContainerRef = ref(null);
+const showSearchDropdown = ref(false);
+const searchResults      = ref([]);
+const searchLoading      = ref(false);
+
+async function fetchSearchSuggestions(word) {
+  if (!word) {
+    searchResults.value      = [];
+    showSearchDropdown.value = false;
+    return;
+  }
+
+  searchLoading.value      = true;
+  showSearchDropdown.value = true;
+
+  try {
+    const response = await useGarnetApiFetch('reports/search', {
+      amount:     5,
+      direction:  'desc',
+      order:      'id',
+      page:       1,
+      searchWord: word,
+    });
+
+    if (response?.code === 2000) {
+      searchResults.value = response.Result || [];
+    } else {
+      searchResults.value = [];
+    }
+  } catch (e) {
+    console.error('[Shop] خطا در جستجوی سریع:', e);
+    searchResults.value = [];
+  } finally {
+    searchLoading.value = false;
+  }
+}
+
+function onSearchFocus() {
+  if (searchQuery.value.trim()) {
+    showSearchDropdown.value = true;
+  }
+}
+
+function goToSearchResult(item) {
+  showSearchDropdown.value = false;
+  router.push(`/product/${item.id}/${item.slug_fa}`);
+}
+
+function submitFullSearch() {
+  showSearchDropdown.value = false;
+  currentPage.value = 1;
+  fetchProducts();
+}
 
 // ─── Data از API ──────────────────────────────────────────
 const products    = ref([]);
-const categories  = ref([]);   // از categories API قبلی پر میشه
+const categories  = ref([]);   // از categories API جدا پر میشه
 const totalCount  = ref(0);
 const currentPage = ref(1);
 const PAGE_SIZE   = 24;
@@ -335,7 +471,7 @@ const activeCatTitle = computed(() =>
   categories.value.find(c => c.id === activeCatId.value)?.title_fa ?? null
 );
 
-// تعداد محصول هر کتگوری (از همین لیست فعلی — در صورت نیاز)
+// تعداد محصول هر کتگوری (بر اساس نتایج صفحه فعلی)
 const catCounts = computed(() => {
   const counts = {};
   categories.value.forEach(c => { counts[c.id] = 0; });
@@ -353,7 +489,7 @@ const activeFiltersCount = computed(() => {
   return n;
 });
 
-// ─── Fetch ────────────────────────────────────────────────
+// ─── Fetch محصولات ──────────────────────────────────────────
 async function fetchProducts() {
   pending.value = true;
   error.value   = null;
@@ -369,17 +505,17 @@ async function fetchProducts() {
     withAttrib: true,
   };
 
-  // ── کتگوری: به‌صورت string مستقیم ──
+  // کتگوری
   if (activeCatId.value) {
     payload.category = String(activeCatId.value);
   }
 
   // جستجو
-  if (searchQuery.value.trim()) {
-    payload.search = searchQuery.value.trim();
-  }
+  // if (searchQuery.value.trim()) {
+  //   payload.searchWord = searchQuery.value.trim();
+  // }
 
-  // فیلتر قیمت
+  // فیلتر قیمت (حالا هم min و هم max واقعی از فیلتر می‌آد)
   if (priceRange.value[0] > 0 || priceRange.value[1] < maxPrice.value) {
     payload.minPrice = priceRange.value[0];
     payload.maxPrice = priceRange.value[1];
@@ -395,8 +531,8 @@ async function fetchProducts() {
     if (maxPrice.value === 50000000 && products.value.length) {
       const max = Math.max(...products.value.map(p => p.price || 0));
       if (max > 0) {
-        maxPrice.value        = max;
-        priceRange.value[1]   = max;
+        maxPrice.value      = max;
+        priceRange.value[1] = max;
       }
     }
   } catch (err) {
@@ -429,13 +565,22 @@ watch(activeCatId, () => {
   fetchProducts();
 });
 
-// ─── Watch: جستجو (debounce ساده) ────────────────────────
+// ─── Watch: جستجو (debounce برای گرید اصلی + دراپ‌داون سریع) ─
 let searchTimer = null;
-watch(searchQuery, () => {
+watch(searchQuery, (val) => {
   clearTimeout(searchTimer);
+
+  const trimmed = val.trim();
+
+  if (!trimmed) {
+    showSearchDropdown.value = false;
+    searchResults.value      = [];
+  }
+
   searchTimer = setTimeout(() => {
     currentPage.value = 1;
-    fetchProducts();
+    // fetchProducts();
+    fetchSearchSuggestions(trimmed);
   }, 400);
 });
 
@@ -473,6 +618,7 @@ function toggleCat(catId) {
   });
 }
 
+// این تابع فقط پس از اتمام debounce داخل ShopFilterPanel صدا زده می‌شود
 function updatePriceRange(range) {
   priceRange.value  = range;
   currentPage.value = 1;
@@ -481,11 +627,13 @@ function updatePriceRange(range) {
 
 function resetAll() {
   router.push({ path: '/shop' });
-  priceRange.value  = [0, maxPrice.value];
-  searchQuery.value = '';
-  sortBy.value      = 'order';
+  priceRange.value    = [0, maxPrice.value];
+  searchQuery.value   = '';
+  sortBy.value        = 'order';
   sortDirection.value = 'desc';
-  currentPage.value = 1;
+  currentPage.value   = 1;
+  showSearchDropdown.value = false;
+  searchResults.value = [];
   fetchProducts();
 }
 </script>

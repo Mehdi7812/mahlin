@@ -1,5 +1,5 @@
 import { DEFAULT_CART, PRODUCTS, DISCOUNT, SHIPPING } from '~/data/products';
-import { money, fa } from '~/utils/format';
+import { money, fa } from '~/utils/format.ts';
 
 export function useCart() {
   const lines = useState('cart-lines', () => DEFAULT_CART.map((l) => ({ ...l })));

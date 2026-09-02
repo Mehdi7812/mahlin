@@ -331,14 +331,14 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 const route = useRoute();
 
 // ─── پالت رنگی ───────────────────────────────────────────
-const PALETTE = {
-  1: { stripeStart: '#8FC1D9', stripeEnd: '#DFF0F5', iconBg: 'rgba(143,193,217,0.12)', ringColor: 'rgba(143,193,217,0.35)', accent: '#6BA5C4', borderHoverColor: 'rgba(143,193,217,0.25)' },
-  2: { stripeStart: '#B9A6DE', stripeEnd: '#EDE6F8', iconBg: 'rgba(185,166,222,0.12)', ringColor: 'rgba(185,166,222,0.35)', accent: '#9C87C4', borderHoverColor: 'rgba(185,166,222,0.25)' },
-  3: { stripeStart: '#9CBFA0', stripeEnd: '#E3EFE4', iconBg: 'rgba(156,191,160,0.12)', ringColor: 'rgba(156,191,160,0.35)', accent: '#7BA582', borderHoverColor: 'rgba(156,191,160,0.25)' },
-  4: { stripeStart: '#F2A868', stripeEnd: '#FBE4CD', iconBg: 'rgba(242,168,104,0.12)', ringColor: 'rgba(242,168,104,0.35)', accent: '#D68C4B', borderHoverColor: 'rgba(242,168,104,0.22)' },
-  5: { stripeStart: '#F3B4B0', stripeEnd: '#FCE4E2', iconBg: 'rgba(243,180,176,0.12)', ringColor: 'rgba(243,180,176,0.35)', accent: '#DE8E89', borderHoverColor: 'rgba(243,180,176,0.25)' },
-};
-const DEFAULT_PALETTE = { stripeStart: '#E0B758', stripeEnd: '#F9F2DC', iconBg: 'rgba(224,183,88,0.10)', ringColor: 'rgba(224,183,88,0.30)', accent: '#C29A45', borderHoverColor: 'rgba(224,183,88,0.22)' };
+// const PALETTE = {
+//   1: { stripeStart: '#8FC1D9', stripeEnd: '#DFF0F5', iconBg: 'rgba(143,193,217,0.12)', ringColor: 'rgba(143,193,217,0.35)', accent: '#6BA5C4', borderHoverColor: 'rgba(143,193,217,0.25)' },
+//   2: { stripeStart: '#B9A6DE', stripeEnd: '#EDE6F8', iconBg: 'rgba(185,166,222,0.12)', ringColor: 'rgba(185,166,222,0.35)', accent: '#9C87C4', borderHoverColor: 'rgba(185,166,222,0.25)' },
+//   3: { stripeStart: '#9CBFA0', stripeEnd: '#E3EFE4', iconBg: 'rgba(156,191,160,0.12)', ringColor: 'rgba(156,191,160,0.35)', accent: '#7BA582', borderHoverColor: 'rgba(156,191,160,0.25)' },
+//   4: { stripeStart: '#F2A868', stripeEnd: '#FBE4CD', iconBg: 'rgba(242,168,104,0.12)', ringColor: 'rgba(242,168,104,0.35)', accent: '#D68C4B', borderHoverColor: 'rgba(242,168,104,0.22)' },
+//   5: { stripeStart: '#F3B4B0', stripeEnd: '#FCE4E2', iconBg: 'rgba(243,180,176,0.12)', ringColor: 'rgba(243,180,176,0.35)', accent: '#DE8E89', borderHoverColor: 'rgba(243,180,176,0.25)' },
+// };
+// const DEFAULT_PALETTE = { stripeStart: '#E0B758', stripeEnd: '#F9F2DC', iconBg: 'rgba(224,183,88,0.10)', ringColor: 'rgba(224,183,88,0.30)', accent: '#C29A45', borderHoverColor: 'rgba(224,183,88,0.22)' };
 
 // ─── State ───────────────────────────────────────────────
 const post              = ref(null);
@@ -394,9 +394,12 @@ function fetchRelated(categoryId, currentId) {
 }
 
 // ─── Computed پایه ─────────────────────────────────────────
+// const catInfo = computed(() =>
+//   PALETTE[post.value?.category] ?? DEFAULT_PALETTE
+// );
 const catInfo = computed(() =>
-  PALETTE[post.value?.category] ?? DEFAULT_PALETTE
-);
+  generateCategoryColor(props.blog.category_title_fa)
+)
 
 const hasCategory = computed(() =>
   !!(post.value?.category_text_fa && post.value.category_text_fa.trim())

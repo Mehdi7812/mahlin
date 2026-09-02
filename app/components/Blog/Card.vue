@@ -129,48 +129,51 @@ const props = defineProps({
 const hover = ref(false);
 
 // ─── پالت رنگی بر اساس category (id عددی) ───────────────
-const PALETTE = {
-  1: { // مقالات
-    stripeStart:      '#8FC1D9', stripeEnd: '#DFF0F5',
-    accent:           '#6BA5C4',
-    borderHoverColor: 'rgba(143,193,217,0.45)',
-    shadowColor:      '0 10px 12px -10px rgba(143,193,217,0.28)',
-  },
-  2: {
-    stripeStart:      '#B9A6DE', stripeEnd: '#EDE6F8',
-    accent:           '#9C87C4',
-    borderHoverColor: 'rgba(185,166,222,0.45)',
-    shadowColor:      '0 10px 12px -10px rgba(185,166,222,0.28)',
-  },
-  3: {
-    stripeStart:      '#9CBFA0', stripeEnd: '#E3EFE4',
-    accent:           '#7BA582',
-    borderHoverColor: 'rgba(156,191,160,0.45)',
-    shadowColor:      '0 10px 12px -10px rgba(156,191,160,0.28)',
-  },
-  4: {
-    stripeStart:      '#F2A868', stripeEnd: '#FBE4CD',
-    accent:           '#D68C4B',
-    borderHoverColor: 'rgba(242,168,104,0.45)',
-    shadowColor:      '0 10px 12px -10px rgba(242,168,104,0.24)',
-  },
-  5: {
-    stripeStart:      '#F3B4B0', stripeEnd: '#FCE4E2',
-    accent:           '#DE8E89',
-    borderHoverColor: 'rgba(243,180,176,0.45)',
-    shadowColor:      '0 10px 12px -10px rgba(243,180,176,0.28)',
-  },
-};
+// const PALETTE = {
+//   1: { // مقالات
+//     stripeStart:      '#8FC1D9', stripeEnd: '#DFF0F5',
+//     accent:           '#6BA5C4',
+//     borderHoverColor: 'rgba(143,193,217,0.45)',
+//     shadowColor:      '0 10px 12px -10px rgba(143,193,217,0.28)',
+//   },
+//   2: {
+//     stripeStart:      '#B9A6DE', stripeEnd: '#EDE6F8',
+//     accent:           '#9C87C4',
+//     borderHoverColor: 'rgba(185,166,222,0.45)',
+//     shadowColor:      '0 10px 12px -10px rgba(185,166,222,0.28)',
+//   },
+//   3: {
+//     stripeStart:      '#9CBFA0', stripeEnd: '#E3EFE4',
+//     accent:           '#7BA582',
+//     borderHoverColor: 'rgba(156,191,160,0.45)',
+//     shadowColor:      '0 10px 12px -10px rgba(156,191,160,0.28)',
+//   },
+//   4: {
+//     stripeStart:      '#F2A868', stripeEnd: '#FBE4CD',
+//     accent:           '#D68C4B',
+//     borderHoverColor: 'rgba(242,168,104,0.45)',
+//     shadowColor:      '0 10px 12px -10px rgba(242,168,104,0.24)',
+//   },
+//   5: {
+//     stripeStart:      '#F3B4B0', stripeEnd: '#FCE4E2',
+//     accent:           '#DE8E89',
+//     borderHoverColor: 'rgba(243,180,176,0.45)',
+//     shadowColor:      '0 10px 12px -10px rgba(243,180,176,0.28)',
+//   },
+// };
 
-const DEFAULT_PALETTE = {
-  stripeStart:      '#A28466', stripeEnd: '#F2EBE3',
-  accent:           '#A28466',
-  borderHoverColor: 'rgba(162,132,102,0.35)',
-  shadowColor:      '0 10px 12px -10px rgba(162,132,102,0.22)',
-};
+// const DEFAULT_PALETTE = {
+//   stripeStart:      '#A28466', stripeEnd: '#F2EBE3',
+//   accent:           '#A28466',
+//   borderHoverColor: 'rgba(162,132,102,0.35)',
+//   shadowColor:      '0 10px 12px -10px rgba(162,132,102,0.22)',
+// };
 
 // رنگ از روی category id
-const catInfo = computed(() => PALETTE[props.blog.category] ?? DEFAULT_PALETTE);
+// const catInfo = computed(() => PALETTE[props.blog.category] ?? DEFAULT_PALETTE);
+const catInfo = computed(() =>
+  generateCategoryColor(props.blog.category_text_fa)
+)
 
 // اولین تصویر از blog_images
 const coverImage = computed(() =>

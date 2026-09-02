@@ -29,7 +29,7 @@
 </template>
 
 <script setup>
-import { fa } from '~/utils/format';
+import { fa } from '~/utils/format.ts';
 
 const props = defineProps({
   qty: { type: Number, default: 1 },

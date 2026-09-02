@@ -143,7 +143,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { PLACEHOLDER_IMG } from '~/data/products';
-import { money } from '~/utils/format';
+import { money } from '~/utils/format.ts';
 
 const props = defineProps({
   product: {
@@ -156,75 +156,79 @@ const isWishlisted = ref(false);
 const hoverShadow  = ref(false);
 
 // ─── پالت رنگی بر اساس ID دسته‌بندی ─────────────────────
-const PALETTE = {
-  1: { // ضد آفتاب
-    borderColor: 'rgba(242,168,104,0.20)',
-    stripeStart: '#F2A868', stripeEnd: '#FBEEDD',
-    iconBg:      'rgba(242,168,104,0.14)',
-    accent:      '#D68C4B',
-    shadowColor: '0 16px 32px -10px rgba(242,168,104,0.26)',
-  },
-  2: { // آب‌رسان
-    borderColor: 'rgba(143,193,217,0.20)',
-    stripeStart: '#8FC1D9', stripeEnd: '#EDF6FA',
-    iconBg:      'rgba(143,193,217,0.14)',
-    accent:      '#6BA5C4',
-    shadowColor: '0 16px 32px -10px rgba(143,193,217,0.30)',
-  },
-  3: { // ترمیم‌کننده و مرطوب‌کننده
-    borderColor: 'rgba(185,166,222,0.20)',
-    stripeStart: '#B9A6DE', stripeEnd: '#F2EEFA',
-    iconBg:      'rgba(185,166,222,0.14)',
-    accent:      '#9C87C4',
-    shadowColor: '0 16px 32px -10px rgba(185,166,222,0.30)',
-  },
-  4: { // کرم جوان‌ساز و لیفتینگ
-    borderColor: 'rgba(243,180,176,0.20)',
-    stripeStart: '#F3B4B0', stripeEnd: '#FCEEED',
-    iconBg:      'rgba(243,180,176,0.14)',
-    accent:      '#DE8E89',
-    shadowColor: '0 16px 32px -10px rgba(243,180,176,0.30)',
-  },
-  5: { // شوینده
-    borderColor: 'rgba(156,191,160,0.20)',
-    stripeStart: '#9CBFA0', stripeEnd: '#EDF4EE',
-    iconBg:      'rgba(156,191,160,0.14)',
-    accent:      '#7BA582',
-    shadowColor: '0 16px 32px -10px rgba(156,191,160,0.30)',
-  },
-  6: { // ضدلک و روشن‌کننده
-    borderColor: 'rgba(224,183,88,0.20)',
-    stripeStart: '#E0B758', stripeEnd: '#F9F2DC',
-    iconBg:      'rgba(224,183,88,0.14)',
-    accent:      '#C29A45',
-    shadowColor: '0 16px 32px -10px rgba(224,183,88,0.26)',
-  },
-  7: { // دور چشم
-    borderColor: 'rgba(110,178,178,0.20)',
-    stripeStart: '#6EB2B2', stripeEnd: '#E9F4F4',
-    iconBg:      'rgba(110,178,178,0.14)',
-    accent:      '#519494',
-    shadowColor: '0 16px 32px -10px rgba(110,178,178,0.26)',
-  },
-  8: { // تونر و لایه‌بردار
-    borderColor: 'rgba(140,155,210,0.20)',
-    stripeStart: '#8C9BD2', stripeEnd: '#EEF0FA',
-    iconBg:      'rgba(140,155,210,0.14)',
-    accent:      '#6A7DC0',
-    shadowColor: '0 16px 32px -10px rgba(140,155,210,0.30)',
-  },
-};
+// const PALETTE = {
+//   1: { // ضد آفتاب
+//     borderColor: 'rgba(242,168,104,0.20)',
+//     stripeStart: '#F2A868', stripeEnd: '#FBEEDD',
+//     iconBg:      'rgba(242,168,104,0.14)',
+//     accent:      '#D68C4B',
+//     shadowColor: '0 16px 32px -10px rgba(242,168,104,0.26)',
+//   },
+//   2: { // آب‌رسان
+//     borderColor: 'rgba(143,193,217,0.20)',
+//     stripeStart: '#8FC1D9', stripeEnd: '#EDF6FA',
+//     iconBg:      'rgba(143,193,217,0.14)',
+//     accent:      '#6BA5C4',
+//     shadowColor: '0 16px 32px -10px rgba(143,193,217,0.30)',
+//   },
+//   3: { // ترمیم‌کننده و مرطوب‌کننده
+//     borderColor: 'rgba(185,166,222,0.20)',
+//     stripeStart: '#B9A6DE', stripeEnd: '#F2EEFA',
+//     iconBg:      'rgba(185,166,222,0.14)',
+//     accent:      '#9C87C4',
+//     shadowColor: '0 16px 32px -10px rgba(185,166,222,0.30)',
+//   },
+//   4: { // کرم جوان‌ساز و لیفتینگ
+//     borderColor: 'rgba(243,180,176,0.20)',
+//     stripeStart: '#F3B4B0', stripeEnd: '#FCEEED',
+//     iconBg:      'rgba(243,180,176,0.14)',
+//     accent:      '#DE8E89',
+//     shadowColor: '0 16px 32px -10px rgba(243,180,176,0.30)',
+//   },
+//   5: { // شوینده
+//     borderColor: 'rgba(156,191,160,0.20)',
+//     stripeStart: '#9CBFA0', stripeEnd: '#EDF4EE',
+//     iconBg:      'rgba(156,191,160,0.14)',
+//     accent:      '#7BA582',
+//     shadowColor: '0 16px 32px -10px rgba(156,191,160,0.30)',
+//   },
+//   6: { // ضدلک و روشن‌کننده
+//     borderColor: 'rgba(224,183,88,0.20)',
+//     stripeStart: '#E0B758', stripeEnd: '#F9F2DC',
+//     iconBg:      'rgba(224,183,88,0.14)',
+//     accent:      '#C29A45',
+//     shadowColor: '0 16px 32px -10px rgba(224,183,88,0.26)',
+//   },
+//   7: { // دور چشم
+//     borderColor: 'rgba(110,178,178,0.20)',
+//     stripeStart: '#6EB2B2', stripeEnd: '#E9F4F4',
+//     iconBg:      'rgba(110,178,178,0.14)',
+//     accent:      '#519494',
+//     shadowColor: '0 16px 32px -10px rgba(110,178,178,0.26)',
+//   },
+//   8: { // تونر و لایه‌بردار
+//     borderColor: 'rgba(140,155,210,0.20)',
+//     stripeStart: '#8C9BD2', stripeEnd: '#EEF0FA',
+//     iconBg:      'rgba(140,155,210,0.14)',
+//     accent:      '#6A7DC0',
+//     shadowColor: '0 16px 32px -10px rgba(140,155,210,0.30)',
+//   },
+// };
 
-const DEFAULT_PALETTE = {
-  borderColor: 'rgba(162,132,102,0.18)',
-  stripeStart: '#A28466', stripeEnd: '#F2EBE3',
-  iconBg:      'rgba(162,132,102,0.12)',
-  accent:      '#A28466',
-  shadowColor: '0 16px 32px -10px rgba(162,132,102,0.24)',
-};
+// const DEFAULT_PALETTE = {
+//   borderColor: 'rgba(162,132,102,0.18)',
+//   stripeStart: '#A28466', stripeEnd: '#F2EBE3',
+//   iconBg:      'rgba(162,132,102,0.12)',
+//   accent:      '#A28466',
+//   shadowColor: '0 16px 32px -10px rgba(162,132,102,0.24)',
+// };
 
 // رنگ از روی category id
-const catInfo = computed(() => PALETTE[props.product.category] ?? DEFAULT_PALETTE);
+// const catInfo = computed(() => PALETTE[props.product.category] ?? DEFAULT_PALETTE);
+
+const catInfo = computed(() =>
+  generateCategoryColor(props.product.category_title_fa)
+)
 
 // لینک محصول
 const productLink = computed(() =>

@@ -1,117 +1,117 @@
 <script setup>
 
 // ─── پالت بر اساس ID کتگوری ───────────────────────────────
-const PALETTE = {
-  1: { // ضد آفتاب
-    bgColor:          '#FDF8F3',
-    borderColor:      'rgba(242,168,104,0.18)',
-    borderHoverColor: 'rgba(242,168,104,0.45)',
-    shadowColor:      '0 16px 32px -10px rgba(242,168,104,0.22)',
-    blobColor:        'rgba(242,168,104,0.16)',
-    stripeStart:      '#F2A868',
-    stripeEnd:        '#FBEEDD',
-    iconBg:           'rgba(242,168,104,0.12)',
-    ringColor:        'rgba(242,168,104,0.22)',
-    accent:           '#D68C4B',
-  },
-  2: { // آب‌رسان
-    bgColor:          '#F6FAFC',
-    borderColor:      'rgba(143,193,217,0.18)',
-    borderHoverColor: 'rgba(143,193,217,0.45)',
-    shadowColor:      '0 16px 32px -10px rgba(143,193,217,0.25)',
-    blobColor:        'rgba(143,193,217,0.18)',
-    stripeStart:      '#8FC1D9',
-    stripeEnd:        '#EDF6FA',
-    iconBg:           'rgba(143,193,217,0.12)',
-    ringColor:        'rgba(143,193,217,0.22)',
-    accent:           '#6BA5C4',
-  },
-  3: { // ترمیم‌کننده و مرطوب‌کننده
-    bgColor:          '#F8F7FB',
-    borderColor:      'rgba(185,166,222,0.18)',
-    borderHoverColor: 'rgba(185,166,222,0.45)',
-    shadowColor:      '0 16px 32px -10px rgba(185,166,222,0.25)',
-    blobColor:        'rgba(185,166,222,0.18)',
-    stripeStart:      '#B9A6DE',
-    stripeEnd:        '#F2EEFA',
-    iconBg:           'rgba(185,166,222,0.12)',
-    ringColor:        'rgba(185,166,222,0.22)',
-    accent:           '#9C87C4',
-  },
-  4: { // کرم جوان‌ساز و لیفتینگ
-    bgColor:          '#FDF7F7',
-    borderColor:      'rgba(243,180,176,0.18)',
-    borderHoverColor: 'rgba(243,180,176,0.45)',
-    shadowColor:      '0 16px 32px -10px rgba(243,180,176,0.25)',
-    blobColor:        'rgba(243,180,176,0.18)',
-    stripeStart:      '#F3B4B0',
-    stripeEnd:        '#FCEEED',
-    iconBg:           'rgba(243,180,176,0.12)',
-    ringColor:        'rgba(243,180,176,0.22)',
-    accent:           '#DE8E89',
-  },
-  5: { // شوینده
-    bgColor:          '#F7FAF7',
-    borderColor:      'rgba(156,191,160,0.18)',
-    borderHoverColor: 'rgba(156,191,160,0.45)',
-    shadowColor:      '0 16px 32px -10px rgba(156,191,160,0.25)',
-    blobColor:        'rgba(156,191,160,0.18)',
-    stripeStart:      '#9CBFA0',
-    stripeEnd:        '#EDF4EE',
-    iconBg:           'rgba(156,191,160,0.12)',
-    ringColor:        'rgba(156,191,160,0.22)',
-    accent:           '#7BA582',
-  },
-  6: { // ضدلک و روشن‌کننده
-    bgColor:          '#FBFAF4',
-    borderColor:      'rgba(224,183,88,0.18)',
-    borderHoverColor: 'rgba(224,183,88,0.45)',
-    shadowColor:      '0 16px 32px -10px rgba(224,183,88,0.22)',
-    blobColor:        'rgba(224,183,88,0.16)',
-    stripeStart:      '#E0B758',
-    stripeEnd:        '#F9F2DC',
-    iconBg:           'rgba(224,183,88,0.12)',
-    ringColor:        'rgba(224,183,88,0.22)',
-    accent:           '#C29A45',
-  },
-  7: { // دور چشم
-    bgColor:          '#F6FAFA',
-    borderColor:      'rgba(110,178,178,0.18)',
-    borderHoverColor: 'rgba(110,178,178,0.45)',
-    shadowColor:      '0 16px 32px -10px rgba(110,178,178,0.22)',
-    blobColor:        'rgba(110,178,178,0.16)',
-    stripeStart:      '#6EB2B2',
-    stripeEnd:        '#E9F4F4',
-    iconBg:           'rgba(110,178,178,0.12)',
-    ringColor:        'rgba(110,178,178,0.22)',
-    accent:           '#519494',
-  },
-  8: { // تونر و لایه‌بردار
-    bgColor:          '#F7F8FC',
-    borderColor:      'rgba(140,155,210,0.18)',
-    borderHoverColor: 'rgba(140,155,210,0.45)',
-    shadowColor:      '0 16px 32px -10px rgba(140,155,210,0.25)',
-    blobColor:        'rgba(140,155,210,0.18)',
-    stripeStart:      '#8C9BD2',
-    stripeEnd:        '#EEF0FA',
-    iconBg:           'rgba(140,155,210,0.12)',
-    ringColor:        'rgba(140,155,210,0.22)',
-    accent:           '#6A7DC0',
-  },
-};
+// const PALETTE = {
+//   1: { // ضد آفتاب
+//     bgColor:          '#FDF8F3',
+//     borderColor:      'rgba(242,168,104,0.18)',
+//     borderHoverColor: 'rgba(242,168,104,0.45)',
+//     shadowColor:      '0 16px 32px -10px rgba(242,168,104,0.22)',
+//     blobColor:        'rgba(242,168,104,0.16)',
+//     stripeStart:      '#F2A868',
+//     stripeEnd:        '#FBEEDD',
+//     iconBg:           'rgba(242,168,104,0.12)',
+//     ringColor:        'rgba(242,168,104,0.22)',
+//     accent:           '#D68C4B',
+//   },
+//   2: { // آب‌رسان
+//     bgColor:          '#F6FAFC',
+//     borderColor:      'rgba(143,193,217,0.18)',
+//     borderHoverColor: 'rgba(143,193,217,0.45)',
+//     shadowColor:      '0 16px 32px -10px rgba(143,193,217,0.25)',
+//     blobColor:        'rgba(143,193,217,0.18)',
+//     stripeStart:      '#8FC1D9',
+//     stripeEnd:        '#EDF6FA',
+//     iconBg:           'rgba(143,193,217,0.12)',
+//     ringColor:        'rgba(143,193,217,0.22)',
+//     accent:           '#6BA5C4',
+//   },
+//   3: { // ترمیم‌کننده و مرطوب‌کننده
+//     bgColor:          '#F8F7FB',
+//     borderColor:      'rgba(185,166,222,0.18)',
+//     borderHoverColor: 'rgba(185,166,222,0.45)',
+//     shadowColor:      '0 16px 32px -10px rgba(185,166,222,0.25)',
+//     blobColor:        'rgba(185,166,222,0.18)',
+//     stripeStart:      '#B9A6DE',
+//     stripeEnd:        '#F2EEFA',
+//     iconBg:           'rgba(185,166,222,0.12)',
+//     ringColor:        'rgba(185,166,222,0.22)',
+//     accent:           '#9C87C4',
+//   },
+//   4: { // کرم جوان‌ساز و لیفتینگ
+//     bgColor:          '#FDF7F7',
+//     borderColor:      'rgba(243,180,176,0.18)',
+//     borderHoverColor: 'rgba(243,180,176,0.45)',
+//     shadowColor:      '0 16px 32px -10px rgba(243,180,176,0.25)',
+//     blobColor:        'rgba(243,180,176,0.18)',
+//     stripeStart:      '#F3B4B0',
+//     stripeEnd:        '#FCEEED',
+//     iconBg:           'rgba(243,180,176,0.12)',
+//     ringColor:        'rgba(243,180,176,0.22)',
+//     accent:           '#DE8E89',
+//   },
+//   5: { // شوینده
+//     bgColor:          '#F7FAF7',
+//     borderColor:      'rgba(156,191,160,0.18)',
+//     borderHoverColor: 'rgba(156,191,160,0.45)',
+//     shadowColor:      '0 16px 32px -10px rgba(156,191,160,0.25)',
+//     blobColor:        'rgba(156,191,160,0.18)',
+//     stripeStart:      '#9CBFA0',
+//     stripeEnd:        '#EDF4EE',
+//     iconBg:           'rgba(156,191,160,0.12)',
+//     ringColor:        'rgba(156,191,160,0.22)',
+//     accent:           '#7BA582',
+//   },
+//   6: { // ضدلک و روشن‌کننده
+//     bgColor:          '#FBFAF4',
+//     borderColor:      'rgba(224,183,88,0.18)',
+//     borderHoverColor: 'rgba(224,183,88,0.45)',
+//     shadowColor:      '0 16px 32px -10px rgba(224,183,88,0.22)',
+//     blobColor:        'rgba(224,183,88,0.16)',
+//     stripeStart:      '#E0B758',
+//     stripeEnd:        '#F9F2DC',
+//     iconBg:           'rgba(224,183,88,0.12)',
+//     ringColor:        'rgba(224,183,88,0.22)',
+//     accent:           '#C29A45',
+//   },
+//   7: { // دور چشم
+//     bgColor:          '#F6FAFA',
+//     borderColor:      'rgba(110,178,178,0.18)',
+//     borderHoverColor: 'rgba(110,178,178,0.45)',
+//     shadowColor:      '0 16px 32px -10px rgba(110,178,178,0.22)',
+//     blobColor:        'rgba(110,178,178,0.16)',
+//     stripeStart:      '#6EB2B2',
+//     stripeEnd:        '#E9F4F4',
+//     iconBg:           'rgba(110,178,178,0.12)',
+//     ringColor:        'rgba(110,178,178,0.22)',
+//     accent:           '#519494',
+//   },
+//   8: { // تونر و لایه‌بردار
+//     bgColor:          '#F7F8FC',
+//     borderColor:      'rgba(140,155,210,0.18)',
+//     borderHoverColor: 'rgba(140,155,210,0.45)',
+//     shadowColor:      '0 16px 32px -10px rgba(140,155,210,0.25)',
+//     blobColor:        'rgba(140,155,210,0.18)',
+//     stripeStart:      '#8C9BD2',
+//     stripeEnd:        '#EEF0FA',
+//     iconBg:           'rgba(140,155,210,0.12)',
+//     ringColor:        'rgba(140,155,210,0.22)',
+//     accent:           '#6A7DC0',
+//   },
+// };
 
-const DEFAULT_PALETTE = {
-  bgColor:          '#FAF7F3',
-  borderColor:      'rgba(162,132,102,0.15)',
-  borderHoverColor: 'rgba(162,132,102,0.35)',
-  shadowColor:      '0 16px 32px -10px rgba(162,132,102,0.20)',
-  blobColor:        'rgba(162,132,102,0.14)',
-  stripeStart:      '#A28466',
-  stripeEnd:        '#F2EBE3',
-  iconBg:           'rgba(162,132,102,0.10)',
-  ringColor:        'rgba(162,132,102,0.20)',
-  accent:           '#A28466',
-};
+// const DEFAULT_PALETTE = {
+//   bgColor:          '#FAF7F3',
+//   borderColor:      'rgba(162,132,102,0.15)',
+//   borderHoverColor: 'rgba(162,132,102,0.35)',
+//   shadowColor:      '0 16px 32px -10px rgba(162,132,102,0.20)',
+//   blobColor:        'rgba(162,132,102,0.14)',
+//   stripeStart:      '#A28466',
+//   stripeEnd:        '#F2EBE3',
+//   iconBg:           'rgba(162,132,102,0.10)',
+//   ringColor:        'rgba(162,132,102,0.20)',
+//   accent:           '#A28466',
+// };
 
 // ─── State ───────────────────────────────────────────────
 const categories = ref([]);
@@ -136,8 +136,12 @@ useGarnetApiFetch('products/categoryIndex')
 // ─── Helpers ─────────────────────────────────────────────
 
 // رنگ‌ها از روی ID — بدون وابستگی به title_fa
-function getPalette(id) {
-  return PALETTE[id] || DEFAULT_PALETTE;
+// function getPalette(id) {
+//   return PALETTE[id] || DEFAULT_PALETTE;
+// }
+
+function getPalette(cat) {
+  return generateCategoryColor(cat.title_fa);
 }
 
 // توضیح از API میاد، فقط اگه خالی بود fallback بده
@@ -222,24 +226,24 @@ function onLeave(e, palette) {
           class="cat-card group relative flex flex-col items-center text-center p-5 sm:p-6 rounded-[20px] sm:rounded-[24px] transition-all duration-500 ease-out hover:-translate-y-2 overflow-hidden transform-gpu animate-fade-in-up border"
           :style="{
             animationDelay:  i * 0.08 + 's',
-            backgroundColor: getPalette(cat.id).bgColor,
-            borderColor:     getPalette(cat.id).borderColor,
-            '--cat-accent':  getPalette(cat.id).accent,
+            backgroundColor: getPalette(cat).bgColor,
+            borderColor:     getPalette(cat).borderColor,
+            '--cat-accent':  getPalette(cat).accent,
           }"
-          @mouseenter="e => onEnter(e, getPalette(cat.id))"
-          @mouseleave="e => onLeave(e, getPalette(cat.id))"
+          @mouseenter="e => onEnter(e, getPalette(cat))"
+          @mouseleave="e => onLeave(e, getPalette(cat))"
         >
           <!-- هاله -->
           <div
             class="absolute -top-12 -end-12 w-32 h-32 rounded-full blur-2xl pointer-events-none"
-            :style="{ backgroundColor: getPalette(cat.id).blobColor }"
+            :style="{ backgroundColor: getPalette(cat).blobColor }"
           />
 
           <!-- نوار بالا -->
           <div
             class="absolute top-0 inset-x-0 h-[2px] rounded-t-[20px] sm:rounded-t-[24px] opacity-70"
             :style="{
-              background: `linear-gradient(to left, ${getPalette(cat.id).stripeEnd}, ${getPalette(cat.id).stripeStart})`
+              background: `linear-gradient(to left, ${getPalette(cat).stripeEnd}, ${getPalette(cat).stripeStart})`
             }"
           />
 
@@ -247,8 +251,8 @@ function onLeave(e, palette) {
           <div
             class="relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center mb-3.5 transition-all duration-400 ease-out transform-gpu group-hover:scale-110 group-hover:-rotate-3"
             :style="{
-              backgroundColor: getPalette(cat.id).iconBg,
-              boxShadow: `0 0 0 1px ${getPalette(cat.id).ringColor}`,
+              backgroundColor: getPalette(cat).iconBg,
+              boxShadow: `0 0 0 1px ${getPalette(cat).ringColor}`,
             }"
           >
             <img
@@ -261,7 +265,7 @@ function onLeave(e, palette) {
               v-else
               :cat="cat.title_fa"
               :size="26"
-              :style="{ color: getPalette(cat.id).accent }"
+              :style="{ color: getPalette(cat).accent }"
             />
           </div>
 
@@ -270,7 +274,7 @@ function onLeave(e, palette) {
             <span>{{ getTitle(cat) }}</span>
             <svg
               class="w-3.5 h-3.5 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 ease-out transform-gpu rtl:rotate-180"
-              :style="{ color: getPalette(cat.id).accent }"
+              :style="{ color: getPalette(cat).accent }"
               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
             >
               <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
