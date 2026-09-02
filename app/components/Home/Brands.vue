@@ -28,8 +28,8 @@
       @mouseleave="resumeAutoplay"
     >
       <!-- گرادینت محو کننده لبه‌ها -->
-      <div class="absolute inset-y-0 start-0 w-16 md:w-32 bg-gradient-to-l from-transparent to-card/30 z-10 pointer-events-none"></div>
-      <div class="absolute inset-y-0 end-0 w-16 md:w-32 bg-gradient-to-r from-transparent to-card/30 z-10 pointer-events-none"></div>
+      <!-- <div class="absolute inset-y-0 start-0 w-16 md:w-32 bg-gradient-to-l from-transparent to-card/30 z-10 pointer-events-none"></div>
+      <div class="absolute inset-y-0 end-0 w-16 md:w-32 bg-gradient-to-r from-transparent to-card/30 z-10 pointer-events-none"></div> -->
 
       <!-- اعمال پدینگ عمودی و سرریز مرئی برای رفع مشکل برش سایه -->
       <Swiper
