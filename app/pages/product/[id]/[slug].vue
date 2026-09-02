@@ -5,10 +5,8 @@
 
     <ProductBreadcrumb :category-tree="categoryTree" :product-name="item.name" />
 
-    <!-- گرید اصلی محصول -->
     <div class="grid md:grid-cols-12 gap-8 lg:gap-16 items-start">
 
-      <!-- ستون سمت راست: تصویر -->
       <div class="md:col-span-5 md:sticky md:top-[100px]">
         <ProductGallery
           v-model:active-image="activeImage"
@@ -25,7 +23,6 @@
         <ProductTrustBadges :is-course="isCourse" />
       </div>
 
-      <!-- ستون سمت چپ: جزئیات خرید -->
       <div class="md:col-span-7 space-y-6">
         <ProductHeader
           :item="item"
@@ -60,7 +57,6 @@
       </div>
     </div>
 
-    <!-- ═══════════════ بخش نظرات خریداران ═══════════════ -->
     <section ref="reviewsSectionRef" class="mt-16 md:mt-24 pt-10 border-t border-ink/10 scroll-mt-24">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div class="flex items-center gap-2">
@@ -120,19 +116,17 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { fa } from '~/utils/format.ts';
+import { fa } from '~/utils/format';
 import { toast } from 'vue-sonner';
 
 const route  = useRoute();
 const router = useRouter();
 
-// استور سراسری پروژه که وضعیت لاگین کاربر رو نگه می‌داره
 const customizer  = useCustomizerStore();
 const isUserLogin = computed(() => !!customizer.auth);
 
 const { add } = useCart();
 
-// ⚠️ نوع دیدگاه مخصوص محصولات — با مقدار واقعی بک‌اند هماهنگ کن
 const COMMENT_KIND = 1;
 
 // ─── شناسه محصول از روی مسیر ────────────────────────────────
@@ -141,8 +135,8 @@ const productId = computed(() => route.params.id);
 // ─── داده‌های خام API ────────────────────────────────────────
 const Product      = ref(null);
 const categoryTree = ref([]);
-const pending       = ref(true);
-const fetchError    = ref(null);
+const pending      = ref(true);
+const fetchError   = ref(null);
 
 // ─── سایر state های صفحه ────────────────────────────────────
 const qty              = ref(1);
@@ -167,71 +161,6 @@ const commentsCount      = ref(0);
 const commentForm    = ref({ name: '', contact: '', text: '', rate: 5, error: false });
 const submitLoading   = ref(false);
 
-// ─── دریافت جزئیات محصول ──────
-const getProductDetail = async () => {
-  pending.value    = true;
-  fetchError.value = null;
-  try {
-    const sendUrl = customizer.auth ? 'products/showByUser' : 'products/showByPub';
-    const { data, error, fetchData } = useGarnetApiFetchReactive(sendUrl, {
-      id: productId.value,
-      inline_attributes: true,
-      inline_price: true,
-    });
-    await fetchData();
-
-    if (error.value) {
-      throw new Error('خطا در دریافت اطلاعات');
-    }
-    if (!data.value?.Product) {
-      throw new Error('Product data not found');
-    }
-
-    Product.value = data.value.Product;
-
-    if (Product.value.status === 0) {
-      await router.push('/shop');
-      return;
-    }
-
-    categoryTree.value = (data.value.CategoryTree || []).map((v) => ({
-      id:   v.category_id,
-      text: v.category_title_fa,
-    }));
-
-    isWishlisted.value = !!Product.value.is_fave;
-    activeImage.value  = Product.value.cover_image || Product.value.product_images?.[0]?.file || null;
-    qty.value           = Product.value.minimum_sale_quantity || 1;
-
-    fetchRelated();
-    saveToRecentlyViewed();
-    loadRecentlyViewed();
-
-    // ری‌ست و بارگذاری اولیه‌ی نظرات این محصول
-    resetCommentForm();
-    comments.value           = [];
-    commentsPage.value       = 1;
-    commentsTotalPages.value = 1;
-    loadingPosts.value       = true;
-    loadComments();
-  } catch (err) {
-    console.error('[ProductDetail] خطا:', err);
-    fetchError.value = err;
-    Product.value = null;
-  } finally {
-    pending.value = false;
-  }
-};
-
-getProductDetail();
-
-watch(productId, (newId, oldId) => {
-  if (newId && newId !== oldId) {
-    getProductDetail();
-    if (process.client) window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-});
-
 // ─── کمک‌کننده‌ها ─────────────────────────────────────────────
 function stripHtml(html) {
   if (!html) return '';
@@ -243,6 +172,10 @@ function scrollToReviews() {
 }
 
 // ─── نرمال‌سازی محصول برای استفاده در تمپلیت ──────────────────
+// ⚠️ این computed حتماً باید قبل از فراخوانی getProductDetail()
+// تعریف بشه، وگرنه چون داخل getProductDetail بلافاصله از
+// fetchRelated (که به item.value وابسته است) استفاده می‌شه،
+// به خطای «Cannot access 'item' before initialization» می‌خوریم.
 const item = computed(() => {
   const p = Product.value;
   if (!p) return null;
@@ -302,22 +235,17 @@ watch(item, (val) => {
 }, { immediate: true });
 
 // ─── پالت رنگی هماهنگ با دسته‌بندی ─────────────────────────────
-// const PALETTE = {
-//   'شوینده': { borderColor: 'rgba(156,191,160,0.20)', iconBg: 'rgba(156,191,160,0.14)', accent: '#7BA582', darkAccent: '#5F8A66' },
-//   'آبرسان': { borderColor: 'rgba(143,193,217,0.20)', iconBg: 'rgba(143,193,217,0.14)', accent: '#6BA5C4', darkAccent: '#4C87A6' },
-//   'ترمیم‌کننده و مرطوب‌کننده': { borderColor: 'rgba(185,166,222,0.20)', iconBg: 'rgba(185,166,222,0.14)', accent: '#9C87C4', darkAccent: '#7C67A8' },
-//   'ضدلک و روشن‌کننده': { borderColor: 'rgba(224,183,88,0.20)', iconBg: 'rgba(224,183,88,0.14)', accent: '#C29A45', darkAccent: '#A17F35' },
-//   'کرم جوانساز و لیفتینگ': { borderColor: 'rgba(243,180,176,0.20)', iconBg: 'rgba(243,180,176,0.14)', accent: '#DE8E89', darkAccent: '#C36F6A' },
-//   'دورچشم': { borderColor: 'rgba(110,178,178,0.20)', iconBg: 'rgba(110,178,178,0.14)', accent: '#519494', darkAccent: '#3D7676' },
-//   'ضدآفتاب': { borderColor: 'rgba(242,168,104,0.20)', iconBg: 'rgba(242,168,104,0.14)', accent: '#D68C4B', darkAccent: '#B76F32' },
-// };
-// const DEFAULT_PALETTE = { borderColor: 'rgba(162,132,102,0.18)', iconBg: 'rgba(162,132,102,0.12)', accent: '#A28466', darkAccent: '#3F3A35' };
+const DEFAULT_PALETTE = { borderColor: 'rgba(162,132,102,0.18)', iconBg: 'rgba(162,132,102,0.12)', accent: '#A28466', darkAccent: '#3F3A35' };
 
-// const catInfo = computed(() => (item.value && PALETTE[item.value.cat]) || DEFAULT_PALETTE);
-
-const catInfo = computed(() =>
-  generateCategoryColor(item.value.cat)
-)
+const catInfo = computed(() => {
+  if (!item.value) return DEFAULT_PALETTE;
+  try {
+    return generateCategoryColor(item.value.cat) || DEFAULT_PALETTE;
+  } catch (e) {
+    console.warn('[ProductDetail] خطا در تولید پالت رنگی:', e);
+    return DEFAULT_PALETTE;
+  }
+});
 
 // ─── تخفیف، موجودی ───────────────────────────────────────────
 const discountPercent = computed(() => {
@@ -338,7 +266,6 @@ const effectiveMax = computed(() => {
 
 const atMaxStock = computed(() => !!item.value && qty.value >= effectiveMax.value);
 
-// تخمین بازه زمانی تحویل (۱ تا ۳ روز آینده) — فقط برای کالای فیزیکی
 const deliveryEstimate = computed(() => {
   const now = new Date();
   const from = new Date(now); from.setDate(now.getDate() + 1);
@@ -365,7 +292,6 @@ function handleAdd() {
 }
 
 function toggleWishlist() {
-  // TODO: اتصال به API واقعی افزودن/حذف علاقه‌مندی (products/toggleFave یا مشابه)
   isWishlisted.value = !isWishlisted.value;
 }
 
@@ -487,15 +413,12 @@ function loadMoreComments() {
   loadComments();
 }
 
-// میانگین امتیاز بر اساس نظراتی که تاکنون بارگذاری شده‌اند
 const avgRating = computed(() => {
   const rated = comments.value.filter((c) => c.rate);
   if (!rated.length) return null;
   const sum = rated.reduce((acc, c) => acc + (c.rate || 0), 0);
   return (sum / rated.length).toFixed(1);
 });
-
-// ═══════════════════════════════════════════════════════════════
 
 // ─── محصولات مشابه (از API) ────────────────────────────────────
 function fetchRelated() {
@@ -557,6 +480,74 @@ function loadRecentlyViewed() {
     recentlyViewed.value = [];
   }
 }
+
+// ═══════════════════════════════════════════════════════════════
+// ─── دریافت جزئیات محصول ───────────────────────────────────────
+// ⚠️ برگردانده‌شده به useGarnetApiFetch ساده (دقیقاً مثل fetchRelated
+// و loadComments در همین فایل) به‌جای useGarnetApiFetchReactive.
+// این هماهنگی باعث می‌شه رفتار SSR این فچ هم مثل بقیه‌ی فچ‌های پروژه
+// (که به‌درستی کار می‌کنن، مثلاً در shop.vue) قابل‌اعتماد باشه.
+// ═══════════════════════════════════════════════════════════════
+async function getProductDetail() {
+  pending.value    = true;
+  fetchError.value = null;
+  try {
+    const sendUrl = customizer.auth ? 'products/showByUser' : 'products/showByPub';
+    const response = await useGarnetApiFetch(sendUrl, {
+      id: productId.value,
+      inline_attributes: true,
+      inline_price: true,
+    });
+
+    if (!response?.Product) {
+      throw new Error('Product data not found');
+    }
+
+    Product.value = response.Product;
+
+    if (Product.value.status === 0) {
+      await router.push('/shop');
+      return;
+    }
+
+    categoryTree.value = (response.CategoryTree || []).map((v) => ({
+      id:   v.category_id,
+      text: v.category_title_fa,
+    }));
+
+    isWishlisted.value = !!Product.value.is_fave;
+    activeImage.value  = Product.value.cover_image || Product.value.product_images?.[0]?.file || null;
+    qty.value           = Product.value.minimum_sale_quantity || 1;
+
+    fetchRelated();
+    saveToRecentlyViewed();
+    loadRecentlyViewed();
+
+    resetCommentForm();
+    comments.value           = [];
+    commentsPage.value       = 1;
+    commentsTotalPages.value = 1;
+    loadingPosts.value       = true;
+    loadComments();
+  } catch (err) {
+    console.error('[ProductDetail] خطا:', err);
+    fetchError.value = err;
+    Product.value = null;
+  } finally {
+    pending.value = false;
+  }
+}
+
+// ─── بار اول: با await تا SSR کامل با دیتای واقعی رندر بشه ────
+await getProductDetail();
+
+// ─── تغییر محصول در حین ناوبری سمت کلاینت ─────────────────────
+watch(productId, (newId, oldId) => {
+  if (newId && newId !== oldId) {
+    getProductDetail();
+    if (process.client) window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+});
 
 // ─── سئو: متادیتا + Schema.org ───────────────────────────────────
 useSeoMeta({
