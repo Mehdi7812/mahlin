@@ -16,6 +16,7 @@ const route = useRoute()
    Core cart state
    ========================================================================= */
 const loading = ref(true)
+const initializing = ref(true)
 const emptyCart = ref(true)
 const btnLoadingShop = ref(false) // qty +/- loading
 const submitting = ref(false)
@@ -53,9 +54,11 @@ function getCart(getAuto = false) {
         getPaymentProcedure()
       }
       loading.value = false
+      initializing.value = false
     })
     .catch(() => {
       loading.value = false
+      initializing.value = false
       emptyCart.value = true
     })
 }
@@ -63,7 +66,9 @@ function getCart(getAuto = false) {
 watch(
   () => customizer.auth,
   (loggedIn) => {
+    initializing.value = false // ← auth مشخص شد
     if (loggedIn) {
+      loading.value = true
       getCart(true)
       getDeliveryProcedure()
     } else {
@@ -966,18 +971,18 @@ const primaryDisabled = computed(() => {
                   @click="goToStep(s.id)"
                 >
                   <span
-                    class="relative grid h-11 w-11 shrink-0 place-items-center rounded-full text-[15px] font-bold transition-all duration-300"
+                    class="relative grid h-11 w-11 shrink-0 place-items-center rounded-full text-[15px] font-bold ring-2 transition-all duration-300"
                     :class="[
                       step === s.id
-                        ? 'scale-110 bg-brand text-white shadow-[0_4px_14px_rgba(23,61,54,0.3)]'
+                        ? 'scale-110 bg-brand text-ink-faint ring-white/70 shadow-[0_6px_18px_rgba(0,0,0,0.25)]'
                         : isStepBehindCurrent(i)
-                          ? 'bg-emerald-500 text-white shadow-[0_4px_14px_rgba(16,185,129,0.35)]'
-                          : 'bg-white text-ink-faint ring-1 ring-line group-hover:ring-gold/40',
+                          ? 'bg-emerald-500 text-white ring-white/70 shadow-[0_6px_18px_rgba(0,0,0,0.22)]'
+                          : 'bg-white text-ink-faint ring-white shadow-[0_2px_8px_rgba(0,0,0,0.15)] group-hover:ring-gold/60',
                     ]"
                   >
                     <span
                       v-if="step === s.id"
-                      class="absolute -inset-1.5 animate-pulse rounded-full ring-2 ring-brand/20"
+                      class="absolute -inset-1.5 animate-pulse rounded-full ring-2 ring-white/50"
                     />
                     <Icon v-if="step === s.id" :name="STEP_ICONS[s.id]" class="text-[17px]" />
                     <Icon v-else-if="isStepBehindCurrent(i)" name="tabler:check" class="animate-check-pop text-[18px]" />
@@ -987,13 +992,13 @@ const primaryDisabled = computed(() => {
                   <span class="hidden flex-col items-start text-right md:flex">
                     <span
                       class="text-[11px] font-medium tabular-fa"
-                      :class="step === s.id ? 'text-gold-deep' : 'text-ink-faint'"
+                      :class="step === s.id ? 'text-gold-deep' : 'text-brand/50'"
                     >
                       مرحله {{ faNumber(i + 1) }}
                     </span>
                     <span
                       class="text-[13.5px] font-bold transition-colors"
-                      :class="step === s.id ? 'text-brand' : isStepBehindCurrent(i) ? 'text-brand/70' : 'text-ink-faint'"
+                      :class="step === s.id ? 'text-brand' : isStepBehindCurrent(i) ? 'text-brand/70' : 'text-brand/40'"
                     >
                       {{ s.label }}
                     </span>
@@ -1003,10 +1008,10 @@ const primaryDisabled = computed(() => {
                 <!-- خط اتصال بین مراحل -->
                 <div
                   v-if="i < STEPS.length - 1"
-                  class="mx-1.5 h-[3px] flex-1 overflow-hidden rounded-full bg-line md:mx-3"
+                  class="mx-1.5 h-[3px] flex-1 overflow-hidden rounded-full bg-white/35 ring-1 ring-white/50 md:mx-3"
                 >
                   <div
-                    class="h-full rounded-full bg-gradient-to-l from-emerald-500 to-brand transition-all duration-700 ease-out"
+                    class="h-full rounded-full bg-gradient-to-l from-emerald-500 to-brand shadow-[0_0_8px_rgba(0,0,0,0.15)] transition-all duration-700 ease-out"
                     :style="{ width: isStepBehindCurrent(i) ? '100%' : '0%' }"
                   />
                 </div>
@@ -1050,24 +1055,109 @@ const primaryDisabled = computed(() => {
       </div>
 
       <!-- ================= Loading skeleton ================= -->
-      <div v-if="loading" class="container-content py-8 lg:py-10">
+      <div v-if="initializing || loading" class="container-content py-8 lg:py-10">
         <div class="grid gap-6 lg:grid-cols-[1fr_380px]">
-          <div class="space-y-3 rounded-[20px] border border-line bg-white p-5">
-            <div v-for="i in 3" :key="i" class="flex animate-pulse gap-4">
-              <div class="h-20 w-20 shrink-0 rounded-xl bg-cream"></div>
-              <div class="flex-1 space-y-2 py-1">
-                <div class="h-3.5 w-2/3 rounded-full bg-cream"></div>
-                <div class="h-3 w-1/3 rounded-full bg-cream"></div>
-                <div class="h-7 w-24 rounded-full bg-cream"></div>
+
+          <!-- چپ: اسکلتون سبد -->
+          <div class="overflow-hidden rounded-[20px] border border-line bg-white shadow-sm">
+            <!-- هدر کارت -->
+            <div class="flex items-center justify-between border-b border-line px-5 py-4">
+              <div class="flex items-center gap-2">
+                <div class="h-4 w-4 animate-pulse rounded bg-ink/[0.07]"></div>
+                <div class="h-4 w-28 animate-pulse rounded-full bg-ink/[0.07]"></div>
+              </div>
+              <div class="h-3.5 w-20 animate-pulse rounded-full bg-ink/[0.05]"></div>
+            </div>
+
+            <!-- آیتم‌های محصول -->
+            <div class="divide-y divide-line">
+              <div v-for="i in 3" :key="i" class="flex gap-4 p-4">
+                <!-- تصویر -->
+                <div class="h-20 w-20 shrink-0 animate-pulse rounded-xl bg-ink/[0.06]"></div>
+                <!-- اطلاعات -->
+                <div class="flex-1 space-y-3 py-1">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="h-4 w-3/5 animate-pulse rounded-full bg-ink/[0.08]"></div>
+                    <div class="h-7 w-7 animate-pulse rounded-full bg-ink/[0.05]"></div>
+                  </div>
+                  <div class="h-3 w-2/5 animate-pulse rounded-full bg-ink/[0.05]"></div>
+                  <div class="flex items-center justify-between">
+                    <!-- کنترل تعداد -->
+                    <div class="flex items-center gap-1 rounded-full border border-line p-1">
+                      <div class="h-7 w-7 animate-pulse rounded-full bg-ink/[0.06]"></div>
+                      <div class="h-4 w-5 animate-pulse rounded bg-ink/[0.06]"></div>
+                      <div class="h-7 w-7 animate-pulse rounded-full bg-ink/[0.06]"></div>
+                    </div>
+                    <!-- قیمت -->
+                    <div class="h-5 w-24 animate-pulse rounded-full bg-ink/[0.08]"></div>
+                  </div>
+                </div>
               </div>
             </div>
+
+            <!-- بخش کوپن -->
+            <div class="border-t border-dashed border-line bg-gradient-to-l from-gold/5 via-cream/40 to-transparent p-5">
+              <div class="flex items-center gap-2">
+                <div class="h-8 w-8 animate-pulse rounded-xl bg-ink/[0.06]"></div>
+                <div class="h-4 w-32 animate-pulse rounded-full bg-ink/[0.08]"></div>
+              </div>
+              <div class="mt-3 flex gap-2">
+                <div class="h-11 flex-1 animate-pulse rounded-2xl bg-ink/[0.06]"></div>
+                <div class="h-11 w-20 animate-pulse rounded-xl bg-ink/[0.06]"></div>
+              </div>
+            </div>
+
+            <!-- دکمه ادامه -->
+            <div class="flex justify-end border-t border-line p-5">
+              <div class="h-12 w-44 animate-pulse rounded-xl bg-ink/[0.07]"></div>
+            </div>
           </div>
-          <div class="animate-pulse space-y-3 rounded-[20px] border border-line bg-white p-6">
-            <div class="h-4 w-1/2 rounded-full bg-cream"></div>
-            <div class="h-3 w-full rounded-full bg-cream"></div>
-            <div class="h-3 w-full rounded-full bg-cream"></div>
-            <div class="h-3 w-2/3 rounded-full bg-cream"></div>
-            <div class="mt-4 h-10 w-full rounded-2xl bg-cream"></div>
+
+          <!-- راست: اسکلتون خلاصه سفارش -->
+          <div class="overflow-hidden rounded-[20px] border border-line bg-white shadow-sm">
+            <!-- نوار رنگی بالا -->
+            <div class="h-1 w-full animate-pulse bg-ink/[0.06]"></div>
+            <div class="p-6 space-y-5">
+              <!-- عنوان -->
+              <div class="flex items-center gap-2">
+                <div class="h-4 w-4 animate-pulse rounded bg-ink/[0.07]"></div>
+                <div class="h-4 w-28 animate-pulse rounded-full bg-ink/[0.08]"></div>
+              </div>
+              <!-- ردیف‌های قیمت -->
+              <div class="space-y-3.5 pt-1">
+                <div v-for="i in 3" :key="i" class="flex items-center justify-between">
+                  <div class="h-3.5 animate-pulse rounded-full bg-ink/[0.06]" :class="i === 1 ? 'w-36' : i === 2 ? 'w-24' : 'w-28'"></div>
+                  <div class="h-3.5 animate-pulse rounded-full bg-ink/[0.08]" :class="i === 1 ? 'w-20' : 'w-16'"></div>
+                </div>
+              </div>
+              <!-- نوار ارسال رایگان -->
+              <div class="rounded-xl bg-ink/[0.03] p-3 space-y-2">
+                <div class="flex justify-between">
+                  <div class="h-3 w-32 animate-pulse rounded-full bg-ink/[0.07]"></div>
+                  <div class="h-3 w-8 animate-pulse rounded-full bg-ink/[0.06]"></div>
+                </div>
+                <div class="h-1.5 w-full animate-pulse rounded-full bg-ink/[0.07]"></div>
+              </div>
+              <!-- مبلغ نهایی -->
+              <div class="flex items-center justify-between border-t border-line pt-4">
+                <div class="h-4 w-20 animate-pulse rounded-full bg-ink/[0.08]"></div>
+                <div class="h-7 w-32 animate-pulse rounded-full bg-ink/[0.10]"></div>
+              </div>
+              <!-- دکمه -->
+              <div class="h-12 w-full animate-pulse rounded-xl bg-ink/[0.07]"></div>
+              <!-- تضمین‌ها -->
+              <div class="flex items-center justify-center gap-4 border-t border-line pt-3">
+                <div class="flex items-center gap-1.5">
+                  <div class="h-3.5 w-3.5 animate-pulse rounded bg-ink/[0.06]"></div>
+                  <div class="h-3 w-16 animate-pulse rounded-full bg-ink/[0.05]"></div>
+                </div>
+                <div class="h-3 w-px bg-line"></div>
+                <div class="flex items-center gap-1.5">
+                  <div class="h-3.5 w-3.5 animate-pulse rounded bg-ink/[0.06]"></div>
+                  <div class="h-3 w-20 animate-pulse rounded-full bg-ink/[0.05]"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1744,7 +1834,7 @@ const primaryDisabled = computed(() => {
                 <div v-else-if="addressStep === 1" class="space-y-4">
                   <ClientOnly>
                     <!-- <CartAddressMapPicker v-model="geoLatLng" /> -->
-                    <CartNeshanMapInput @handle-lat-lng="geoLatLng = $event" />
+                    <AccountNeshanMapInput @handle-lat-lng="geoLatLng = $event" />
                   </ClientOnly>
                   <div class="flex justify-end">
                     <UiBaseButton :disabled="!hasValidMapLatLng" @click="addressStep = 2">
@@ -1770,19 +1860,16 @@ const primaryDisabled = computed(() => {
                       placeholder="انتخاب استان"
                       required
                     />
-                    <div>
-                      <label class="mb-1.5 block text-meta font-bold text-ink-muted">شهر <span class="text-danger">*</span></label>
-                      <select
-                        v-model="newAddress.address_id"
-                        class="field"
-                        :class="addressErrors.address_id && 'field-error'"
-                        :disabled="!citiesForSelectedProvince.length"
-                      >
-                        <option value="" disabled>انتخاب شهر</option>
-                        <option v-for="c in citiesForSelectedProvince" :key="c.id" :value="c.id">{{ c.title }}</option>
-                      </select>
-                      <p v-if="addressErrors.address_id" class="err">{{ addressErrors.address_id }}</p>
-                    </div>
+                    
+                    <UiBaseSelect
+                      v-model="newAddress.address_id"
+                      label="شهر"
+                      :options="citiesForSelectedProvince.map((c) => ({ label: c.title, value: c.id }))"
+                      placeholder="انتخاب شهر"
+                      :disabled="!citiesForSelectedProvince.length"
+                      :error="addressErrors.address_id"
+                      required
+                    />
                   </div>
 
                   <div>
@@ -2021,9 +2108,7 @@ const primaryDisabled = computed(() => {
           </div>
         </Transition>
       </Teleport>
-
     </div>
-    
   </div>
 </template>
 

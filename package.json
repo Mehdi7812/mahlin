@@ -13,6 +13,8 @@
     "nuxt": "^4.5.2"
   },
   "dependencies": {
+    "@neshan-maps-platform/ol": "^1.0.5",
+    "@neshan-maps-platform/vue3-openlayers": "^2.0.1",
     "@nuxt/icon": "^2.5.1",
     "@nuxtjs/i18n": "^10.6.0",
     "@pinia/nuxt": "^1.0.2",
