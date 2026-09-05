@@ -16,17 +16,46 @@
           <div>
             <div class="flex justify-between items-center text-xs mb-2">
               <span class="font-bold text-ink flex items-center gap-2">
-                <span class="w-6 h-6 rounded-full grid place-items-center text-[10px] font-bold text-white" :style="{ backgroundColor: catInfo.accent }">
+                <span
+                  class="w-6 h-6 rounded-full grid place-items-center text-[10px] font-bold text-white"
+                  :style="{ backgroundColor: catInfo.accent }"
+                >
                   {{ (c.user_full_name || c.name || 'ک').charAt(0) }}
                 </span>
                 {{ c.user_full_name || c.name || 'کاربر مهمان' }}
               </span>
               <span class="text-ink/40 font-latin">{{ formatDate(c.created_at) }}</span>
             </div>
+
             <div v-if="c.rate" class="flex gap-0.5 text-gold text-sm mb-3">
               <span v-for="star in c.rate" :key="star">★</span>
             </div>
+
             <p class="text-xs sm:text-sm text-ink/70 leading-relaxed">{{ c.comment }}</p>
+
+            <!-- ریپلای‌ها -->
+            <div
+              v-if="c.comment_children_active && c.comment_children_active.length"
+              class="mt-4 pt-4 border-t border-dashed border-ink/[0.08] space-y-3"
+            >
+              <div
+                v-for="(reply, ri) in c.comment_children_active"
+                :key="reply.id ?? ri"
+                class="pr-4 border-r-2 rounded-sm"
+                :style="{ borderColor: catInfo.accent }"
+              >
+                <div class="flex justify-between items-center text-[11px] mb-1.5">
+                  <span class="font-bold text-ink/80 flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-ink/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M9 17l-5-5 5-5M4 12h16" stroke-linecap="round" stroke-linejoin="round" transform="scale(-1,1) translate(-24,0)"/>
+                    </svg>
+                    {{ reply.user_full_name || reply.name || 'پاسخ فروشگاه' }}
+                  </span>
+                  <span class="text-ink/35 font-latin">{{ formatDate(reply.created_at) }}</span>
+                </div>
+                <p class="text-[11px] sm:text-xs text-ink/60 leading-relaxed">{{ reply.comment }}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -85,6 +114,8 @@ function formatDate(dateStr) {
   if (!dateStr) return '';
   try {
     return new Date(dateStr.replace(' ', 'T')).toLocaleDateString('fa-IR', { month: 'short', day: 'numeric' });
-  } catch { return ''; }
+  } catch {
+    return '';
+  }
 }
 </script>

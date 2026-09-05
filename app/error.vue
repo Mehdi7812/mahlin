@@ -94,7 +94,6 @@
 
       <!-- دکمه‌های اکشن -->
       <div class="flex flex-col sm:flex-row items-center justify-center gap-3 animate-fade-up" style="animation-delay: 0.35s">
-
         <!-- دکمه اصلی: بازگشت به خانه -->
         <NuxtLink
           to="/"
@@ -124,7 +123,6 @@
           </svg>
           <span>مشاهده فروشگاه</span>
         </NuxtLink>
-
       </div>
 
       <!-- لینک‌های سریع -->

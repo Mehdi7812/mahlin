@@ -397,8 +397,9 @@ function fetchRelated(categoryId, currentId) {
 // const catInfo = computed(() =>
 //   PALETTE[post.value?.category] ?? DEFAULT_PALETTE
 // );
+
 const catInfo = computed(() =>
-  generateCategoryColor(props.blog.category_title_fa)
+  generateCategoryColor(post.value?.category_text_fa)
 )
 
 const hasCategory = computed(() =>

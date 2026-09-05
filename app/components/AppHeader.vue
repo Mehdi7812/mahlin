@@ -118,7 +118,7 @@
 
           <!-- حساب کاربری -->
           <NuxtLink
-            to="/account"
+            :to="accountLink"
             aria-label="حساب کاربری"
             class="hidden sm:grid w-9 h-9 sm:w-10 sm:h-10 place-items-center rounded-full text-ink hover:bg-ink/5 transition-colors"
           >
@@ -225,7 +225,9 @@
           <NuxtLink to="/journal" class="text-base font-semibold py-4 border-b border-ink/10 text-ink" active-class="text-gold" @click="open = false">وبلاگ</NuxtLink>
           <NuxtLink to="/about" class="text-base font-semibold py-4 border-b border-ink/10 text-ink" active-class="text-gold" @click="open = false">درباره ما</NuxtLink>
           <NuxtLink to="/contact" class="text-base font-semibold py-4 border-b border-ink/10 text-ink" active-class="text-gold" @click="open = false">ارتباط با ما</NuxtLink>
-          <NuxtLink to="/account" class="text-base font-semibold py-4 border-b border-ink/10 text-ink" active-class="text-gold" @click="open = false">حساب کاربری</NuxtLink>
+          <NuxtLink :to="accountLink" class="text-base font-semibold py-4 border-b border-ink/10 text-ink" active-class="text-gold" @click="open = false">
+            {{ isLoggedIn ? 'حساب کاربری' : 'ورود / ثبت‌نام' }}
+          </NuxtLink>
         </div>
 
         <div class="mt-auto px-5 py-5 border-t border-ink/10">
@@ -252,7 +254,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { fa } from '~/utils/format.ts';
 
 const { count } = useCart();
@@ -262,6 +264,51 @@ const searchQuery = ref('');
 const searchInput = ref(null);
 const route = useRoute();
 const router = useRouter();
+
+/* ===================================================================
+   🔐 وضعیت لاگین کاربر (از localStorage با کلید "g-auth-token")
+   -------------------------------------------------------------
+   چون localStorage فقط در کلاینت در دسترسه، مقدار اولیه‌ی isLoggedIn
+   را false می‌گذاریم (برای جلوگیری از Hydration Mismatch در SSR)
+   و بعد از mount شدن کامپوننت، مقدار واقعی را از localStorage می‌خوانیم.
+=================================================================== */
+const TOKEN_KEY = 'g-auth-token';
+const isLoggedIn = ref(false);
+
+function checkAuth() {
+  if (import.meta.client) {
+    const token = localStorage.getItem(TOKEN_KEY);
+    isLoggedIn.value = !!token;
+  }
+}
+
+// همگام‌سازی بین تب‌ها (اگر در یک تب لاگین/لاگ‌اوت شد)
+function handleStorageChange(e) {
+  if (e.key === TOKEN_KEY) {
+    checkAuth();
+  }
+}
+
+onMounted(() => {
+  checkAuth();
+  if (import.meta.client) {
+    window.addEventListener('storage', handleStorageChange);
+    // در صورتی که لاگین/لاگ‌اوت در همان تب رخ بده و بخوای فوراً آپدیت بشه،
+    // می‌تونی در جای دیگه‌ی پروژه یک CustomEvent با نام 'auth-changed' دیسپچ کنی
+    // و اینجا هم گوش بدی:
+    window.addEventListener('auth-changed', checkAuth);
+  }
+});
+
+onUnmounted(() => {
+  if (import.meta.client) {
+    window.removeEventListener('storage', handleStorageChange);
+    window.removeEventListener('auth-changed', checkAuth);
+  }
+});
+
+// مسیر داینامیک: اگر لاگین بود -> /account، در غیر این صورت -> /login
+const accountLink = computed(() => (isLoggedIn.value ? '/account' : '/login'));
 
 function openSearch() {
   open.value = false;
@@ -288,11 +335,13 @@ watch(open, (val) => {
     document.body.style.overflow = val ? 'hidden' : '';
   }
   if (val) closeSearch();
+  if (val) checkAuth(); // آپدیت وضعیت لاگین هر بار که منوی موبایل باز میشه
 });
 
 watch(() => route.fullPath, () => {
   open.value = false;
   closeSearch();
+  checkAuth(); // آپدیت وضعیت لاگین بعد از هر تغییر مسیر (مثلاً بعد از صفحه لاگین)
 });
 
 function handleEscape(e) {

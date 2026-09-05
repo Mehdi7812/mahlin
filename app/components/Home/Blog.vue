@@ -1,7 +1,11 @@
 <template>
   <section class="relative max-w-[1280px] mx-auto px-4 md:px-6 py-12 md:py-20">
-    <div class="absolute -bottom-20 -start-20 w-80 h-80 bg-lilac/[0.06] blur-[110px] rounded-full pointer-events-none"></div>
-    <div class="absolute top-10 -end-10 w-60 h-60 bg-sage/[0.05] blur-[90px] rounded-full pointer-events-none"></div>
+
+    <!-- blobs داخل wrapper محدود -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none rounded-[32px]">
+      <div class="absolute -bottom-20 -start-20 w-80 h-80 bg-lilac/[0.06] blur-[110px] rounded-full" />
+      <div class="absolute top-10 -end-10 w-60 h-60 bg-sage/[0.05] blur-[90px] rounded-full" />
+    </div>
 
     <!-- هدر بخش -->
     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10 md:mb-12 relative">
@@ -15,7 +19,7 @@
         </h2>
       </div>
 
-      <!-- دکمه مشاهده همه + کنترل‌های ناوبری (دسکتاپ) -->
+      <!-- دکمه‌های دسکتاپ -->
       <div class="hidden md:flex items-center gap-5">
         <NuxtLink
           to="/journal"
@@ -30,37 +34,38 @@
           </svg>
         </NuxtLink>
 
-        <span v-if="blogs.length && !pending" class="w-px h-5 bg-ink/10"></span>
-
-        <div v-if="blogs.length && !pending" class="flex items-center gap-2">
-          <button
-            type="button"
-            aria-label="اسلاید قبلی"
-            :disabled="isBeginning"
-            class="w-9 h-9 grid place-items-center rounded-full border border-ink/10 text-ink hover:bg-ink/5 hover:border-ink/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
-            @click="slidePrev"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </button>
-          <button
-            type="button"
-            aria-label="اسلاید بعدی"
-            :disabled="isEnd"
-            class="w-9 h-9 grid place-items-center rounded-full border border-ink/10 text-ink hover:bg-ink/5 hover:border-ink/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
-            @click="slideNext"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </button>
-        </div>
+        <template v-if="blogs.length && !pending">
+          <span class="w-px h-5 bg-ink/10" />
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              aria-label="اسلاید قبلی"
+              :disabled="isBeginning"
+              class="w-9 h-9 grid place-items-center rounded-full border border-ink/10 text-ink hover:bg-ink/5 hover:border-ink/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+              @click="slidePrev"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button
+              type="button"
+              aria-label="اسلاید بعدی"
+              :disabled="isEnd"
+              class="w-9 h-9 grid place-items-center rounded-full border border-ink/10 text-ink hover:bg-ink/5 hover:border-ink/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+              @click="slideNext"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </template>
       </div>
     </div>
 
     <!-- لودینگ -->
-    <div v-if="pending" class="flex gap-4 overflow-hidden">
+    <div v-if="pending" class="flex gap-4">
       <div
         v-for="n in 3" :key="n"
         class="min-w-[260px] flex-shrink-0 rounded-2xl border border-ink/[0.06] bg-ink/[0.03] h-64 animate-pulse"
@@ -76,8 +81,12 @@
       خطا در دریافت مقالات
     </div>
 
-    <!-- اسلایدر مقالات -->
-    <div v-else-if="blogs.length" class="relative -mx-1 px-1 pt-3 pb-6">
+    <!-- اسلایدر -->
+    <div
+      v-else-if="blogs.length"
+      class="relative pt-3 pb-6"
+      style="margin-inline: -1rem;"
+    >
       <Swiper
         dir="rtl"
         class="blog-swiper"
@@ -86,11 +95,13 @@
         :space-between="16"
         :grab-cursor="true"
         :watch-overflow="true"
+        :centered-slides="false"
         :pagination="{ el: paginationEl, clickable: true, dynamicBullets: true }"
         :breakpoints="{
-          640:  { slidesPerView: 2, spaceBetween: 24 },
-          1024: { slidesPerView: 3, spaceBetween: 32 },
+          640:  { slidesPerView: 2,   spaceBetween: 24, slidesOffsetBefore: 0, slidesOffsetAfter: 0 },
+          1024: { slidesPerView: 3,   spaceBetween: 32, slidesOffsetBefore: 0, slidesOffsetAfter: 0 },
         }"
+        style="padding-inline: 1rem;"
         @swiper="onSwiperInit"
         @slide-change="onSlideChange"
       >
@@ -99,7 +110,10 @@
           :key="b.id"
           class="!h-auto"
         >
-          <div class="animate-fade-in-up h-full" :style="{ animationDelay: i * 0.1 + 's' }">
+          <div
+            class="animate-fade-in-up h-full"
+            :style="{ animationDelay: i * 0.1 + 's' }"
+          >
             <BlogCard :blog="b" :badge="blogBadges[i] ?? null" class="h-full" />
           </div>
         </SwiperSlide>
@@ -135,54 +149,38 @@ import { Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
-// ─── Swiper state ────────────────────────────────────────
 const swiperInstance = shallowRef(null);
 const isBeginning    = ref(true);
 const isEnd          = ref(false);
 const paginationEl   = ref(null);
 
-// ─── State ───────────────────────────────────────────────
 const blogs   = ref([]);
 const pending = ref(true);
 const error   = ref(null);
 
-// ─── بج‌های ثابت برای ۳ مقاله اول ──────────────────────
 const blogBadges = [
   { label: 'جدیدترین', color: '#8FC1D9' },
   { label: 'پرطرفدار', color: '#F2A868' },
   null,
 ];
 
-// ─── Fetch ───────────────────────────────────────────────
 useGarnetApiFetch('blog/indexWithImages', {
-    amount:    '5',
-    direction: 'desc',
-    order:     'order',
-    page:      1,
+  method: 'GET',
+  params: { amount: '5', direction: 'desc', order: 'order', page: 1 },
 })
-  .then((response) => {
-    blogs.value = (response.Blog || []).slice(0, 5);
-  })
-  .catch((err) => {
-    console.error('[HomeBlog] خطا در دریافت مقالات:', err);
-    error.value = err;
-  })
-  .finally(() => {
-    pending.value = false;
-  });
+  .then((response) => { blogs.value = (response.Blog || []).slice(0, 5); })
+  .catch((err) => { error.value = err; })
+  .finally(() => { pending.value = false; });
 
-// ─── Swiper helpers ──────────────────────────────────────
 function onSwiperInit(swiper) {
   swiperInstance.value = swiper;
   isBeginning.value    = swiper.isBeginning;
   isEnd.value          = swiper.isEnd;
 }
-
 function onSlideChange(swiper) {
   isBeginning.value = swiper.isBeginning;
   isEnd.value       = swiper.isEnd;
 }
-
 function slidePrev() { swiperInstance.value?.slidePrev(); }
 function slideNext() { swiperInstance.value?.slideNext(); }
 </script>
@@ -201,17 +199,16 @@ function slideNext() { swiperInstance.value?.slideNext(); }
   height: auto;
 }
 
-/* ─── جلوگیری از برش سایه‌ی کارت‌ها هنگام هاور ───────────
-   overflow افقی رو hidden نگه می‌داریم (لازمه‌ی اسلاید شدن)
-   ولی overflow عمودی رو visible می‌کنیم تا سایه/ترنسفورم برش نخوره
+/*
+  اسلایدر باید overflow-x: clip داشته باشه نه hidden
+  تا سایه/ترنسفورم کارت‌ها برش نخوره ولی scrollbar نیاد
 */
 .blog-swiper {
-  overflow-x: hidden;
-  overflow-y: visible;
-  padding: 15px 0
+  overflow: clip visible;
+  padding-block: 12px;
 }
 
 :deep(.blog-swiper .swiper-wrapper) {
-  overflow: visible;
+  align-items: stretch;
 }
 </style>

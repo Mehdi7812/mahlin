@@ -10,14 +10,14 @@
       <div class="md:col-span-5 md:sticky md:top-[100px]">
         <ProductGallery
           v-model:active-image="activeImage"
+          v-model:is-wishlisted="isWishlisted"
           :images="item.images"
           :product-name="item.name"
           :discount-percent="discountPercent"
           :in-stock="item.inStock"
-          :is-wishlisted="isWishlisted"
           :copied="copied"
           :cat-info="catInfo"
-          @toggle-wishlist="toggleWishlist"
+          :product-id="item.id"
           @share="shareProduct"
         />
         <ProductTrustBadges :is-course="isCourse" />
@@ -48,6 +48,7 @@
           :in-stock="item.inStock"
           :just-added="justAdded"
           :cat-info="catInfo"
+          :product-id="item.id"
           @increment="increment"
           @decrement="decrement"
           @add="handleAdd"
@@ -197,7 +198,7 @@ const item = computed(() => {
     size:      p.unit_text ? `${fa(p.capacity)} ${p.unit_text}` : null,
     img:       p.cover_image,
     images:    (p.product_images || []).map((im) => im.file),
-    inStock:   (p.stock ?? 0) > 0 && p.allow_sale === 1,
+    inStock:   p.allow_sale === 1,
     stockCount: p.stock,
     minQty:    p.minimum_sale_quantity || 1,
     maxQty:    p.maximum_sale_quantity || null,
@@ -491,17 +492,20 @@ function loadRecentlyViewed() {
 async function getProductDetail() {
   pending.value    = true;
   fetchError.value = null;
+
   try {
-    const sendUrl = customizer.auth ? 'products/showByUser' : 'products/showByPub';
+    // دیگه نیاز به nextTick نیست — auth از watch مدیریت میشه
+    const sendUrl = customizer.auth
+      ? 'products/showByUser'
+      : 'products/showByPub';
+
     const response = await useGarnetApiFetch(sendUrl, {
-      id: productId.value,
+      id:                productId.value,
       inline_attributes: true,
-      inline_price: true,
+      inline_price:      true,
     });
 
-    if (!response?.Product) {
-      throw new Error('Product data not found');
-    }
+    if (!response?.Product) throw new Error('Product not found');
 
     Product.value = response.Product;
 
@@ -516,8 +520,10 @@ async function getProductDetail() {
     }));
 
     isWishlisted.value = !!Product.value.is_fave;
-    activeImage.value  = Product.value.cover_image || Product.value.product_images?.[0]?.file || null;
-    qty.value           = Product.value.minimum_sale_quantity || 1;
+    activeImage.value  = Product.value.cover_image
+      || Product.value.product_images?.[0]?.file
+      || null;
+    qty.value = Product.value.minimum_sale_quantity || 1;
 
     fetchRelated();
     saveToRecentlyViewed();
@@ -529,10 +535,11 @@ async function getProductDetail() {
     commentsTotalPages.value = 1;
     loadingPosts.value       = true;
     loadComments();
+
   } catch (err) {
     console.error('[ProductDetail] خطا:', err);
     fetchError.value = err;
-    Product.value = null;
+    Product.value    = null;
   } finally {
     pending.value = false;
   }
