@@ -29,18 +29,59 @@
           محصولات ماهلین با معیار دکتر پوست انتخاب می‌شوند؛ بدون توضیحات اغراق‌شده، فقط ترکیبات و کاربرد درست.
         </p>
 
-        <div class="flex flex-wrap items-center gap-5 mt-10 animate-fade-in-up" style="animation-delay:0.35s">
+        <div class="flex flex-wrap items-center gap-6 mt-10 animate-fade-in-up" style="animation-delay:0.35s">
+          <!-- Primary CTA -->
           <NuxtLink
             to="/shop"
-            class="group inline-flex items-center gap-3 px-8 py-4 border border-gold text-accent hover:bg-gold hover:text-white transition-all duration-300 rounded-sm"
+            class="group relative inline-flex items-center gap-3 overflow-hidden rounded-sm
+                  px-8 py-4 border border-gold/50 bg-gold/[0.03]
+                  transition-all duration-300 ease-out
+                  hover:-translate-y-0.5 hover:border-gold
+                  hover:shadow-[0_12px_32px_rgba(197,160,89,0.18)]
+                  active:translate-y-0
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2"
           >
-            <span>مشاهده محصولات</span>
-            <svg class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Gold fill -->
+            <span
+              class="absolute inset-0 translate-y-full bg-gold transition-transform duration-300 ease-out group-hover:translate-y-0"
+              aria-hidden="true"
+            ></span>
+
+            <span
+              class="relative z-10 text-sm font-semibold text-accent transition-colors duration-300 group-hover:text-white"
+            >
+              مشاهده محصولات
+            </span>
+
+            <svg
+              class="relative z-10 w-4 h-4 text-accent transition-all duration-300
+                    group-hover:text-white group-hover:-translate-x-1 rotate-180"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              aria-hidden="true"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </NuxtLink>
-          <NuxtLink to="/about" class="text-sm text-ink/55 hover:text-gold transition-colors duration-300 underline underline-offset-4 decoration-ink/15 hover:decoration-gold">
-            بیشتر درباره ماهلین
+
+          <!-- Secondary link -->
+          <NuxtLink
+            to="/about"
+            class="group relative inline-flex items-center py-2 text-sm text-ink/50
+                  transition-colors duration-300 hover:text-gold
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/30 rounded-sm"
+          >
+            <span class="relative">
+              بیشتر درباره ماهلین
+
+              <!-- Base underline -->
+              <span class="absolute -bottom-1 inset-x-0 h-px bg-gold/15" aria-hidden="true"></span>
+
+              <!-- Animated underline (grows from right in RTL) -->
+              <span
+                class="absolute -bottom-1 right-0 h-px bg-gold w-0 transition-all duration-300 ease-out group-hover:w-full"
+                aria-hidden="true"
+              ></span>
+            </span>
           </NuxtLink>
         </div>
       </div>

@@ -27,7 +27,7 @@ export default {
       fontFamily: {
         body: ['Vazirmatn', 'system-ui', 'sans-serif'],
         display: ['Lalezar', 'Vazirmatn', 'sans-serif'],
-        latin: ['"Bodoni Moda"', 'serif']
+        latin: ['Vazirmatn', 'system-ui', 'sans-serif']
       }
     }
   }

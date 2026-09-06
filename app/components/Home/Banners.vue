@@ -7,7 +7,7 @@
         v-for="(banner, index) in banners"
         :key="index"
         :to="banner.link"
-        class="banner-card group relative h-[220px] sm:h-[260px] rounded-[24px] overflow-hidden border border-ink/5 block"
+        class="banner-card group relative h-[180px] sm:h-[200px] rounded-[24px] overflow-hidden border border-ink/5 block"
         :style="{ animationDelay: index * 0.15 + 's' }"
       >
         <!-- تصویر -->
@@ -230,8 +230,5 @@ const banners = [
 /* ── فلش داخل دکمه ──────────────────────────────────────── */
 .banner-arrow {
   transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.banner-card:hover .banner-arrow {
-  transform: translateX(-5px) rotate(180deg); /* RTL: حرکت به چپ */
 }
 </style>

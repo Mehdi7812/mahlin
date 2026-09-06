@@ -21,17 +21,12 @@
       </div>
     </div>
 
-    <!-- اسلایدر برندها (حرکت پیوسته و بی‌نهایت) -->
-    <div 
+    <!-- اسلایدر برندها -->
+    <div
       class="relative"
       @mouseenter="pauseAutoplay"
       @mouseleave="resumeAutoplay"
     >
-      <!-- گرادینت محو کننده لبه‌ها -->
-      <!-- <div class="absolute inset-y-0 start-0 w-16 md:w-32 bg-gradient-to-l from-transparent to-card/30 z-10 pointer-events-none"></div>
-      <div class="absolute inset-y-0 end-0 w-16 md:w-32 bg-gradient-to-r from-transparent to-card/30 z-10 pointer-events-none"></div> -->
-
-      <!-- اعمال پدینگ عمودی و سرریز مرئی برای رفع مشکل برش سایه -->
       <Swiper
         dir="rtl"
         :modules="[Autoplay, FreeMode]"
@@ -54,24 +49,41 @@
           :key="brand.name"
           class="!w-[210px] sm:!w-[230px]"
         >
-          <div 
+          <div
             class="group relative flex flex-col items-center text-center bg-white border rounded-[20px] px-6 py-7 h-full transition-all duration-400 hover:-translate-y-2 cursor-default"
             :style="{ borderColor: `${brand.color}22` }"
             @mouseenter="e => onCardEnter(e, brand)"
             @mouseleave="e => onCardLeave(e, brand)"
           >
             <!-- هاله رنگی -->
-            <div 
+            <div
               class="absolute -top-8 -end-8 w-24 h-24 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
               :style="{ backgroundColor: `${brand.color}30` }"
             />
 
-            <!-- آیکون/لوگو حرفی -->
-            <div 
-              class="relative w-14 h-14 rounded-2xl flex items-center justify-center mb-4 transition-all duration-400 group-hover:scale-110 group-hover:-rotate-3"
-              :style="{ backgroundColor: `${brand.color}14`, boxShadow: `0 0 0 1px ${brand.color}28` }"
+            <!-- لوگوی واقعی برند -->
+            <div
+              class="relative w-14 h-14 rounded-2xl flex items-center justify-center mb-4 overflow-hidden transition-all duration-400 group-hover:scale-110 group-hover:-rotate-3"
+              :style="{
+                backgroundColor: `${brand.color}14`,
+                boxShadow: `0 0 0 1px ${brand.color}28`
+              }"
             >
-              <span 
+              <img
+                v-if="!brand.logoFailed"
+                :src="brand.logo"
+                :alt="`لوگوی ${brand.name}`"
+                class="w-8 h-8 object-contain transition-all duration-400
+                      opacity-80 group-hover:opacity-100 group-hover:scale-105
+                      mix-blend-multiply"
+                loading="lazy"
+                decoding="async"
+                referrerpolicy="no-referrer"
+                @error="onLogoError($event, brand)"
+              />
+              <!-- فال‌بک: مونوگرام حرفی -->
+              <span
+                v-else
                 class="font-latin text-xl font-bold"
                 :style="{ color: brand.color }"
               >
@@ -90,7 +102,7 @@
             </span>
 
             <!-- خط تزئینی پایین -->
-            <span 
+            <span
               class="mt-3 w-8 h-[2px] rounded-full transition-all duration-400 group-hover:w-12"
               :style="{ backgroundColor: brand.color }"
             />
@@ -102,23 +114,37 @@
 </template>
 
 <script setup>
-import { shallowRef } from 'vue';
+import { ref, shallowRef } from 'vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Autoplay, FreeMode } from 'swiper/modules';
 
 import 'swiper/css';
 import 'swiper/css/free-mode';
 
-const brands = [
-  { name: 'Arencia', desc: 'محصولات تخصصی جوانسازی', color: '#B9A6DE' },
-  { name: 'Medicube', desc: 'مراقبت پیشرفته کره‌ای', color: '#8FC1D9' },
-  { name: 'SKIN1004', desc: 'فرمولاسیون طبیعی سنتلا', color: '#9CBFA0' },
-  { name: 'Anua', desc: 'مراقبت ملایم و آرام‌بخش', color: '#F3B4B0' },
-  { name: 'COSRX', desc: 'فرمول‌های علمی و مینیمال', color: '#F2A868' },
-  { name: 'Torriden', desc: 'آبرسانی عمقی و متعادل', color: '#6EB2B2' },
-  { name: 'Beauty of Joseon', desc: 'ترکیب سنت و علم پوست', color: '#E0B758' },
-  { name: 'Round Lab', desc: 'مراقبت مینیمال کره‌ای', color: '#DE8E89' },
+/**
+ * زنجیره‌ی منابع لوگو:
+ * ۱) Google Favicon CDN (رایگان، بدون کلید، کیفیت خوب)
+ * ۲) DuckDuckGo Icons (فال‌بک اول)
+ * ۳) مونوگرام حرفی داخل کارت (فال‌بک نهایی — هیچ‌وقت خالی نمی‌مونه)
+ */
+const googleLogo = (d) => `https://www.google.com/s2/favicons?domain=${d}&sz=256`;
+const ddgLogo = (d) => `https://icons.duckduckgo.com/ip3/${d}.ico`;
+
+// ⚠️ دامنه‌های Anua / Torriden / Round Lab رو یک‌بار در مرورگر چک کن (جدول پایین)
+const brandData = [
+  { name: 'Arencia',           domain: 'arencia.com',       desc: 'محصولات تخصصی جوانسازی',   color: '#B9A6DE' },
+  { name: 'Medicube',          domain: 'medicube.us',       desc: 'مراقبت پیشرفته کره‌ای',     color: '#8FC1D9' },
+  { name: 'SKIN1004',          domain: 'skin1004.com',      desc: 'فرمولاسیون طبیعی سنتلا',   color: '#9CBFA0' },
+  { name: 'Anua',              domain: 'anua.kr',           desc: 'مراقبت ملایم و آرام‌بخش',   color: '#F3B4B0' },
+  { name: 'COSRX',             domain: 'cosrx.com',         desc: 'فرمول‌های علمی و مینیمال',  color: '#F2A868' },
+  { name: 'Torriden',          domain: 'torriden.com',      desc: 'آبرسانی عمقی و متعادل',    color: '#6EB2B2' },
+  { name: 'Beauty of Joseon',  domain: 'beautyofjoseon.com',desc: 'ترکیب سنت و علم پوست',     color: '#E0B758' },
+  { name: 'Round Lab',         domain: 'roundlab.co.kr',    desc: 'مراقبت مینیمال کره‌ای',     color: '#DE8E89' },
 ];
+
+const brands = ref(
+  brandData.map((b) => ({ ...b, logo: googleLogo(b.domain), logoFailed: false }))
+);
 
 const swiperInstance = shallowRef(null);
 
@@ -132,6 +158,18 @@ function pauseAutoplay() {
 
 function resumeAutoplay() {
   swiperInstance.value?.autoplay?.start();
+}
+
+/** اگر گوگل جواب نداد → DuckDuckGo → در نهایت مونوگرام */
+function onLogoError(event, brand) {
+  const img = event.target;
+  if (!img.dataset.retried) {
+    img.dataset.retried = '1';
+    img.src = ddgLogo(brand.domain);
+  } else {
+    const target = brands.value.find((b) => b.name === brand.name);
+    if (target) target.logoFailed = true;
+  }
 }
 
 function onCardEnter(e, brand) {

@@ -44,10 +44,10 @@
               <span class="relative inline-flex h-2 w-2 rounded-full bg-gold" />
             </span>
             آنالایزر هوشمند پوست ماهلین
-            <span
+            <!-- <span
               class="rounded bg-gold/20 px-1.5 py-px font-mono text-[9px] tracking-wider"
               >V۲.۱</span
-            >
+            > -->
           </div>
 
           <!-- تیتر -->
@@ -303,7 +303,7 @@
                 </button>
               </div>
 
-              <!-- استپر -->
+              <!-- استپر (اصلاح شده و ۱۰۰٪ دقیق) -->
               <div
                 v-if="phase === 'quiz'"
                 class="mt-4 flex items-center gap-1.5"
@@ -324,14 +324,11 @@
                   @click="s <= maxReachedStep && (currentStep = s)"
                 >
                   <span
-                    class="absolute inset-y-0 start-0 rounded-full bg-gradient-to-l from-gold to-sage transition-all duration-500 ease-out"
-                    :class="
-                      s < currentStep
-                        ? 'w-full'
-                        : s === currentStep
-                          ? 'w-1/2'
-                          : 'w-0'
-                    "
+                    class="absolute inset-y-0 start-0 rounded-full transition-all duration-500 ease-out"
+                    :class="[
+                      s <= currentStep ? 'w-full' : 'w-0',
+                      s < currentStep ? 'bg-sage' : 'bg-gold/40'
+                    ]"
                   />
                 </button>
               </div>
@@ -381,10 +378,8 @@
                       "
                       @click="selectSkinType(item)"
                     >
-                      <span
-                        class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-xl shadow-sm transition-transform duration-300 group-hover:scale-110"
-                      >
-                        {{ item.icon }}
+                      <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white shadow-sm transition-transform duration-300 group-hover:scale-110">
+                        <QuizIcon :name="item.icon" class="h-6 w-6" />
                       </span>
 
                       <div class="min-w-0 flex-1">
@@ -519,14 +514,9 @@
                       "
                       @click="toggleConcern(item)"
                     >
-                      <span
-                        class="relative grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-xl shadow-sm transition-transform duration-300 group-hover:scale-110"
-                      >
-                        {{ item.icon }}
-                        <span
-                          v-if="concernRank(item.id)"
-                          class="absolute -top-1.5 -start-1.5 grid h-5 w-5 place-items-center rounded-full bg-gold text-[10px] font-bold text-white shadow"
-                        >
+                      <span class="relative grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white shadow-sm transition-transform duration-300 group-hover:scale-110">
+                        <QuizIcon :name="item.icon" class="h-6 w-6" />
+                        <span v-if="concernRank(item.id)" class="absolute -top-1.5 -start-1.5 grid h-5 w-5 place-items-center rounded-full bg-gold text-[10px] font-bold text-white shadow">
                           {{ toFa(concernRank(item.id)) }}
                         </span>
                       </span>
@@ -579,10 +569,8 @@
                       "
                       @click="selectSensitivity(item)"
                     >
-                      <span
-                        class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-lg shadow-sm"
-                      >
-                        {{ item.icon }}
+                      <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white shadow-sm transition-transform duration-300 group-hover:scale-110">
+                        <QuizIcon :name="item.icon" class="h-6 w-6" />
                       </span>
 
                       <div class="min-w-0 flex-1">
@@ -628,7 +616,9 @@
                       "
                       @click="selectAge(item)"
                     >
-                      <span class="text-xl">{{ item.icon }}</span>
+                      <span class="grid h-10 w-10 place-items-center rounded-xl bg-white shadow-sm transition-transform duration-300 group-hover:scale-110">
+                        <QuizIcon :name="item.icon" class="h-5 w-5" />
+                      </span>
                       <span class="text-[13px] font-bold text-ink">{{
                         item.title
                       }}</span>
@@ -669,10 +659,8 @@
                       "
                       @click="selectExperience(item)"
                     >
-                      <span
-                        class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-lg shadow-sm"
-                      >
-                        {{ item.icon }}
+                      <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white shadow-sm transition-transform duration-300 group-hover:scale-110">
+                        <QuizIcon :name="item.icon" class="h-6 w-6" />
                       </span>
 
                       <div class="min-w-0 flex-1">
@@ -1383,6 +1371,169 @@ const RadioDot = (props) =>
   );
 RadioDot.props = ["active"];
 
+const QuizIcon = (props) => {
+  const iconDef = iconPaths[props.name]
+  if (!iconDef) return null
+  const paths = iconDef.paths || []
+  return h(
+    'svg',
+    {
+      class: props.class || 'h-6 w-6',
+      viewBox: '0 0 24 24',
+      fill: 'none',
+      'aria-hidden': 'true'
+    },
+    paths.map((p, i) =>
+      h('path', {
+        key: i,
+        d: p.d,
+        fill: p.fill || 'none',
+        stroke: p.stroke || 'none',
+        'stroke-width': p.strokeWidth || '1.5',
+        'stroke-linecap': p.linecap || 'round',
+        'stroke-linejoin': p.linejoin || 'round',
+      })
+    )
+  )
+}
+QuizIcon.props = ['name', 'class']
+
+const iconPaths = {
+  // ─── نوع پوست ───
+  oily: {
+    paths: [
+      { d: "M12 2.69l5.66 7.14C19.77 12.36 21 14.79 21 17.5 21 20.54 16.97 23 12 23s-9-2.46-9-5.5c0-2.71 1.23-5.14 3.34-7.67L12 2.69z", fill: "#bae6fd", stroke: "#38bdf8", strokeWidth: "1.5" },
+      { d: "M14 15c.5-1 1-2 1.5-3", stroke: "#0284c7", strokeWidth: "1.5", linecap: "round" }
+    ]
+  },
+  combination: {
+    paths: [
+      { d: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z", fill: "#ede9fe", stroke: "#8b5cf6", strokeWidth: "1.5" },
+      { d: "M12 2v20", stroke: "#8b5cf6", strokeWidth: "1.5" },
+      { d: "M2 12h10", stroke: "#8b5cf6", strokeWidth: "1.5" }
+    ]
+  },
+  dry: {
+    paths: [
+      { d: "M12 2.69l5.66 7.14C19.77 12.36 21 14.79 21 17.5 21 20.54 16.97 23 12 23s-9-2.46-9-5.5c0-2.71 1.23-5.14 3.34-7.67L12 2.69z", fill: "#ffedd5", stroke: "#f97316", strokeWidth: "1.5" },
+      { d: "M10 16l4-4M14 16l-4-4", stroke: "#c2410c", strokeWidth: "1.5", linecap: "round" }
+    ]
+  },
+  normal: {
+    paths: [
+      { d: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z", fill: "#dcfce7", stroke: "#22c55e", strokeWidth: "1.5" },
+      { d: "M8 12l2.5 2.5L16 9", stroke: "#16a34a", strokeWidth: "2", linecap: "round", linejoin: "round" }
+    ]
+  },
+
+  // ─── دغدغه‌ها ───
+  acne: {
+    paths: [
+      { d: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z", fill: "#fee2e2", stroke: "#ef4444", strokeWidth: "1.5" },
+      { d: "M12 8v4M12 16h.01", stroke: "#dc2626", strokeWidth: "2", linecap: "round" }
+    ]
+  },
+  spots: {
+    paths: [
+      { d: "M12 7a5 5 0 100 10 5 5 0 000-10z", fill: "#fef9c3", stroke: "#eab308", strokeWidth: "1.5" },
+      { d: "M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41", stroke: "#ca8a04", strokeWidth: "1.5", linecap: "round" }
+    ]
+  },
+  aging: {
+    paths: [
+      { d: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z", fill: "#f3e8ff", stroke: "#a855f7", strokeWidth: "1.5" },
+      { d: "M12 6v6l3 3", stroke: "#9333ea", strokeWidth: "2", linecap: "round", linejoin: "round" }
+    ]
+  },
+  dehydration: {
+    paths: [
+      { d: "M12 2.69l5.66 7.14C19.77 12.36 21 14.79 21 17.5 21 20.54 16.97 23 12 23s-9-2.46-9-5.5c0-2.71 1.23-5.14 3.34-7.67L12 2.69z", fill: "#e0f2fe", stroke: "#0ea5e9", strokeWidth: "1.5" },
+      { d: "M9 14h6", stroke: "#0284c7", strokeWidth: "1.5", linecap: "round" }
+    ]
+  },
+  redness: {
+    paths: [
+      { d: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z", fill: "#ffe4e6", stroke: "#f43f5e", strokeWidth: "1.5" },
+      { d: "M12 18a6 6 0 01-6-6c0-3 2-7 6-12 4 5 6 9 6 12a6 6 0 01-6 6z", fill: "#fecdd3", stroke: "#e11d48", strokeWidth: "1" }
+    ]
+  },
+  texture: {
+    paths: [
+      { d: "M3 3h18v18H3z", fill: "#f1f5f9", stroke: "#94a3b8", strokeWidth: "1.5" },
+      { d: "M3 9h18M3 15h18M9 3v18M15 3v18", stroke: "#64748b", strokeWidth: "1", linecap: "round" }
+    ]
+  },
+
+  // ─── حساسیت ───
+  very: {
+    paths: [
+      { d: "M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z", fill: "#fce7f3", stroke: "#ec4899", strokeWidth: "1.5" },
+      { d: "M12 9v4M12 17h.01", stroke: "#be185d", strokeWidth: "1.5", linecap: "round" }
+    ]
+  },
+  some: {
+    paths: [
+      { d: "M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z", fill: "#fef3c7", stroke: "#f59e0b", strokeWidth: "1.5" },
+      { d: "M12 8v4M12 16h.01", stroke: "#b45309", strokeWidth: "1.5", linecap: "round" }
+    ]
+  },
+  resilient: {
+    paths: [
+      { d: "M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z", fill: "#d1fae5", stroke: "#10b981", strokeWidth: "1.5" },
+      { d: "M9 12l2 2 4-4", stroke: "#047857", strokeWidth: "2", linecap: "round", linejoin: "round" }
+    ]
+  },
+
+  // ─── سن ───
+  u25: {
+    paths: [
+      { d: "M12 22a10 10 0 010-20 10 10 0 010 20z", fill: "#dcfce7", stroke: "#22c55e", strokeWidth: "1.5" },
+      { d: "M12 14c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z", fill: "#bbf7d0", stroke: "#16a34a", strokeWidth: "1" },
+      { d: "M12 12a4 4 0 100-8 4 4 0 000 8z", fill: "#86efac", stroke: "#15803d", strokeWidth: "1" }
+    ]
+  },
+  "25_34": {
+    paths: [
+      { d: "M12 22a10 10 0 010-20 10 10 0 010 20z", fill: "#ccfbf1", stroke: "#14b8a6", strokeWidth: "1.5" },
+      { d: "M9 12h6M12 9v6", stroke: "#0d9488", strokeWidth: "2", linecap: "round" }
+    ]
+  },
+  "35_44": {
+    paths: [
+      { d: "M12 22a10 10 0 010-20 10 10 0 010 20z", fill: "#fef3c7", stroke: "#f59e0b", strokeWidth: "1.5" },
+      { d: "M16 8l-4 4-4-4M8 14h8", stroke: "#d97706", strokeWidth: "2", linecap: "round", linejoin: "round" }
+    ]
+  },
+  o45: {
+    paths: [
+      { d: "M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.3L12 14.2l-4.8 2.6.9-5.3-3.9-3.8 5.4-.8L12 2z", fill: "#fef08a", stroke: "#eab308", strokeWidth: "1.5" }
+    ]
+  },
+
+  // ─── تجربه ───
+  beginner: {
+    paths: [
+      { d: "M4 19.5A2.5 2.5 0 016.5 17H20", fill: "#e0e7ff", stroke: "#6366f1", strokeWidth: "1.5" },
+      { d: "M4 4.5A2.5 2.5 0 016.5 2H20v15H6.5A2.5 2.5 0 004 19.5", fill: "#e0e7ff", stroke: "#6366f1", strokeWidth: "1.5" },
+      { d: "M12 6v5M9 8.5h6", stroke: "#4f46e5", strokeWidth: "1.5", linecap: "round" }
+    ]
+  },
+  intermediate: {
+    paths: [
+      { d: "M4 19.5A2.5 2.5 0 016.5 17H20", fill: "#c7d2fe", stroke: "#4f46e5", strokeWidth: "1.5" },
+      { d: "M4 4.5A2.5 2.5 0 016.5 2H20v15H6.5A2.5 2.5 0 004 19.5", fill: "#c7d2fe", stroke: "#4f46e5", strokeWidth: "1.5" },
+      { d: "M9 7h6M9 11h4", stroke: "#4338ca", strokeWidth: "1.5", linecap: "round" }
+    ]
+  },
+  advanced: {
+    paths: [
+      { d: "M12 14l9-5-9-5-9 5 9 5z", fill: "#a5b4fc", stroke: "#4338ca", strokeWidth: "1.5" },
+      { d: "M6 11v6c0 2 2.7 3.5 6 3.5s6-1.5 6-3.5v-6", stroke: "#4338ca", strokeWidth: "1.5" },
+      { d: "M21 11v5", stroke: "#4338ca", strokeWidth: "1.5", linecap: "round" }
+    ]
+  }
+}
+
 const StepNav = (props, { emit }) =>
   h("div", { class: "mt-6 flex items-center justify-between gap-3" }, [
     h(
@@ -1581,137 +1732,42 @@ const analyzeSteps = [
 ];
 
 /* ── داده‌ها ─────────────────────────── */
-
 const skinTypes = [
-  {
-    id: "oily",
-    title: "چرب و براق",
-    desc: "براقی در تمام صورت، منافذ باز و تمایل به جوش.",
-    icon: "💧",
-    tag: "SEBUM HIGH",
-  },
-  {
-    id: "combination",
-    title: "مختلط",
-    desc: "پیشانی و بینی چرب، گونه‌ها نرمال یا خشک.",
-    icon: "⚖️",
-    tag: "T-ZONE",
-  },
-  {
-    id: "dry",
-    title: "خشک و کشیده",
-    desc: "کشیدگی پس از شستشو، پوسته‌ریزی و زبری.",
-    icon: "🌵",
-    tag: "LIPID LOW",
-  },
-  {
-    id: "normal",
-    title: "نرمال و متعادل",
-    desc: "بدون چربی اضافه یا خشکی؛ بافت یکدست.",
-    icon: "✨",
-    tag: "BALANCED",
-  },
-];
+  { id: "oily", title: "چرب و براق", desc: "براقی در تمام صورت، منافذ باز و تمایل به جوش.", icon: "oily", tag: "SEBUM HIGH" },
+  { id: "combination", title: "مختلط", desc: "پیشانی و بینی چرب، گونه‌ها نرمال یا خشک.", icon: "combination", tag: "T-ZONE" },
+  { id: "dry", title: "خشک و کشیده", desc: "کشیدگی پس از شستشو، پوسته‌ریزی و زبری.", icon: "dry", tag: "LIPID LOW" },
+  { id: "normal", title: "نرمال و متعادل", desc: "بدون چربی اضافه یا خشکی؛ بافت یکدست.", icon: "normal", tag: "BALANCED" },
+]
 
 const skinConcerns = [
-  {
-    id: "acne",
-    title: "جوش و آکنه فعال",
-    desc: "جوش سرسیاه، زیرپوستی و التهاب مکرر.",
-    icon: "🎯",
-    activeBadge: "BHA",
-  },
-  {
-    id: "spots",
-    title: "لک و جای جوش",
-    desc: "ملاسما، تیرگی، لک آفتاب و PIH.",
-    icon: "☀️",
-    activeBadge: "VIT-C",
-  },
-  {
-    id: "aging",
-    title: "چروک و افتادگی",
-    desc: "خطوط ریز، کاهش استحکام و سفتی.",
-    icon: "⏳",
-    activeBadge: "RETINOL",
-  },
-  {
-    id: "dehydration",
-    title: "کم‌آبی و کدری",
-    desc: "بی‌روحی، خستگی و خطوط ناشی از خشکی.",
-    icon: "🌊",
-    activeBadge: "HA",
-  },
-  {
-    id: "redness",
-    title: "قرمزی و التهاب",
-    desc: "گرگرفتگی، رگ‌های سطحی و روزاسه خفیف.",
-    icon: "🌡️",
-    activeBadge: "CICA",
-  },
-  {
-    id: "texture",
-    title: "منافذ باز و زبری",
-    desc: "بافت ناهموار، میلیا و منافذ قابل رؤیت.",
-    icon: "🔬",
-    activeBadge: "PHA",
-  },
-];
+  { id: "acne", title: "جوش و آکنه فعال", desc: "جوش سرسیاه، زیرپوستی و التهاب مکرر.", icon: "acne", activeBadge: "BHA" },
+  { id: "spots", title: "لک و جای جوش", desc: "ملاسما، تیرگی، لک آفتاب و PIH.", icon: "spots", activeBadge: "VIT-C" },
+  { id: "aging", title: "چروک و افتادگی", desc: "خطوط ریز، کاهش استحکام و سفتی.", icon: "aging", activeBadge: "RETINOL" },
+  { id: "dehydration", title: "کم‌آبی و کدری", desc: "بی‌روحی، خستگی و خطوط ناشی از خشکی.", icon: "dehydration", activeBadge: "HA" },
+  { id: "redness", title: "قرمزی و التهاب", desc: "گرگرفتگی، رگ‌های سطحی و روزاسه خفیف.", icon: "redness", activeBadge: "CICA" },
+  { id: "texture", title: "منافذ باز و زبری", desc: "بافت ناهموار، میلیا و منافذ قابل رؤیت.", icon: "texture", activeBadge: "PHA" },
+]
 
 const sensitivityLevels = [
-  {
-    id: "very",
-    title: "بسیار حساس",
-    desc: "با اغلب محصولات دچار سوزش، خارش یا قرمزی می‌شوم.",
-    icon: "🌸",
-    badge: "فرمولاسیون فوق ملایم",
-  },
-  {
-    id: "some",
-    title: "نسبتاً حساس",
-    desc: "گاهی با اکتیوهای قوی واکنش نشان می‌دهم.",
-    icon: "🍃",
-    badge: "شروع تدریجی",
-  },
-  {
-    id: "resilient",
-    title: "مقاوم",
-    desc: "به‌ندرت دچار التهاب می‌شوم و تحمل بالایی دارم.",
-    icon: "🛡️",
-    badge: "غلظت کلینیکال",
-  },
-];
+  { id: "very", title: "بسیار حساس", desc: "با اغلب محصولات دچار سوزش، خارش یا قرمزی می‌شوم.", icon: "very", badge: "فرمولاسیون فوق ملایم" },
+  { id: "some", title: "نسبتاً حساس", desc: "گاهی با اکتیوهای قوی واکنش نشان می‌دهم.", icon: "some", badge: "شروع تدریجی" },
+  { id: "resilient", title: "مقاوم", desc: "به‌ندرت دچار التهاب می‌شوم و تحمل بالایی دارم.", icon: "resilient", badge: "غلظت کلینیکال" },
+]
 
 const ageRanges = [
-  { id: "u25", title: "زیر ۲۵", desc: "پیشگیری و کنترل چربی", icon: "🌱" },
-  { id: "25_34", title: "۲۵ تا ۳۴", desc: "شروع آنتی‌ایجینگ", icon: "🌿" },
-  { id: "35_44", title: "۳۵ تا ۴۴", desc: "کلاژن‌سازی فعال", icon: "🌳" },
-  { id: "o45", title: "۴۵ به بالا", desc: "ترمیم و تراکم‌بخشی", icon: "🌟" },
-];
+  { id: "u25", title: "زیر ۲۵", desc: "پیشگیری و کنترل چربی", icon: "u25" },
+  { id: "25_34", title: "۲۵ تا ۳۴", desc: "شروع آنتی‌ایجینگ", icon: "25_34" },
+  { id: "35_44", title: "۳۵ تا ۴۴", desc: "کلاژن‌سازی فعال", icon: "35_44" },
+  { id: "o45", title: "۴۵ به بالا", desc: "ترمیم و تراکم‌بخشی", icon: "o45" },
+]
 
 const experienceLevels = [
-  {
-    id: "beginner",
-    title: "مبتدی",
-    desc: "تازه شروع کرده‌ام یا فقط شوینده و کرم استفاده می‌کنم.",
-    icon: "🔰",
-  },
-  {
-    id: "intermediate",
-    title: "متوسط",
-    desc: "با سرم و ضدآفتاب آشنا هستم و روتین ثابت دارم.",
-    icon: "📘",
-  },
-  {
-    id: "advanced",
-    title: "حرفه‌ای",
-    desc: "تجربه رتینول، اسیدها و لایه‌برداری شیمیایی دارم.",
-    icon: "🎓",
-  },
-];
+  { id: "beginner", title: "مبتدی", desc: "تازه شروع کرده‌ام یا فقط شوینده و کرم استفاده می‌کنم.", icon: "beginner" },
+  { id: "intermediate", title: "متوسط", desc: "با سرم و ضدآفتاب آشنا هستم و روتین ثابت دارم.", icon: "intermediate" },
+  { id: "advanced", title: "حرفه‌ای", desc: "تجربه رتینول، اسیدها و لایه‌برداری شیمیایی دارم.", icon: "advanced" },
+]
 
 /* ── ابزار ─────────────────────────── */
-
 const toFa = (v) => String(v).replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[d]);
 const clamp = (n) => Math.max(8, Math.min(96, Math.round(n)));
 
@@ -1798,11 +1854,7 @@ function startAnalysis() {
       clearInterval(analyzeTimer);
       setTimeout(() => {
         phase.value = "result";
-        setTimeout(() => {
-          phase.value = "result";
-          resultTab.value = "analysis"; // ← این خط اضافه شود
-          saveToStorage();
-        }, 400);
+        resultTab.value = "analysis";
         saveToStorage();
       }, 400);
     }
