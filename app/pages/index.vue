@@ -1,15 +1,19 @@
 <template>
-    <HomeHero />
+  <HomeHero />
 
-    <HomeTrustStrip />
+  <HomeTrustStrip />
 
-    <HomeBrands />
+  <HomeBrands />
 
-    <HomeCategory /> 
-    
-    <HomeReccommendProduct />
+  <HomeSkinQuiz />
 
-    <!-- <HomeTestimonials /> -->
+  <HomeCategory />
 
-    <HomeBlog />
+  <HomeReccommendProduct />
+
+  <HomeBanners />
+
+  <HomeDeals />
+
+  <HomeBlog />
 </template>

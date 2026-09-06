@@ -1,5 +1,5 @@
 <template>
-  <section class="relative border-y border-ink/5 bg-card/30 py-12 md:py-16 overflow-hidden">
+  <section class="relative bg-card/30 py-12 md:py-16 overflow-hidden">
     <!-- بلاب‌های رنگی پس‌زمینه -->
     <div class="absolute top-0 start-1/4 w-64 h-64 bg-gold/[0.05] blur-[100px] rounded-full pointer-events-none"></div>
     <div class="absolute bottom-0 end-1/4 w-64 h-64 bg-sky/[0.05] blur-[100px] rounded-full pointer-events-none"></div>

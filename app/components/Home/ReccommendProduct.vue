@@ -103,7 +103,7 @@
         >
           <div class="relative h-full">
             <!-- بج فقط برای ۳ کارت اول -->
-            <span
+            <!-- <span
               v-if="badges[i]"
               :class="[
                 'absolute top-3 start-3 z-10 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-md',
@@ -111,7 +111,7 @@
               ]"
             >
               {{ badges[i].label }}
-            </span>
+            </span> -->
 
             <ProductCard
               :product="p"
