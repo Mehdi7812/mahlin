@@ -930,14 +930,14 @@ const primaryDisabled = computed(() => {
       <!-- دکوراسیون پس‌زمینه -->
       <div class="pointer-events-none absolute inset-x-0 top-0 -z-0 h-64 overflow-hidden">
         <div class="absolute -top-24 -right-16 h-64 w-64 rounded-full bg-gold/10 blur-3xl"></div>
-        <div class="absolute -top-10 left-1/4 h-52 w-52 rounded-full bg-brand/5 blur-3xl"></div>
+        <div class="absolute -top-10 left-1/4 h-52 w-52 rounded-full bg-gold/5 blur-3xl"></div>
       </div>
 
       <!-- ================= Header ================= -->
       <div class="relative border-b border-line backdrop-blur-sm">
         <div class="container-content py-6 lg:py-8">
           <nav class="animate-fade-in-up flex items-center gap-1.5 text-micro text-ink-faint">
-            <NuxtLink to="/" class="flex items-center gap-1 transition hover:text-brand">
+            <NuxtLink to="/" class="flex items-center gap-1 transition hover:text-gold">
               <Icon name="tabler:home" class="text-[13px]" /> خانه
             </NuxtLink>
             <Icon name="tabler:chevron-left" class="text-meta" />
@@ -945,8 +945,8 @@ const primaryDisabled = computed(() => {
           </nav>
 
           <div class="animate-fade-in-up animation-delay-100 mt-4 flex flex-wrap items-end justify-between gap-4">
-            <h1 class="flex items-center gap-3 text-[26px] font-black text-brand lg:text-[32px]">
-              <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-brand to-brand/80 text-gold shadow-lg shadow-brand/20 lg:h-12 lg:w-12">
+            <h1 class="flex items-center gap-3 text-[26px] font-black text-black lg:text-[32px]">
+              <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-white to-white/80 text-gold shadow-lg shadow-gold/20 lg:h-12 lg:w-12">
                 <Icon name="tabler:shopping-cart" class="text-[20px]" />
               </span>
               سبد خرید
@@ -974,7 +974,7 @@ const primaryDisabled = computed(() => {
                     class="relative grid h-11 w-11 shrink-0 place-items-center rounded-full text-[15px] font-bold ring-2 transition-all duration-300"
                     :class="[
                       step === s.id
-                        ? 'scale-110 bg-brand text-ink-faint ring-white/70 shadow-[0_6px_18px_rgba(0,0,0,0.25)]'
+                        ? 'scale-110 bg-gold/40 text-ink-faint ring-white/70 shadow-[0_6px_18px_rgba(0,0,0,0.25)]'
                         : isStepBehindCurrent(i)
                           ? 'bg-emerald-500 text-white ring-white/70 shadow-[0_6px_18px_rgba(0,0,0,0.22)]'
                           : 'bg-white text-ink-faint ring-white shadow-[0_2px_8px_rgba(0,0,0,0.15)] group-hover:ring-gold/60',
@@ -992,13 +992,13 @@ const primaryDisabled = computed(() => {
                   <span class="hidden flex-col items-start text-right md:flex">
                     <span
                       class="text-[11px] font-medium tabular-fa"
-                      :class="step === s.id ? 'text-gold-deep' : 'text-brand/50'"
+                      :class="step === s.id ? 'text-gold-deep' : 'text-gold/50'"
                     >
                       مرحله {{ faNumber(i + 1) }}
                     </span>
                     <span
                       class="text-[13.5px] font-bold transition-colors"
-                      :class="step === s.id ? 'text-brand' : isStepBehindCurrent(i) ? 'text-brand/70' : 'text-brand/40'"
+                      :class="step === s.id ? 'text-gold' : isStepBehindCurrent(i) ? 'text-gold/70' : 'text-gold/40'"
                     >
                       {{ s.label }}
                     </span>
@@ -1011,7 +1011,7 @@ const primaryDisabled = computed(() => {
                   class="mx-1.5 h-[3px] flex-1 overflow-hidden rounded-full bg-white/35 ring-1 ring-white/50 md:mx-3"
                 >
                   <div
-                    class="h-full rounded-full bg-gradient-to-l from-emerald-500 to-brand shadow-[0_0_8px_rgba(0,0,0,0.15)] transition-all duration-700 ease-out"
+                    class="h-full rounded-full bg-gradient-to-l from-emerald-500 to-emerald-600 shadow-[0_0_8px_rgba(0,0,0,0.15)] transition-all duration-700 ease-out"
                     :style="{ width: isStepBehindCurrent(i) ? '100%' : '0%' }"
                   />
                 </div>
@@ -1022,15 +1022,15 @@ const primaryDisabled = computed(() => {
             <div class="sm:hidden">
               <div class="flex items-center justify-between rounded-2xl border border-line bg-white px-4 py-3 shadow-sm">
                 <div class="flex items-center gap-3">
-                  <span class="relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand text-white">
-                    <span class="absolute -inset-1 animate-pulse rounded-full ring-2 ring-brand/20" />
+                  <span class="relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gold text-white">
+                    <span class="absolute -inset-1 animate-pulse rounded-full ring-2 ring-gold/20" />
                     <Icon :name="STEP_ICONS[step]" class="text-[17px]" />
                   </span>
                   <div>
                     <p class="text-[10.5px] font-medium text-ink-faint tabular-fa">
                       مرحله {{ faNumber(currentStepIndex + 1) }} از {{ faNumber(STEPS.length) }}
                     </p>
-                    <p class="text-[13.5px] font-bold text-brand">{{ STEPS[currentStepIndex].label }}</p>
+                    <p class="text-[13.5px] font-bold text-gold">{{ STEPS[currentStepIndex].label }}</p>
                   </div>
                 </div>
 
@@ -1041,7 +1041,7 @@ const primaryDisabled = computed(() => {
                     class="h-1.5 rounded-full transition-all duration-300"
                     :class="[
                       step === s.id
-                        ? 'w-6 bg-brand'
+                        ? 'w-6 bg-gold'
                         : isStepBehindCurrent(i)
                           ? 'w-1.5 bg-emerald-500'
                           : 'w-1.5 bg-line',
@@ -1167,13 +1167,13 @@ const primaryDisabled = computed(() => {
         <div v-if="emptyCart && step === 'cart'" class="mx-auto max-w-[480px] animate-fade-in-up">
           <div class="relative overflow-hidden rounded-3xl border border-line bg-white p-10 text-center">
             <div class="pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full bg-gold/10 blur-2xl"></div>
-            <div class="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-brand/5 blur-2xl"></div>
+            <div class="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-gold/5 blur-2xl"></div>
 
             <div class="relative mx-auto grid h-24 w-24 place-items-center rounded-full bg-gradient-to-br from-cream to-white ring-1 ring-line">
               <span class="absolute inset-0 animate-ping-slow rounded-full bg-gold/10"></span>
               <Icon name="tabler:shopping-bag" class="relative animate-bounce-soft text-[40px] text-gold-deep" />
             </div>
-            <h2 class="mt-6 text-price font-black text-brand">سبد خرید شما خالی است</h2>
+            <h2 class="mt-6 text-price font-black text-gold">سبد خرید شما خالی است</h2>
             <p class="mx-auto mt-2 max-w-xs text-[14px] leading-6 text-ink-muted">
               هنوز محصولی اضافه نکرده‌اید. نگاهی به فروشگاه بندازید و بهترین‌ها را انتخاب کنید.
             </p>
@@ -1194,7 +1194,7 @@ const primaryDisabled = computed(() => {
               <!-- ============= STEP 1: CART ============= -->
               <div v-if="step === 'cart'" key="cart" class="overflow-hidden rounded-[20px] border border-line bg-white shadow-sm">
                 <div class="flex items-center justify-between border-b border-line px-5 py-4">
-                  <p class="flex items-center gap-2 text-small font-bold text-brand">
+                  <p class="flex items-center gap-2 text-small font-bold text-gold">
                     <Icon name="tabler:package" class="text-gold" />
                     محصولات سبد شما
                   </p>
@@ -1221,14 +1221,14 @@ const primaryDisabled = computed(() => {
                         :alt="item.products.title_fa"
                         class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
-                      <span class="absolute bottom-0 right-0 rounded-tl-lg bg-brand/90 px-1.5 py-0.5 text-[10px] font-bold text-white tabular-fa">
+                      <span class="absolute bottom-0 right-0 rounded-tl-lg bg-gold/90 px-1.5 py-0.5 text-[10px] font-bold text-white tabular-fa">
                         × {{ faNumber(item.amount) }}
                       </span>
                     </div>
 
                     <div class="min-w-0 flex-1">
                       <div class="flex items-start justify-between gap-2">
-                        <p class="line-clamp-1 text-[14px] font-bold text-brand">
+                        <p class="line-clamp-1 text-[14px] font-bold text-gold">
                           {{ item.products?.title_fa }}
                         </p>
                         <button
@@ -1256,7 +1256,7 @@ const primaryDisabled = computed(() => {
                       <div class="mt-3 flex items-center justify-between">
                         <div class="flex items-center gap-1 rounded-full border border-line bg-white p-1">
                           <button
-                            class="grid h-7 w-7 place-items-center rounded-full text-ink-muted transition hover:bg-cream hover:text-brand disabled:opacity-40"
+                            class="grid h-7 w-7 place-items-center rounded-full text-ink-muted transition hover:bg-cream hover:text-gold disabled:opacity-40"
                             :disabled="btnLoadingShop || item.amount <= 1"
                             @click="decreaseAmount(item)"
                           >
@@ -1264,7 +1264,7 @@ const primaryDisabled = computed(() => {
                           </button>
                           <span class="w-6 text-center text-[13px] font-bold tabular-fa">{{ faNumber(item.amount) }}</span>
                           <button
-                            class="grid h-7 w-7 place-items-center rounded-full text-ink-muted transition hover:bg-cream hover:text-brand disabled:opacity-40"
+                            class="grid h-7 w-7 place-items-center rounded-full text-ink-muted transition hover:bg-cream hover:text-gold disabled:opacity-40"
                             :disabled="btnLoadingShop || item.amount === item.products?.maximum_sale_quantity"
                             @click="increaseAmount(item)"
                           >
@@ -1272,7 +1272,7 @@ const primaryDisabled = computed(() => {
                           </button>
                         </div>
 
-                        <p class="text-[14px] font-black text-brand tabular-fa">
+                        <p class="text-[14px] font-black text-gold tabular-fa">
                           {{ faPrice((item.unit_price || item.products?.final_price || 0) * item.amount) }}
                         </p>
                       </div>
@@ -1286,7 +1286,7 @@ const primaryDisabled = computed(() => {
                     <span class="grid h-8 w-8 place-items-center rounded-xl bg-gold/15 text-gold-deep">
                       <Icon name="tabler:gift" class="text-[16px]" />
                     </span>
-                    <p class="text-small font-bold text-brand">کد تخفیف دارید؟</p>
+                    <p class="text-small font-bold text-gold">کد تخفیف دارید؟</p>
                     <Transition name="pop-fade">
                       <span
                         v-if="couponSuccess"
@@ -1303,7 +1303,7 @@ const primaryDisabled = computed(() => {
                         v-model="coupon"
                         :error="!!couponError"
                         placeholder="مثلا: SUSHIA10"
-                        class="uppercase"
+                        class="uppercase rounded-lg h-full"
                         @keydown.enter="applyCoupon"
                       />
                       <button
@@ -1327,7 +1327,7 @@ const primaryDisabled = computed(() => {
                     <p v-if="couponSuccess" class="mt-2 text-meta text-emerald-600">تخفیف با موفقیت اعمال شد</p>
                   </Transition>
                   <p v-if="invoice.discount_code" class="mt-2 text-meta text-ink-muted">
-                    کد فعال: <span class="font-bold text-brand">{{ invoice.discount_code }}</span>
+                    کد فعال: <span class="font-bold text-gold">{{ invoice.discount_code }}</span>
                   </p>
                 </div>
 
@@ -1344,7 +1344,7 @@ const primaryDisabled = computed(() => {
                 <!-- Address summary + trigger for the address dialog -->
                 <div v-if="hasShippable" class="rounded-[20px] border border-line bg-white p-5 shadow-sm">
                   <div class="mb-4 flex items-center justify-between">
-                    <h3 class="flex items-center gap-2 font-black text-brand">
+                    <h3 class="flex items-center gap-2 font-black text-gold">
                       <span class="grid h-8 w-8 place-items-center rounded-xl bg-gold/15 text-gold-deep">
                         <Icon name="tabler:map-pin" class="text-[16px]" />
                       </span>
@@ -1352,7 +1352,7 @@ const primaryDisabled = computed(() => {
                     </h3>
                     <button
                       type="button"
-                      class="flex items-center gap-1 text-meta font-bold text-gold-deep transition hover:text-brand"
+                      class="flex items-center gap-1 text-meta font-bold text-gold-deep transition hover:text-gold"
                       @click="selectedAddress ? openAddressModal(0) : startAddNewAddress()"
                     >
                       <Icon :name="selectedAddress ? 'tabler:replace' : 'tabler:plus'" class="text-[14px]" />
@@ -1363,7 +1363,7 @@ const primaryDisabled = computed(() => {
                   <div v-if="selectedAddress" class="rounded-2xl border border-line bg-cream/20 p-4">
                     <div class="flex items-center gap-2">
                       <Icon name="tabler:home-2" class="text-[15px] text-gold-deep" />
-                      <p class="text-[14px] font-bold text-brand">{{ selectedAddress.title }}</p>
+                      <p class="text-[14px] font-bold text-gold">{{ selectedAddress.title }}</p>
                     </div>
                     <p class="mt-2 text-[13px] leading-6 text-ink-muted">
                       آدرس: {{ selectedAddress.description }}
@@ -1382,7 +1382,7 @@ const primaryDisabled = computed(() => {
 
                 <!-- Shipping method -->
                 <div v-if="hasShippable" class="rounded-[20px] border border-line bg-white p-5 shadow-sm">
-                  <h3 class="mb-4 flex items-center gap-2 font-black text-brand">
+                  <h3 class="mb-4 flex items-center gap-2 font-black text-gold">
                     <span class="grid h-8 w-8 place-items-center rounded-xl bg-gold/15 text-gold-deep">
                       <Icon name="tabler:truck-delivery" class="text-[16px]" />
                     </span>
@@ -1402,12 +1402,12 @@ const primaryDisabled = computed(() => {
                       <input type="radio" class="sr-only" :value="m.id" :checked="selectedShippingMethod?.id === m.id" @change="chooseShippingMethod(m)" />
                       <span
                         class="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-xl transition-colors"
-                        :class="selectedShippingMethod?.id === m.id ? 'bg-brand text-gold' : 'bg-cream text-ink-muted'"
+                        :class="selectedShippingMethod?.id === m.id ? 'bg-gold text-white' : 'bg-cream text-ink-muted'"
                       >
                         <Icon name="tabler:truck" class="text-h3" />
                       </span>
                       <div class="min-w-0 flex-1">
-                        <span class="text-[14px] font-bold text-brand">{{ m.title }}</span>
+                        <span class="text-[14px] font-bold text-gold">{{ m.title }}</span>
                       </div>
                       <span
                         class="mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition-colors"
@@ -1420,7 +1420,7 @@ const primaryDisabled = computed(() => {
 
                   <!-- روزها و ساعات ارسال -->
                   <div v-if="deliveryDays.length" class="mt-5 space-y-3 border-t border-line pt-4">
-                    <p class="flex items-center gap-1.5 text-[13px] font-bold text-brand">
+                    <p class="flex items-center gap-1.5 text-[13px] font-bold text-gold">
                       <Icon name="tabler:calendar-time" class="text-gold-deep" /> انتخاب زمان ارسال
                     </p>
                     <div class="scrollbar-thin flex gap-2 overflow-x-auto pb-1">
@@ -1458,7 +1458,7 @@ const primaryDisabled = computed(() => {
                         <span class="flex items-center gap-2">
                           <Icon name="tabler:clock" class="text-[14px] text-ink-faint" />
                           <span>
-                            <span class="block text-meta font-bold text-brand">{{ slot.title }}</span>
+                            <span class="block text-meta font-bold text-gold">{{ slot.title }}</span>
                             <span class="mt-0.5 block text-micro text-ink-muted tabular-fa">ساعت {{ slot.from_time }} تا {{ slot.to_time }}</span>
                           </span>
                         </span>
@@ -1493,7 +1493,7 @@ const primaryDisabled = computed(() => {
               <!-- ============= STEP 3: PAYMENT ============= -->
               <div v-else key="payment" class="space-y-5">
                 <div class="rounded-[20px] border border-line bg-white p-5 shadow-sm">
-                  <h3 class="mb-4 flex items-center gap-2 font-black text-brand">
+                  <h3 class="mb-4 flex items-center gap-2 font-black text-gold">
                     <span class="grid h-8 w-8 place-items-center rounded-xl bg-gold/15 text-gold-deep">
                       <Icon name="tabler:credit-card" class="text-[16px]" />
                     </span>
@@ -1513,7 +1513,7 @@ const primaryDisabled = computed(() => {
                       <input v-model="paymentMethod" type="radio" class="sr-only" :value="opt" />
                       <span
                         class="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-xl transition-colors"
-                        :class="paymentMethod === opt ? 'bg-brand text-gold' : 'bg-cream text-ink-muted'"
+                        :class="paymentMethod === opt ? 'bg-gold text-white' : 'bg-cream text-ink-muted'"
                       >
                         <Icon
                           :name="
@@ -1527,7 +1527,7 @@ const primaryDisabled = computed(() => {
                         />
                       </span>
                       <div class="min-w-0 flex-1">
-                        <span class="text-[14px] font-bold text-brand">
+                        <span class="text-[14px] font-bold text-gold">
                           {{ opt.pp_title }}<span v-if="opt.gateway_title"> ({{ opt.gateway_title }})</span>
                         </span>
                         <p v-if="opt.pp_d1 === 'walletPayment'" class="mt-0.5 flex items-center gap-1 text-meta text-ink-muted">
@@ -1545,7 +1545,7 @@ const primaryDisabled = computed(() => {
                   </div>
 
                   <div class="mt-4 flex items-center gap-2 rounded-xl bg-cream/60 p-3 text-meta leading-6 text-ink-muted">
-                    <Icon name="tabler:shield-lock" class="shrink-0 text-[16px] text-brand" />
+                    <Icon name="tabler:shield-lock" class="shrink-0 text-[16px] text-gold" />
                     اطلاعات بانکی شما نزد ما ذخیره نمی‌شود.
                   </div>
 
@@ -1607,11 +1607,11 @@ const primaryDisabled = computed(() => {
           <!-- RIGHT: order summary -->
           <aside class="lg:sticky lg:top-28">
             <div class="animate-fade-in-up overflow-hidden rounded-[20px] border border-line bg-white shadow-sm">
-              <div class="h-1 w-full bg-gradient-to-l from-gold via-gold-deep to-brand"></div>
+              <div class="h-1 w-full bg-gradient-to-l from-gold via-gold-deep to-gold"></div>
 
               <div class="p-6">
                 <div class="mb-4 flex items-center justify-between">
-                  <h2 class="flex items-center gap-2 text-[15px] font-black text-brand">
+                  <h2 class="flex items-center gap-2 text-[15px] font-black text-gold">
                     <Icon name="tabler:receipt" class="text-gold-deep" />
                     خلاصه سفارش
                   </h2>
@@ -1619,12 +1619,12 @@ const primaryDisabled = computed(() => {
                 </div>
 
                 <ul v-if="step !== 'cart'" class="scrollbar-thin max-h-48 space-y-3 overflow-y-auto border-b border-line pb-4">
-                  <li v-for="item in invoiceDetails" :key="item.id" class="flex gap-3">
-                    <div class="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-cream ring-1 ring-line/60">
+                  <li v-for="item in invoiceDetails" :key="item.id" class="flex gap-3 p-px">
+                    <div class="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-cream ring-1 ring-gold/60">
                       <img v-if="item.products?.cover_image" :src="item.products.cover_image" class="h-full w-full object-cover" />
                     </div>
                     <div class="min-w-0 flex-1">
-                      <p class="line-clamp-1 text-[13px] font-bold text-brand">{{ item.products?.title_fa }}</p>
+                      <p class="line-clamp-1 text-[13px] font-bold text-gold">{{ item.products?.title_fa }}</p>
                       <p class="mt-0.5 text-micro text-ink-faint tabular-fa">
                         {{ faNumber(item.amount) }} × {{ faPrice(item.unit_price || item.products?.final_price || 0) }}
                       </p>
@@ -1687,8 +1687,8 @@ const primaryDisabled = computed(() => {
                 </div>
 
                 <div class="mt-4 flex items-baseline justify-between border-t border-line pt-4">
-                  <span class="text-[14px] font-bold text-brand">مبلغ نهایی</span>
-                  <span class="bg-gradient-to-l from-brand to-brand/70 bg-clip-text text-h2 font-black text-transparent tabular-fa">
+                  <span class="text-[14px] font-bold text-gold">مبلغ نهایی</span>
+                  <span class="bg-gradient-to-l from-gold to-gold/70 bg-clip-text text-h2 font-black text-transparent tabular-fa">
                     {{ faPrice(orderTotal) }}
                   </span>
                 </div>
@@ -1705,12 +1705,12 @@ const primaryDisabled = computed(() => {
 
                 <div class="mt-4 flex items-center justify-center gap-4 border-t border-line pt-3">
                   <p class="flex items-center gap-1.5 text-micro text-ink-faint">
-                    <Icon name="tabler:shield-check" class="text-[14px] text-brand" />
+                    <Icon name="tabler:shield-check" class="text-[14px] text-gold" />
                     پرداخت امن
                   </p>
                   <span class="h-3 w-px bg-line"></span>
                   <p class="flex items-center gap-1.5 text-micro text-ink-faint">
-                    <Icon name="tabler:route" class="text-[14px] text-brand" />
+                    <Icon name="tabler:route" class="text-[14px] text-gold" />
                     پیگیری سفارش
                   </p>
                 </div>
@@ -1729,7 +1729,7 @@ const primaryDisabled = computed(() => {
           <div class="flex items-center justify-between gap-3">
             <div>
               <p class="text-micro text-ink-faint">مبلغ نهایی</p>
-              <p class="text-body-lg font-black text-brand tabular-fa">{{ faPrice(orderTotal) }}</p>
+              <p class="text-body-lg font-black text-gold tabular-fa">{{ faPrice(orderTotal) }}</p>
             </div>
             <UiBaseButton :disabled="primaryDisabled" :loading="submitting" @click="primaryAction">
               {{ primaryLabel }}
@@ -1750,7 +1750,7 @@ const primaryDisabled = computed(() => {
                       <Icon :name="addressStep === 0 ? 'tabler:list' : addressStep === 1 ? 'tabler:map-pin' : 'tabler:edit'" class="text-[18px]" />
                     </span>
                     <div>
-                      <h3 class="text-[15px] font-black text-brand">
+                      <h3 class="text-[15px] font-black text-gold">
                         {{ addressStep === 0 ? 'انتخاب آدرس' : 'آدرس جدید' }}
                       </h3>
                       <p v-if="addressStep !== 0" class="mt-0.5 text-meta text-ink-muted">
@@ -1762,7 +1762,7 @@ const primaryDisabled = computed(() => {
                     <button
                       v-if="addressStep === 1 && addresses.length"
                       type="button"
-                      class="text-meta font-bold text-ink-muted transition hover:text-brand"
+                      class="text-meta font-bold text-ink-muted transition hover:text-gold"
                       @click="addressStep = 0"
                     >
                       برگشت
@@ -1770,7 +1770,7 @@ const primaryDisabled = computed(() => {
                     <button
                       v-if="addressStep === 2"
                       type="button"
-                      class="text-meta font-bold text-ink-muted transition hover:text-brand"
+                      class="text-meta font-bold text-ink-muted transition hover:text-gold"
                       @click="addressStep = 1"
                     >
                       برگشت
@@ -1803,7 +1803,7 @@ const primaryDisabled = computed(() => {
                       "
                     >
                       <div class="flex items-center justify-between">
-                        <p class="flex items-center gap-1.5 text-[13px] font-bold text-brand">
+                        <p class="flex items-center gap-1.5 text-[13px] font-bold text-gold">
                           <Icon name="tabler:home-2" class="text-[14px] text-gold-deep" />
                           {{ a.title }}
                         </p>
@@ -1825,7 +1825,7 @@ const primaryDisabled = computed(() => {
                   </div>
                   <div v-else class="py-8 text-center">
                     <Icon name="tabler:map-pin-off" class="mx-auto text-[40px] text-ink-faint" />
-                    <p class="mt-3 text-[13px] font-bold text-brand">هیچ آدرسی ثبت نکرده‌اید</p>
+                    <p class="mt-3 text-[13px] font-bold text-gold">هیچ آدرسی ثبت نکرده‌اید</p>
                     <p class="mt-1 text-meta text-ink-muted">برای ادامه، آدرس خود را اضافه کنید.</p>
                   </div>
                 </div>
@@ -1937,7 +1937,7 @@ const primaryDisabled = computed(() => {
                 <div class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-red-50 text-red-500">
                   <Icon name="tabler:trash" class="text-[24px]" />
                 </div>
-                <p class="mt-4 mb-1 text-[14px] font-bold text-brand">حذف آدرس</p>
+                <p class="mt-4 mb-1 text-[14px] font-bold text-gold">حذف آدرس</p>
                 <p class="mb-5 text-[13px] text-ink-muted">آیا از حذف این آدرس مطمئن هستید؟ این عملیات قابل بازگشت نیست.</p>
                 <div class="flex justify-center gap-2">
                   <UiBaseButton variant="secondary" @click="closeDeleteDialog">انصراف</UiBaseButton>
@@ -1959,10 +1959,11 @@ const primaryDisabled = computed(() => {
                   <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gold/15 text-gold-deep">
                     <Icon name="tabler:wallet" class="text-[18px]" />
                   </span>
-                  <h3 class="text-[15px] font-black text-brand">افزایش کیف پول</h3>
+                  <h3 class="text-[15px] font-black text-gold">افزایش کیف پول</h3>
                 </div>
+                
                 <p class="mt-3 text-[13px] leading-6 text-ink-muted">
-                  آیا مبلغ <span class="font-bold text-brand">{{ faPrice(walletShortfall) }}</span> به کیف پول شما افزایش داده شود؟
+                  آیا مبلغ <span class="font-bold text-gold">{{ faPrice(walletShortfall) }}</span> به کیف پول شما افزایش داده شود؟
                 </p>
 
                 <div class="mt-4 space-y-2">
@@ -1973,7 +1974,7 @@ const primaryDisabled = computed(() => {
                     :class="paymentOption2 === opt ? 'border-gold bg-gold/8' : 'border-line'"
                   >
                     <input v-model="paymentOption2" type="radio" class="sr-only" :value="opt" />
-                    <span class="text-[13px] font-bold text-brand">{{ opt.pp_title }}</span>
+                    <span class="text-[13px] font-bold text-gold">{{ opt.pp_title }}</span>
                     <span v-if="opt.gateway_title" class="text-meta text-ink-muted">({{ opt.gateway_title }})</span>
                     <span
                       class="mr-auto grid h-4 w-4 shrink-0 place-items-center rounded-full border-2"
@@ -2003,7 +2004,7 @@ const primaryDisabled = computed(() => {
                     <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gold/15 text-gold-deep">
                       <Icon name="tabler:user-edit" class="text-[18px]" />
                     </span>
-                    <h3 class="text-[15px] font-black text-brand">ویرایش اطلاعات فردی</h3>
+                    <h3 class="text-[15px] font-black text-gold">ویرایش اطلاعات فردی</h3>
                   </div>
                   <button type="button" class="grid h-9 w-9 place-items-center rounded-full bg-cream text-ink-muted transition hover:bg-red-50 hover:text-red-500" @click="userInfoDialog = false">
                     <Icon name="tabler:x" class="text-[16px]" />
@@ -2062,7 +2063,7 @@ const primaryDisabled = computed(() => {
                 <div class="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-full bg-gold/15 text-gold-deep">
                   <Icon name="tabler:sparkles" class="text-[26px]" />
                 </div>
-                <h3 class="text-center text-[15px] font-black text-brand">قدردان همراهی شما هستیم 🌟</h3>
+                <h3 class="text-center text-[15px] font-black text-gold">قدردان همراهی شما هستیم 🌟</h3>
 
                 <div class="mt-4 space-y-3">
                   <div
@@ -2074,18 +2075,18 @@ const primaryDisabled = computed(() => {
                       v-if="d.condition_purchase && d.award_type == 4"
                       class="text-[13px] leading-6 text-ink-muted"
                     >
-                      به‌دلیل شرکت در <b class="text-brand">{{ JSON.parse(d.condition_purchase).title_fa }}</b>
+                      به‌دلیل شرکت در <b class="text-gold">{{ JSON.parse(d.condition_purchase).title_fa }}</b>
                       مبلغ {{ faPrice(d.award_amount) }} تخفیف اختصاصی روی این سفارش دریافت کردید.
                     </p>
                     <p
                       v-else-if="d.condition_purchase && d.award_type == 3"
                       class="text-[13px] leading-6 text-ink-muted"
                     >
-                      به‌دلیل شرکت در <b class="text-brand">{{ JSON.parse(d.condition_purchase).title_fa }}</b>
+                      به‌دلیل شرکت در <b class="text-gold">{{ JSON.parse(d.condition_purchase).title_fa }}</b>
                       شامل {{ faNumber(d.award_amount) }}٪ تخفیف اختصاصی روی این سفارش دریافت کردید.
                     </p>
                     <p v-else class="text-[13px] leading-6 text-ink-muted">
-                      به‌دلیل وجود در لیست <b class="text-brand">{{ d.title }}</b> شامل
+                      به‌دلیل وجود در لیست <b class="text-gold">{{ d.title }}</b> شامل
                       {{ faNumber(d.award_amount) }}٪ تخفیف اختصاصی هستید.
                     </p>
 

@@ -29,8 +29,26 @@
           leave-to-class="opacity-0 translate-y-2"
         >
           <!-- فرم اصلی -->
-          <form v-if="!isSent" @submit.prevent="handleSubmit" class="space-y-5 relative z-10">
+          <form v-if="!isSent" @submit.prevent="handleSubmit" class="space-y-5 relative z-10" novalidate>
             <h2 class="text-lg font-bold text-ink mb-6">ارسال پیام مستقیم</h2>
+
+            <!-- خطای عمومی سرور -->
+            <Transition
+              enter-active-class="transition-[opacity,transform] duration-200"
+              enter-from-class="opacity-0 -translate-y-1"
+              enter-to-class="opacity-100 translate-y-0"
+            >
+              <div
+                v-if="serverError"
+                class="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-50 text-red-600 text-xs font-bold"
+              >
+                <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 8v4m0 4h.01" stroke-linecap="round"/>
+                </svg>
+                {{ serverError }}
+              </div>
+            </Transition>
             
             <div class="grid sm:grid-cols-2 gap-5">
               <!-- نام -->
@@ -39,34 +57,32 @@
                 <input 
                   v-model="form.name"
                   type="text" 
-                  required
                   placeholder="مثال: سارا احمدی" 
-                  class="w-full px-4 py-3.5 rounded-2xl border border-ink/10 focus:border-gold/60 bg-ink/[0.01] text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-1 focus:ring-gold/30 transition-all duration-300"
+                  class="w-full px-4 py-3.5 rounded-2xl border bg-ink/[0.01] text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-1 transition-all duration-300"
+                  :class="errors.name
+                    ? 'border-red-300 focus:border-red-400 focus:ring-red-200'
+                    : 'border-ink/10 focus:border-gold/60 focus:ring-gold/30'"
+                  @input="errors.name = ''"
                 />
+                <p v-if="errors.name" class="text-[11px] text-red-500 mr-1">{{ errors.name }}</p>
               </div>
 
-              <!-- ایمیل -->
+              <!-- موبایل -->
               <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-bold text-ink/60 mr-1">نشانی ایمیل</label>
+                <label class="text-xs font-bold text-ink/60 mr-1">شماره موبایل</label>
                 <input 
-                  v-model="form.email"
-                  type="email" 
-                  required
-                  placeholder="example@gmail.com" 
-                  class="w-full px-4 py-3.5 rounded-2xl border border-ink/10 focus:border-gold/60 bg-ink/[0.01] text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-1 focus:ring-gold/30 transition-all duration-300 font-latin text-left"
+                  v-model="form.mobile"
+                  type="tel"
+                  inputmode="numeric"
+                  placeholder="09xxxxxxxxx" 
+                  class="w-full px-4 py-3.5 rounded-2xl border bg-ink/[0.01] text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-1 transition-all duration-300 font-latin text-left"
+                  :class="errors.mobile
+                    ? 'border-red-300 focus:border-red-400 focus:ring-red-200'
+                    : 'border-ink/10 focus:border-gold/60 focus:ring-gold/30'"
+                  @input="errors.mobile = ''"
                 />
+                <p v-if="errors.mobile" class="text-[11px] text-red-500 mr-1">{{ errors.mobile }}</p>
               </div>
-            </div>
-
-            <!-- موضوع پیام -->
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-bold text-ink/60 mr-1">موضوع ارتباط</label>
-              <input 
-                v-model="form.subject"
-                type="text" 
-                placeholder="مثال: مشاوره تخصصی پوست / پیگیری سفارش" 
-                class="w-full px-4 py-3.5 rounded-2xl border border-ink/10 focus:border-gold/60 bg-ink/[0.01] text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-1 focus:ring-gold/30 transition-all duration-300"
-              />
             </div>
 
             <!-- پیام -->
@@ -74,18 +90,22 @@
               <label class="text-xs font-bold text-ink/60 mr-1">متن پیام شما</label>
               <textarea 
                 v-model="form.message"
-                required
                 rows="5" 
                 placeholder="پیام خود را بنویسید..." 
-                class="w-full px-4 py-3.5 rounded-2xl border border-ink/10 focus:border-gold/60 bg-ink/[0.01] text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-1 focus:ring-gold/30 transition-all duration-300 resize-none leading-relaxed"
+                class="w-full px-4 py-3.5 rounded-2xl border bg-ink/[0.01] text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-1 transition-all duration-300 resize-none leading-relaxed"
+                :class="errors.message
+                  ? 'border-red-300 focus:border-red-400 focus:ring-red-200'
+                  : 'border-ink/10 focus:border-gold/60 focus:ring-gold/30'"
+                @input="errors.message = ''"
               ></textarea>
+              <p v-if="errors.message" class="text-[11px] text-red-500 mr-1">{{ errors.message }}</p>
             </div>
 
             <!-- دکمه ارسال با افکت لودینگ تمیز -->
             <button 
               type="submit" 
               :disabled="loading"
-              class="w-full sm:w-auto px-8 py-4 bg-ink hover:bg-gold text-cream hover:text-ink font-bold text-sm rounded-full transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-50"
+              class="w-full sm:w-auto px-8 py-4 bg-ink hover:bg-gold text-cream hover:text-ink font-bold text-sm rounded-full transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:pointer-events-none"
             >
               <span v-if="loading" class="w-4 h-4 border-2 border-cream border-t-transparent rounded-full animate-spin"></span>
               <span v-else>ارسال پیام به ماهلین</span>
@@ -107,7 +127,7 @@
               سپاس از ارتباط شما با ماهلین. همکاران ما در دپارتمان پشتیبانی به زودی و در کمتر از ۲۴ ساعت کاری با شما تماس خواهند گرفت.
             </p>
             <button 
-              @click="isSent = false" 
+              @click="resetForm" 
               class="px-6 py-3 border border-gold text-gold hover:bg-gold hover:text-ink font-bold text-xs rounded-full transition-all duration-300"
             >
               ارسال پیام جدید
@@ -189,33 +209,112 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const loading = ref(false);
 const isSent = ref(false);
+const serverError = ref('');
 
 const form = ref({
   name: '',
-  email: '',
-  subject: '',
-  message: ''
+  mobile: '',
+  message: '',
 });
 
-function handleSubmit() {
+const errors = ref({
+  name: '',
+  mobile: '',
+  message: '',
+});
+
+// ─── شناسه‌ی فرم (متناسب با فرم واقعی در پنل مدیریت) ────
+const FORM_ID = 1;
+
+// ─── محاسبه‌ی duration (زمان سپری‌شده از باز شدن فرم تا ارسال) ────
+let startTime = 0;
+onMounted(() => {
+  if (import.meta.client) {
+    startTime = Date.now();
+  }
+});
+
+// ─── اعتبارسنجی فرم ──────────────────────────────────────
+const MOBILE_REGEX = /^09\d{9}$/;
+
+function validateForm() {
+  errors.value = { name: '', mobile: '', message: '' };
+  let isValid = true;
+
+  const name = form.value.name.trim();
+  if (!name) {
+    errors.value.name = 'وارد کردن نام و نام خانوادگی الزامی است';
+    isValid = false;
+  } else if (name.length < 3) {
+    errors.value.name = 'نام باید حداقل ۳ حرف باشد';
+    isValid = false;
+  }
+
+  const mobile = form.value.mobile.trim();
+  if (!mobile) {
+    errors.value.mobile = 'وارد کردن شماره موبایل الزامی است';
+    isValid = false;
+  } else if (!MOBILE_REGEX.test(mobile)) {
+    errors.value.mobile = 'شماره موبایل معتبر نیست (مثال: 09123456789)';
+    isValid = false;
+  }
+
+  const message = form.value.message.trim();
+  if (!message) {
+    errors.value.message = 'وارد کردن متن پیام الزامی است';
+    isValid = false;
+  } else if (message.length < 10) {
+    errors.value.message = 'متن پیام باید حداقل ۱۰ حرف باشد';
+    isValid = false;
+  }
+
+  return isValid;
+}
+
+// ─── ارسال فرم ───────────────────────────────────────────
+async function handleSubmit() {
+  serverError.value = '';
+
+  if (!validateForm()) return;
+
   loading.value = true;
-  
-  // شبیه‌سازی ارسال اطلاعات به سرور با یک تأخیر شکیل و روان
-  setTimeout(() => {
-    loading.value = false;
+
+  const duration = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
+
+  const payload = {
+    formId: FORM_ID,
+    status: 1,
+    uniqueForm: true,
+    duration,
+    formResults: {
+      1: form.value.name.trim(),
+      2: form.value.mobile.trim(),
+      3: form.value.message.trim(),
+    },
+  };
+
+  try {
+    await useGarnetApiFetch('forms/createResults', payload);
     isSent.value = true;
-    
-    // بازنشانی مقادیر فرم
-    form.value = {
-      name: '',
-      email: '',
-      subject: '',
-      message: ''
-    };
-  }, 1200);
+  } catch (err) {
+    console.error('[Contact] خطا در ارسال فرم:', err);
+    serverError.value = 'ارسال پیام با خطا مواجه شد. لطفاً دوباره تلاش کنید.';
+  } finally {
+    loading.value = false;
+  }
+}
+
+function resetForm() {
+  form.value = { name: '', mobile: '', message: '' };
+  errors.value = { name: '', mobile: '', message: '' };
+  serverError.value = '';
+  isSent.value = false;
+  if (import.meta.client) {
+    startTime = Date.now();
+  }
 }
 </script>

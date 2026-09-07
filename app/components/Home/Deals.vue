@@ -13,8 +13,8 @@
 
       <!-- هدر بخش -->
       <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-9 md:mb-11">
-        <div class="text-center md:text-start">
-          <div class="flex items-center justify-center md:justify-start gap-2 mb-2">
+        <div>
+          <div class="flex items-center justify-start gap-2 mb-2">
             <span class="w-6 h-px bg-blush/70"></span>
             <span class="text-[10px] sm:text-xs uppercase tracking-[0.15em] text-blush font-bold">
               فروش ویژه زمان‌دار

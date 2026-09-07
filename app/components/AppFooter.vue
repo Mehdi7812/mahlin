@@ -238,9 +238,6 @@
               قوانین و مقررات
             </NuxtLink>
             <span class="w-px h-3 bg-cream/15 block"></span>
-            <NuxtLink to="/sitemap" class="text-cream/40 hover:text-cream/80 transition-colors duration-200">
-              نقشه سایت
-            </NuxtLink>
           </div>
         </div>
       </div>

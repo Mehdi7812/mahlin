@@ -1,6 +1,5 @@
 <template>
   <div class="max-w-[1280px] mx-auto px-4 md:px-6 py-16 md:py-24 overflow-hidden">
-    
     <!-- ۱. بخش آغازین: بیانیه برند -->
     <section class="relative max-w-[900px] mx-auto text-center mb-20 md:mb-28">
       <div class="absolute -top-20 start-1/2 -translate-x-1/2 w-80 h-80 bg-gold/[0.06] blur-[110px] rounded-full pointer-events-none"></div>
@@ -35,7 +34,6 @@
 
     <!-- ۳. داستان شکل‌گیری و معرفی بنیان‌گذار -->
     <section class="grid lg:grid-cols-[1fr_1.1fr] gap-12 lg:gap-20 items-center mb-24 md:mb-32">
-      
       <div class="relative w-full max-w-[460px] mx-auto lg:mx-0 aspect-[4/5] transform-gpu">
         <div class="absolute inset-0 bg-gold/5 rounded-tr-[120px] rounded-bl-[120px] translate-x-4 translate-y-4 -z-10 pointer-events-none" />
         <div class="absolute -top-6 -end-6 w-24 h-24 rounded-full bg-blush/10 blur-2xl pointer-events-none"></div>
@@ -44,7 +42,7 @@
           <img 
             src="/assets/founder-portrait.png" 
             alt="بنیان‌گذار ماهلین اسکین‌کر" 
-            class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700 ease-out"
+            class="w-full h-full object-cover transition-all duration-700 ease-out"
             @error="onImgError"
           />
           <div class="absolute inset-0 bg-gradient-to-t from-ink/20 via-transparent to-transparent pointer-events-none" />
@@ -98,7 +96,7 @@
           :class="i % 2 === 1 ? 'sm:flex-row-reverse' : ''"
         >
           <!-- نقطه رنگی روی خط -->
-          <div class="absolute start-0 sm:start-1/2 top-1 sm:-translate-x-1/2 w-8 h-8 rounded-full grid place-items-center z-10" :style="{ backgroundColor: m.color + '22' }">
+          <div class="absolute start-0 sm:start-1/2 top-1 sm:translate-x-1/2 w-8 h-8 rounded-full grid place-items-center z-10" :style="{ backgroundColor: m.color + '22' }">
             <span class="w-2.5 h-2.5 rounded-full" :style="{ backgroundColor: m.color }"></span>
           </div>
 
@@ -212,7 +210,6 @@
         </svg>
       </NuxtLink>
     </section>
-
   </div>
 </template>
 
