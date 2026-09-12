@@ -29,6 +29,8 @@ function logout() {
 async function getUserInfo() {
   if (!import.meta.client) return;
 
+  customizer.userInfoLoading = true;
+
   const token =
     localStorage.getItem('g-auth-token') ||
     sessionStorage.getItem('g-auth-token') ||
@@ -37,17 +39,19 @@ async function getUserInfo() {
   // توکن نداره — مطمئناً لاگین نیست
   if (!token) {
     customizer.auth = false;
+    customizer.userInfoLoading = false;
     return;
   }
 
   try {
     const response = await useGarnetApiFetch('users/userInfo');
+    const user = response?.User ?? response?.userInfo;
 
-    if (response?.User?.status === 0) {
+    if (user?.status === 0) {
       // حساب غیرفعاله
       logout();
-    } else if (response?.User) {
-      customizer.userInfo  = response.User;
+    } else if (user) {
+      customizer.userInfo  = user;
       customizer.auth      = true;
       // customizer.cartCount = response.User.invoice_count;
     } else {
@@ -55,6 +59,8 @@ async function getUserInfo() {
     }
   } catch {
     logout();
+  } finally {
+    customizer.userInfoLoading = false;
   }
 }
 

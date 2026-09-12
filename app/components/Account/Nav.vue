@@ -1,7 +1,7 @@
 <template>
   <!-- سایدبار دسکتاپ -->
   <aside class="hidden lg:block w-[280px] shrink-0">
-    <div class="sticky top-[100px] relative rounded-[32px] bg-[#3f3733] text-cream overflow-hidden shadow-[0_35px_60px_-30px_rgba(63,58,53,0.55)] ring-1 ring-white/[0.06]">
+    <div class="sticky top-[100px] rounded-[32px] bg-[#3f3733] text-cream overflow-hidden shadow-[0_35px_60px_-30px_rgba(63,58,53,0.55)] ring-1 ring-white/[0.06]">
 
       <!-- بافت نقطه‌ای ظریف (تکسچر) -->
       <div
@@ -35,11 +35,12 @@
       </div>
 
       <!-- کاربر -->
-      <div class="relative px-6 py-6 text-center">
+      <div v-if="!customizer.userInfoLoading" class="relative px-6 py-6 text-center">
         <div class="relative w-16 h-16 mx-auto mb-3.5">
           <div class="absolute -inset-[3px] rounded-full bg-gradient-to-br from-[#e8b4bc] via-gold/80 to-[#e8b4bc] opacity-80" />
-          <div class="relative w-full h-full rounded-full bg-[#3f3733] grid place-items-center">
-            <span class="font-display text-xl text-gold">{{ userInitial }}</span>
+          <div class="relative w-full h-full rounded-full bg-[#3f3733] grid place-items-center overflow-hidden">
+            <img v-if="currentUser.photo" :src="currentUser.photo" alt="تصویر پروفایل" class="w-full h-full object-cover" />
+            <span v-else class="font-display text-xl text-gold">{{ userInitial }}</span>
           </div>
           <span class="absolute -bottom-0.5 -end-0.5 w-5 h-5 rounded-full bg-[#3f3733] grid place-items-center ring-2 ring-[#3f3733]">
             <span class="w-full h-full rounded-full bg-gradient-to-br from-[#e8b4bc] to-gold grid place-items-center">
@@ -48,8 +49,8 @@
           </span>
         </div>
 
-        <p class="font-bold text-[15px]">{{ USER.full_name }}</p>
-        <p class="text-[11px] text-cream/40 mt-1 font-latin" dir="ltr">{{ USER.mobile }}</p>
+        <p class="font-bold text-[15px]">{{ currentUser.full_name }}</p>
+        <p class="text-[11px] text-cream/40 mt-1 font-latin" dir="ltr">{{ currentUser.mobile }}</p>
 
         <!-- استریپ آمار کوچک -->
         <!-- <div class="flex items-center justify-center gap-2 mt-4">
@@ -62,6 +63,11 @@
             <p class="text-[9.5px] text-cream/40 mt-0.5">در جریان</p>
           </div>
         </div> -->
+      </div>
+      <div v-else class="relative px-6 py-6 text-center animate-pulse" aria-busy="true">
+        <div class="mx-auto mb-3.5 h-16 w-16 rounded-full bg-white/10" />
+        <div class="mx-auto h-4 w-28 rounded-full bg-white/10" />
+        <div class="mx-auto mt-2 h-3 w-20 rounded-full bg-white/10" />
       </div>
 
       <div class="relative flex items-center gap-2.5 px-6">
@@ -78,13 +84,13 @@
           v-for="item in items"
           :key="item.to"
           :to="item.to"
-          class="group relative flex items-center gap-3 px-3.5 py-3.5 mb-1 rounded-2xl text-[13.5px] font-semibold transition-all duration-300"
-          :class="isActive(item.to) ? 'text-cream' : 'text-cream/50 hover:text-cream/80'"
+          class="group relative flex items-center gap-3 px-3 py-2 mb-1 rounded-xl text-[13.5px] font-semibold transition-all duration-300"
+          :class="isActive(item.to) ? 'text-cream hover:text-white' : 'text-cream/50 hover:text-cream'"
         >
           <!-- پس‌زمینه فعال -->
           <span
             v-if="isActive(item.to)"
-            class="absolute inset-0 rounded-2xl bg-white/[0.06] border border-white/[0.08]"
+            class="absolute inset-0 rounded-xl bg-white/[0.06] border border-white/[0.08]"
           />
           <!-- نوار کناری فعال -->
           <span
@@ -110,10 +116,10 @@
         <div class="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent my-3 mx-3.5" />
 
         <NuxtLink
-          to="/contact"
+          to="/tickets"
           class="group flex items-center gap-3 px-3.5 py-3.5 rounded-2xl text-[13.5px] font-semibold text-cream/50 hover:text-cream/80 transition-colors"
         >
-          <span class="flex-1 text-right">پشتیبانی</span>
+          <span class="flex-1 text-right">تیکت</span>
           <span class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-white/[0.04] text-cream/40 group-hover:bg-white/[0.07] transition-colors">
             <Icon name="tabler:headset" class="text-[15px]" />
           </span>
@@ -170,6 +176,10 @@ import { USER, ORDERS } from '~/data/account';
 import { faNumber } from '~/utils/format.ts';
 
 const route = useRoute();
+const customizer = useCustomizerStore();
+const currentUser = computed(() => customizer.userInfo && !Array.isArray(customizer.userInfo)
+  ? customizer.userInfo
+  : {});
 
 const pendingOrdersCount = computed(
   () => ORDERS.filter((o) => ['pending', 'processing', 'shipped'].includes(o.status)).length
@@ -177,14 +187,14 @@ const pendingOrdersCount = computed(
 
 const totalOrders = computed(() => ORDERS.length);
 
-const userInitial = computed(() => (USER.full_name || 'م').trim().charAt(0));
+const userInitial = computed(() => (currentUser.value.full_name || 'م').trim().charAt(0));
 
 const items = computed(() => [
   { to: '/account', label: 'داشبورد', icon: 'tabler:layout-dashboard' },
   { to: '/account/orders', label: 'سفارش‌های من', icon: 'tabler:package', badge: pendingOrdersCount.value },
   { to: '/account/favorites', label: 'علاقه‌مندی‌ها', icon: 'tabler:heart' },
   { to: '/account/addresses', label: 'آدرس‌ها', icon: 'tabler:map-pin' },
-  { to: '/account/loyalty', label: 'باشگاه مشتریان', icon: 'tabler:sparkles' },
+  // { to: '/account/loyalty', label: 'باشگاه مشتریان', icon: 'tabler:sparkles' },
   { to: '/account/profile', label: 'اطلاعات حساب', icon: 'tabler:user' },
 ]);
 

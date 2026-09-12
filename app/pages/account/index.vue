@@ -1,5 +1,50 @@
 <template>
-  <div class="flex flex-col gap-6">
+  <div v-if="customizer.userInfoLoading" class="flex flex-col gap-6 animate-pulse" aria-busy="true">
+    <div class="relative overflow-hidden rounded-[28px] bg-[#3f3733] p-6 md:p-8">
+      <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center gap-4">
+          <div class="h-16 w-16 shrink-0 rounded-full bg-white/10 sm:h-[72px] sm:w-[72px]" />
+          <div class="space-y-3">
+            <div class="h-3 w-20 rounded-full bg-white/10" />
+            <div class="h-7 w-48 rounded-full bg-white/10" />
+            <div class="h-3 w-36 rounded-full bg-white/10" />
+          </div>
+        </div>
+        <div class="h-12 w-32 rounded-full bg-white/10" />
+      </div>
+      <div class="mt-6 grid grid-cols-3 gap-3 border-t border-ink/[0.06] pt-5">
+        <div v-for="item in 3" :key="item" class="space-y-2">
+          <div class="h-5 w-14 rounded-full bg-white/10" />
+          <div class="h-3 w-20 rounded-full bg-white/10" />
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      <div v-for="item in 4" :key="item" class="rounded-[20px] border border-ink/[0.06] bg-cardLight p-4 sm:p-5">
+        <div class="mb-3 h-10 w-10 rounded-xl bg-ink/10" />
+        <div class="h-6 w-16 rounded-full bg-ink/10" />
+        <div class="mt-2 h-3 w-24 rounded-full bg-ink/10" />
+      </div>
+    </div>
+
+    <div class="grid gap-5 lg:grid-cols-3">
+      <div class="flex flex-col gap-5 lg:col-span-2">
+        <div v-for="item in 2" :key="item" class="rounded-[22px] border border-ink/[0.06] bg-cardLight p-5">
+          <div class="mb-5 h-5 w-36 rounded-full bg-ink/10" />
+          <div class="h-28 rounded-xl bg-ink/[0.05]" />
+        </div>
+      </div>
+      <div class="flex flex-col gap-5">
+        <div v-for="item in 2" :key="item" class="rounded-[22px] border border-ink/[0.06] bg-cardLight p-5">
+          <div class="mb-5 h-5 w-32 rounded-full bg-ink/10" />
+          <div class="h-24 rounded-2xl bg-ink/[0.05]" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div v-else class="flex flex-col gap-6">
 
     <!-- خوش‌آمدگویی -->
     <div class="relative overflow-hidden rounded-[28px] bg-[#3f3733] text-cream p-6 md:p-8 shadow-[0_35px_60px_-30px_rgba(63,58,53,0.55)]">
@@ -19,8 +64,9 @@
           <!-- آواتار حلقه‌دار -->
           <div class="relative w-16 h-16 sm:w-[72px] sm:h-[72px] shrink-0">
             <div class="absolute -inset-[3px] rounded-full bg-gradient-to-br from-[#e8b4bc] via-gold/80 to-[#e8b4bc] opacity-80" />
-            <div class="relative w-full h-full rounded-full bg-[#3f3733] grid place-items-center">
-              <span class="font-display text-2xl text-gold">{{ userInitial }}</span>
+            <div class="relative w-full h-full rounded-full bg-[#3f3733] grid place-items-center overflow-hidden">
+              <img v-if="currentUser.photo" :src="currentUser.photo" alt="تصویر پروفایل" class="w-full h-full object-cover" />
+              <span v-else class="font-display text-2xl text-gold">{{ userInitial }}</span>
             </div>
             <span class="absolute -bottom-0.5 -end-0.5 w-6 h-6 rounded-full bg-[#3f3733] grid place-items-center ring-2 ring-[#3f3733]">
               <span class="w-full h-full rounded-full bg-gradient-to-br from-[#e8b4bc] to-gold grid place-items-center">
@@ -30,14 +76,14 @@
           </div>
 
           <div>
-            <p class="text-[13px] text-cream/55 mb-1">{{ greeting }}،</p>
-            <h2 class="font-display text-2xl md:text-3xl">{{ USER.full_name }} عزیز</h2>
+            <p class="text-[13px] text-cream/55 mb-1">{{ greeting }}</p>
+            <h2 class="font-display text-2xl md:text-3xl">{{ currentUser.full_name }} عزیز</h2>
             <div class="flex flex-wrap items-center gap-2 mt-2.5">
               <!-- <span class="inline-flex items-center gap-1.5 text-[11px] font-bold text-gold bg-gradient-to-l from-[#e8b4bc]/15 to-gold/15 border border-gold/20 px-3 py-1 rounded-full">
                 <Icon name="tabler:crown" class="text-[13px]" />
                 سطح {{ USER.level }}
               </span> -->
-              <span class="text-[13px] text-cream/45">عضو ماهلین از {{ faDate(USER.member_since) }}</span>
+              <span class="text-[13px] text-cream/45">عضو ماهلین از {{ faDate(currentUser.register_date) }}</span>
             </div>
           </div>
         </div>
@@ -62,7 +108,7 @@
           <p class="text-[10.5px] text-cream/45 mt-0.5">امتیاز باشگاه</p>
         </div>
         <div class="text-center sm:text-right">
-          <p class="font-latin text-lg font-bold text-sage">{{ money(USER.wallet_balance) }}</p>
+            <p class="font-latin text-lg font-bold text-sage">{{ money(currentUser.wallet_balance) }}</p>
           <p class="text-[10.5px] text-cream/45 mt-0.5">موجودی کیف پول</p>
         </div>
       </div>
@@ -177,12 +223,12 @@
 
         <!-- باشگاه مشتریان خلاصه -->
         <div class="rounded-[22px] border border-ink/[0.06] bg-cardLight p-5 flex flex-col gap-4">
-          <h3 class="flex items-center gap-2 font-bold text-ink text-[14px]">
+          <!-- <h3 class="flex items-center gap-2 font-bold text-ink text-[14px]">
             <Icon name="tabler:sparkles" class="text-gold" />
             باشگاه مشتریان
-          </h3>
+          </h3> -->
 
-          <div class="rounded-2xl bg-gradient-to-br from-accent to-accentHover text-cream p-4">
+          <!-- <div class="rounded-2xl bg-gradient-to-br from-accent to-accentHover text-cream p-4">
             <p class="text-[11px] text-cream/70">امتیاز فعلی</p>
             <p class="text-2xl font-bold font-latin mt-1">{{ faNumber(LOYALTY.points) }}</p>
             <div class="mt-3 h-1.5 rounded-full bg-white/20 overflow-hidden">
@@ -191,22 +237,22 @@
             <p class="mt-2 text-[10.5px] text-cream/60">
               {{ faNumber(LOYALTY.nextTierPoints - LOYALTY.points) }} امتیاز تا سطح {{ LOYALTY.nextTier }}
             </p>
-          </div>
+          </div> -->
 
           <div class="flex items-center justify-between text-[13px] rounded-xl bg-ink/[0.03] px-3.5 py-3">
             <span class="text-inkSoft flex items-center gap-1.5">
               <Icon name="tabler:wallet" class="text-[15px] text-sage" />
               کیف پول
             </span>
-            <span class="font-bold text-ink font-latin">{{ money(USER.wallet_balance) }} تومان</span>
+            <span class="font-bold text-ink font-latin">{{ money(currentUser.wallet_balance) }} تومان</span>
           </div>
 
-          <NuxtLink
+          <!-- <NuxtLink
             to="/account/loyalty"
             class="text-center text-[12.5px] font-bold text-accent hover:text-accentHover"
           >
             مشاهده جزئیات باشگاه مشتریان
-          </NuxtLink>
+          </NuxtLink> -->
         </div>
 
         <!-- آدرس پیش‌فرض -->
@@ -260,7 +306,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { USER, ORDERS, ORDER_STATUS_META, LOYALTY, ADDRESSES } from '~/data/account';
 import { money, faNumber, faDate, faDateShort } from '~/utils/format.ts';
 
@@ -268,13 +314,53 @@ definePageMeta({ layout: 'account' });
 useSeoMeta({ title: 'داشبورد | ماهلین اسکین‌کر' });
 
 const hour = new Date().getHours();
-const greeting = hour < 12 ? 'صبح بخیر' : hour < 18 ? 'ظهر بخیر' : 'عصر بخیر';
+const greeting = hour >= 19 || hour < 2
+  ? 'شب بخیر'
+  : hour < 12
+    ? 'صبح بخیر'
+    : hour < 15
+      ? 'ظهر بخیر'
+      : 'عصر بخیر';
+const customizer = useCustomizerStore();
+const currentUser = computed(() => customizer.userInfo && !Array.isArray(customizer.userInfo)
+  ? customizer.userInfo
+  : {});
+const addresses = ref([]);
 
-const userInitial = computed(() => (USER.full_name || 'م').trim().charAt(0));
+const userInitial = computed(() => (currentUser.value.full_name || 'م').trim().charAt(0));
 
 const recentOrders = computed(() => ORDERS.slice(0, 3));
 
-const defaultAddress = computed(() => ADDRESSES.find((a) => a.is_default) || ADDRESSES[0] || null);
+const defaultAddress = computed(() => {
+  const liveDefault = addresses.value.find((address) => address.is_default === true || address.is_default === 1)
+    || addresses.value[0]
+    || null;
+
+  if (liveDefault) {
+    return {
+      title: liveDefault.title || 'خانه',
+      province: liveDefault.province || '',
+      city: liveDefault.city || '',
+      description: liveDefault.description || '',
+    };
+  }
+
+  return ADDRESSES.find((a) => a.is_default) || ADDRESSES[0] || null;
+});
+
+function loadDefaultAddress() {
+  useGarnetApiFetch('users/userAddress')
+    .then((response) => {
+      addresses.value = response?.UserAddress || [];
+    })
+    .catch(() => {
+      addresses.value = ADDRESSES;
+    });
+}
+
+onMounted(() => {
+  loadDefaultAddress();
+});
 
 const progressPercent = computed(() =>
   Math.min(100, Math.round((LOYALTY.points / LOYALTY.nextTierPoints) * 100))
@@ -293,12 +379,12 @@ const spendingBars = computed(() => {
   }));
 });
 
-const stats = [
+const stats = computed(() => [
   { label: 'کل سفارش‌ها', value: faNumber(ORDERS.length), icon: 'tabler:package', bg: 'rgba(143,193,217,0.14)', color: '#6BA5C4', delta: '+۲ این ماه', deltaType: 'up' },
   { label: 'در حال پردازش', value: faNumber(ORDERS.filter(o => ['pending','processing','shipped'].includes(o.status)).length), icon: 'tabler:truck-delivery', bg: 'rgba(185,166,222,0.14)', color: '#9C87C4' },
-  { label: 'امتیاز باشگاه', value: faNumber(USER.points), icon: 'tabler:sparkles', bg: 'rgba(224,183,88,0.16)', color: '#C29A45', delta: '+۱۹۸', deltaType: 'up' },
-  { label: 'موجودی کیف پول', value: faNumber(USER.wallet_balance), icon: 'tabler:wallet', bg: 'rgba(156,191,160,0.16)', color: '#7BA582' },
-];
+  { label: 'امتیاز باشگاه', value: faNumber(currentUser.value.points ?? 0), icon: 'tabler:sparkles', bg: 'rgba(224,183,88,0.16)', color: '#C29A45', delta: '+۱۹۸', deltaType: 'up' },
+  { label: 'موجودی کیف پول', value: faNumber(currentUser.value.wallet_balance ?? 0), icon: 'tabler:wallet', bg: 'rgba(156,191,160,0.16)', color: '#7BA582' },
+]);
 
 const quickLinks = [
   { to: '/account/favorites', title: 'علاقه‌مندی‌ها', desc: 'محصولات ذخیره‌شده', icon: 'tabler:heart', bg: 'rgba(243,180,176,0.16)', color: '#DE8E89' },

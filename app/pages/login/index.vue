@@ -185,10 +185,8 @@ function submitLogin() {
 
   loading.value = true;
   useGarnetApiFetch("auth/loginMobile", { mobile: mobile.value, password: password.value })
-    .then((response) => {
+    .then(async (response) => {
       if (response.code === 2000) {
-        customizer.userInfo = response.userInfo;
-        customizer.auth = true;
         customizer.token = response.token;
         customizer.Set_Token(response.token);
         customizer.Set_Auth(true);
@@ -197,6 +195,19 @@ function submitLogin() {
         } else if (typeof sessionStorage !== "undefined") {
           sessionStorage.setItem("g-auth-token", response.token);
         }
+
+        const user = response?.userInfo ?? response?.User;
+        if (user) {
+          customizer.userInfo = user;
+        } else {
+          const userResponse = await useGarnetApiFetch("users/userInfo");
+          const fetchedUser = userResponse?.User ?? userResponse?.userInfo;
+          if (!fetchedUser) {
+            throw new Error(userResponse?.error?.message || "اطلاعات کاربر دریافت نشد");
+          }
+          customizer.userInfo = fetchedUser;
+        }
+        customizer.auth = true;
         router.push(backTo.value);
       } else {
         toast.error(t(response.error));
@@ -212,7 +223,14 @@ function submitLogin() {
 
 const changePassword = () => {
   errors.password = !password.value ? t("required") : "";
+
+  // بررسی حداقل طول رمز عبور
+  if (!errors.password && password.value.length < 8) {
+    errors.password = "رمز عبور باید حداقل ۸ کاراکتر باشد";
+  }
+
   if (errors.password) return;
+
   if (password.value !== password_confirm.value) {
     toast.error("تکرار کلمه عبور مشابه نیست");
     return;
@@ -279,13 +297,18 @@ const getUserInfo = () => {
 
   useGarnetApiFetch("users/userInfo")
     .then((response) => {
-      if (response.User.status === 0) {
+      const user = response?.User ?? response?.userInfo;
+      if (!user) {
+        throw new Error(response?.error?.message || "اطلاعات کاربر دریافت نشد");
+      }
+
+      if (user.status === 0) {
         customizer.userInfo = [];
         customizer.auth = false;
-        localStorage.clear();
-        sessionStorage.clear();
+        localStorage.removeItem("g-auth-token");
+        sessionStorage.removeItem("g-auth-token");
       } else {
-        customizer.userInfo = response.User;
+        customizer.userInfo = user;
         customizer.auth = true;
         router.push(backTo.value);
       }
@@ -464,13 +487,13 @@ const setPresenter = async () => {
           <div v-else-if="formStep === 'otp'" key="otp" class="px-7 pb-8 pt-2">
             <button
               type="button"
-              class="mb-4 flex items-center gap-1 rounded-full px-3 py-1.5 text-sm text-inkSoft transition hover:bg-ink/5 hover:text-ink"
+              class="mb-4 flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm text-inkSoft transition hover:bg-ink/5 hover:text-ink mr-auto"
               @click="formStep = 'getMobile'"
             >
+              بازگشت
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                 <path d="M14 6l-6 6 6 6" />
               </svg>
-              بازگشت
             </button>
 
             <p v-if="mobileExist" class="mb-5 text-center text-sm leading-6 text-inkSoft">

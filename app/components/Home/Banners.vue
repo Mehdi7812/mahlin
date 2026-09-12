@@ -1,8 +1,20 @@
 <!-- components/HomeBanners.vue -->
 <template>
   <section class="max-w-[1280px] mx-auto px-4 md:px-6 py-8 md:py-12">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
+    <!-- اسکلتون لودینگ -->
+    <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
+      <div
+          v-for="n in 2"
+          :key="n"
+          class="h-[180px] sm:h-[200px] rounded-[24px] bg-ink/5 animate-pulse"
+      />
+    </div>
 
+    <!-- بنرها -->
+    <div
+        v-else-if="banners.length"
+        class="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6"
+    >
       <NuxtLink
         v-for="(banner, index) in banners"
         :key="index"
@@ -43,8 +55,10 @@
           <!-- پایین -->
           <div class="flex items-end justify-between gap-4">
             <div class="space-y-1.5 overflow-hidden">
-
-              <h3 class="banner-title text-white font-display text-lg sm:text-2xl font-bold tracking-wide">
+              <h3
+                  v-if="banner.title"
+                  class="banner-title text-white font-display text-lg sm:text-2xl font-bold tracking-wide"
+              >
                 {{ banner.title }}
               </h3>
 
@@ -73,22 +87,44 @@
 </template>
 
 <script setup>
-const banners = [
-  {
-    image: "/images/banner1.jpeg",
-    badge: "کالکشن جدید",
-    title: "روتین تخصصی ضد لک و روشن‌کننده",
-    subtitle: "شفافیت و درخشش طبیعی پوست با سرم‌های ویتامین C",
-    link: "/shop?category=1",
+
+const props = defineProps({
+  sliderId: {
+    type: [Number, String],
+    default: 1,
   },
-  {
-    image: "/images/banner2.jpeg",
-    badge: "پیشنهاد ویژه",
-    title: "آبرسان‌های عمقی و تقویت سد دفاعی",
-    subtitle: "مناسب پوست‌های خشک، دهیدراته و حساس",
-    link: "/shop?category=2",
-  },
-];
+});
+
+const banners = ref([]);
+const loading = ref(true);
+
+const getContent = () => {
+  loading.value = true;
+
+  useGarnetApiFetch("sliders/show", { id: props.sliderId })
+      .then((response) => {
+        const items = response?.Slider?.slider_images || [];
+
+        banners.value = items.map((item) => ({
+          id: item.id,
+          image: item.file,
+          link: item.button_link,
+          title: item.title || item.name || "",
+          subtitle: item.subtitle || item.description || "",
+          badge: item.button_text || "",
+        }));
+      })
+      .catch((error) => {
+        toast.error(t(error));
+      })
+      .finally(() => {
+        loading.value = false;
+      });
+};
+
+onMounted(() => {
+  getContent();
+});
 </script>
 
 <style scoped>
@@ -227,7 +263,6 @@ const banners = [
   box-shadow: 0 8px 20px rgba(162, 132, 102, 0.45);
 }
 
-/* ── فلش داخل دکمه ──────────────────────────────────────── */
 .banner-arrow {
   transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }

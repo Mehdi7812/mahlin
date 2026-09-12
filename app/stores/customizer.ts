@@ -5,6 +5,7 @@ export const useCustomizerStore = defineStore('customizer', {
         auth: false,
         token: null as string | null,
         userInfo: [] as any[],
+        userInfoLoading: true,
         allOptions: [] as any[],
         drawer: false,
         drawerPanel: false,

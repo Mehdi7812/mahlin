@@ -1189,11 +1189,11 @@ const primaryDisabled = computed(() => {
         <!-- ================= Content ================= -->
         <div v-else class="grid gap-6 lg:grid-cols-[1fr_380px] lg:items-start">
           <!-- LEFT: step content -->
-          <section>
+          <section class="min-w-0">
             <Transition name="step-fade" mode="out-in">
               <!-- ============= STEP 1: CART ============= -->
               <div v-if="step === 'cart'" key="cart" class="overflow-hidden rounded-[20px] border border-line bg-white shadow-sm">
-                <div class="flex items-center justify-between border-b border-line px-5 py-4">
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-line px-5 py-4">
                   <p class="flex items-center gap-2 text-small font-bold text-gold">
                     <Icon name="tabler:package" class="text-gold" />
                     محصولات سبد شما
@@ -1212,9 +1212,9 @@ const primaryDisabled = computed(() => {
                   <div
                     v-for="item in invoiceDetails"
                     :key="item.id"
-                    class="group flex gap-4 p-4 transition-colors hover:bg-cream/30"
+                    class="group flex gap-3 p-4 transition-colors hover:bg-cream/30 sm:gap-4"
                   >
-                    <div class="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-cream ring-1 ring-line/60">
+                    <div class="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-cream ring-1 ring-line/60 sm:h-20 sm:w-20">
                       <img
                         v-if="item.products?.cover_image"
                         :src="item.products.cover_image"
@@ -1228,7 +1228,7 @@ const primaryDisabled = computed(() => {
 
                     <div class="min-w-0 flex-1">
                       <div class="flex items-start justify-between gap-2">
-                        <p class="line-clamp-1 text-[14px] font-bold text-gold">
+                        <p class="line-clamp-1 min-w-0 text-[13.5px] font-bold text-gold sm:text-[14px]">
                           {{ item.products?.title_fa }}
                         </p>
                         <button
@@ -1253,7 +1253,7 @@ const primaryDisabled = computed(() => {
                         </span>
                       </div>
 
-                      <div class="mt-3 flex items-center justify-between">
+                      <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
                         <div class="flex items-center gap-1 rounded-full border border-line bg-white p-1">
                           <button
                             class="grid h-7 w-7 place-items-center rounded-full text-ink-muted transition hover:bg-cream hover:text-gold disabled:opacity-40"
@@ -1272,7 +1272,7 @@ const primaryDisabled = computed(() => {
                           </button>
                         </div>
 
-                        <p class="text-[14px] font-black text-gold tabular-fa">
+                        <p class="text-[13.5px] font-black text-gold tabular-fa sm:text-[14px]">
                           {{ faPrice((item.unit_price || item.products?.final_price || 0) * item.amount) }}
                         </p>
                       </div>
@@ -1281,9 +1281,9 @@ const primaryDisabled = computed(() => {
                 </TransitionGroup>
 
                 <!-- Coupon -->
-                <div class="relative overflow-hidden border-t border-dashed border-line bg-gradient-to-l from-gold/5 via-cream/40 to-transparent p-5">
-                  <div class="flex items-center gap-2">
-                    <span class="grid h-8 w-8 place-items-center rounded-xl bg-gold/15 text-gold-deep">
+                <div class="relative overflow-hidden border-t border-dashed border-line bg-gradient-to-l from-gold/5 via-cream/40 to-transparent p-4 sm:p-5">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-gold/15 text-gold-deep">
                       <Icon name="tabler:gift" class="text-[16px]" />
                     </span>
                     <p class="text-small font-bold text-gold">کد تخفیف دارید؟</p>
@@ -1298,11 +1298,11 @@ const primaryDisabled = computed(() => {
                   </div>
 
                   <div class="mt-3 flex gap-2">
-                    <div class="relative flex-1">
+                    <div class="relative min-w-0 flex-1">
                       <UiBaseInput
                         v-model="coupon"
                         :error="!!couponError"
-                        placeholder="مثلا: SUSHIA10"
+                        placeholder="مثلا: MAHLIN10"
                         class="uppercase rounded-lg h-full"
                         @keydown.enter="applyCoupon"
                       />
@@ -1331,8 +1331,8 @@ const primaryDisabled = computed(() => {
                   </p>
                 </div>
 
-                <div class="flex justify-end border-t border-line p-5">
-                  <UiBaseButton :disabled="emptyCart" class="group" @click="goToInfo">
+                <div class="flex justify-end border-t border-line p-4 sm:p-5">
+                  <UiBaseButton :disabled="emptyCart" class="group w-full sm:w-auto" @click="goToInfo">
                     تایید و تکمیل سفارش
                     <Icon name="tabler:arrow-left" class="mr-1.5 transition-transform group-hover:-translate-x-1" />
                   </UiBaseButton>
@@ -1342,17 +1342,17 @@ const primaryDisabled = computed(() => {
               <!-- ============= STEP 2: INFO ============= -->
               <div v-else-if="step === 'info'" key="info" class="space-y-5">
                 <!-- Address summary + trigger for the address dialog -->
-                <div v-if="hasShippable" class="rounded-[20px] border border-line bg-white p-5 shadow-sm">
-                  <div class="mb-4 flex items-center justify-between">
+                <div v-if="hasShippable" class="rounded-[20px] border border-line bg-white p-4 shadow-sm sm:p-5">
+                  <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
                     <h3 class="flex items-center gap-2 font-black text-gold">
-                      <span class="grid h-8 w-8 place-items-center rounded-xl bg-gold/15 text-gold-deep">
+                      <span class="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-gold/15 text-gold-deep">
                         <Icon name="tabler:map-pin" class="text-[16px]" />
                       </span>
                       آدرس تحویل
                     </h3>
                     <button
                       type="button"
-                      class="flex items-center gap-1 text-meta font-bold text-gold-deep transition hover:text-gold"
+                      class="flex shrink-0 items-center gap-1 text-meta font-bold text-gold-deep transition hover:text-gold"
                       @click="selectedAddress ? openAddressModal(0) : startAddNewAddress()"
                     >
                       <Icon :name="selectedAddress ? 'tabler:replace' : 'tabler:plus'" class="text-[14px]" />
@@ -1362,15 +1362,15 @@ const primaryDisabled = computed(() => {
 
                   <div v-if="selectedAddress" class="rounded-2xl border border-line bg-cream/20 p-4">
                     <div class="flex items-center gap-2">
-                      <Icon name="tabler:home-2" class="text-[15px] text-gold-deep" />
-                      <p class="text-[14px] font-bold text-gold">{{ selectedAddress.title }}</p>
+                      <Icon name="tabler:home-2" class="shrink-0 text-[15px] text-gold-deep" />
+                      <p class="min-w-0 truncate text-[14px] font-bold text-gold">{{ selectedAddress.title }}</p>
                     </div>
-                    <p class="mt-2 text-[13px] leading-6 text-ink-muted">
+                    <p class="mt-2 break-words text-[13px] leading-6 text-ink-muted">
                       آدرس: {{ selectedAddress.description }}
                       <span v-if="selectedAddress.postal_code"> - کدپستی ({{ selectedAddress.postal_code }})</span>
                     </p>
-                    <p v-if="selectedAddress.receiver_is_different" class="mt-1 flex items-center gap-1 text-meta text-ink-faint">
-                      <Icon name="tabler:user" class="text-[12px]" />
+                    <p v-if="selectedAddress.receiver_is_different" class="mt-1 flex flex-wrap items-center gap-1 text-meta text-ink-faint">
+                      <Icon name="tabler:user" class="shrink-0 text-[12px]" />
                       گیرنده: {{ selectedAddress.receiver_full_name }} - {{ selectedAddress.receiver_mobile }}
                     </p>
                   </div>
@@ -1381,9 +1381,9 @@ const primaryDisabled = computed(() => {
                 </div>
 
                 <!-- Shipping method -->
-                <div v-if="hasShippable" class="rounded-[20px] border border-line bg-white p-5 shadow-sm">
+                <div v-if="hasShippable" class="rounded-[20px] border border-line bg-white p-4 shadow-sm sm:p-5">
                   <h3 class="mb-4 flex items-center gap-2 font-black text-gold">
-                    <span class="grid h-8 w-8 place-items-center rounded-xl bg-gold/15 text-gold-deep">
+                    <span class="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-gold/15 text-gold-deep">
                       <Icon name="tabler:truck-delivery" class="text-[16px]" />
                     </span>
                     روش ارسال
@@ -1392,7 +1392,7 @@ const primaryDisabled = computed(() => {
                     <label
                       v-for="m in deliveryMethods"
                       :key="m.id"
-                      class="flex cursor-pointer items-center gap-4 rounded-2xl border p-4 transition-all duration-200"
+                      class="flex cursor-pointer items-center gap-3 rounded-2xl border p-3.5 transition-all duration-200 sm:gap-4 sm:p-4"
                       :class="
                         selectedShippingMethod?.id === m.id
                           ? 'border-gold bg-gold/8 ring-2 ring-gold/20'
@@ -1401,16 +1401,16 @@ const primaryDisabled = computed(() => {
                     >
                       <input type="radio" class="sr-only" :value="m.id" :checked="selectedShippingMethod?.id === m.id" @change="chooseShippingMethod(m)" />
                       <span
-                        class="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-xl transition-colors"
+                        class="grid h-10 w-10 shrink-0 place-items-center rounded-xl transition-colors"
                         :class="selectedShippingMethod?.id === m.id ? 'bg-gold text-white' : 'bg-cream text-ink-muted'"
                       >
                         <Icon name="tabler:truck" class="text-h3" />
                       </span>
                       <div class="min-w-0 flex-1">
-                        <span class="text-[14px] font-bold text-gold">{{ m.title }}</span>
+                        <span class="block truncate text-[13.5px] font-bold text-gold sm:text-[14px]">{{ m.title }}</span>
                       </div>
                       <span
-                        class="mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition-colors"
+                        class="grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition-colors"
                         :class="selectedShippingMethod?.id === m.id ? 'border-gold bg-gold' : 'border-line'"
                       >
                         <Icon v-if="selectedShippingMethod?.id === m.id" name="tabler:check" class="text-[11px] text-white" />
@@ -1419,16 +1419,16 @@ const primaryDisabled = computed(() => {
                   </div>
 
                   <!-- روزها و ساعات ارسال -->
-                  <div v-if="deliveryDays.length" class="mt-5 space-y-3 border-t border-line pt-4">
+                  <div v-if="deliveryDays.length" class="mt-5 min-w-0 space-y-3 border-t border-line pt-4">
                     <p class="flex items-center gap-1.5 text-[13px] font-bold text-gold">
                       <Icon name="tabler:calendar-time" class="text-gold-deep" /> انتخاب زمان ارسال
                     </p>
-                    <div class="scrollbar-thin flex gap-2 overflow-x-auto pb-1">
+                    <div class="scrollbar-thin -mx-1 flex min-w-0 gap-2 overflow-x-auto px-1 pb-1">
                       <button
                         v-for="day in deliveryDays"
                         :key="day.date"
                         type="button"
-                        class="shrink-0 rounded-2xl border px-3.5 py-2.5 text-center transition-all duration-200"
+                        class="shrink-0 rounded-2xl border px-3 py-2.5 text-center transition-all duration-200 sm:px-3.5"
                         :class="[
                           selectedDay?.date === day.date ? 'border-gold bg-gold/10 text-gold-deep shadow-sm' : 'border-line text-ink-muted hover:border-gold/40',
                           day.isClosed ? 'cursor-not-allowed opacity-40' : '',
@@ -1436,18 +1436,18 @@ const primaryDisabled = computed(() => {
                         :disabled="day.isClosed"
                         @click="selectedDay = day"
                       >
-                        <span class="block text-meta font-bold">{{ day.dateFaName || day.title || (day.date ? faDate(day.date) : '') }}</span>
-                        <span class="mt-0.5 block text-micro">{{ day.isToday ? 'امروز' : (day.date ? faDate(day.date) : '') }}</span>
-                        <span v-if="day.isClosed" class="mt-1 block text-micro font-bold text-danger">تعطیل</span>
+                        <span class="block whitespace-nowrap text-meta font-bold">{{ day.dateFaName || day.title || (day.date ? faDate(day.date) : '') }}</span>
+                        <span class="mt-0.5 block whitespace-nowrap text-micro">{{ day.isToday ? 'امروز' : (day.date ? faDate(day.date) : '') }}</span>
+                        <span v-if="day.isClosed" class="mt-1 block whitespace-nowrap text-micro font-bold text-danger">تعطیل</span>
                       </button>
                     </div>
 
-                    <div v-if="selectedDay?.times?.length" class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <div v-if="selectedDay?.times?.length" class="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2">
                       <button
                         v-for="slot in selectedDay.times"
                         :key="slot.id"
                         type="button"
-                        class="flex items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-right transition-all duration-200"
+                        class="flex min-w-0 items-center justify-between gap-2 rounded-xl border px-3 py-2.5 text-right transition-all duration-200 sm:px-3.5"
                         :class="[
                           selectedTimeSlot?.id === slot.id ? 'border-gold bg-gold/10 shadow-sm' : 'border-line hover:border-gold/40',
                           slot.isDisabled ? 'cursor-not-allowed opacity-40' : '',
@@ -1455,16 +1455,17 @@ const primaryDisabled = computed(() => {
                         :disabled="slot.isDisabled"
                         @click="selectedTimeSlot = slot"
                       >
-                        <span class="flex items-center gap-2">
-                          <Icon name="tabler:clock" class="text-[14px] text-ink-faint" />
-                          <span>
-                            <span class="block text-meta font-bold text-gold">{{ slot.title }}</span>
-                            <span class="mt-0.5 block text-micro text-ink-muted tabular-fa">ساعت {{ slot.from_time }} تا {{ slot.to_time }}</span>
+                        <span class="flex min-w-0 items-center gap-2">
+                          <Icon name="tabler:clock" class="shrink-0 text-[14px] text-ink-faint" />
+                          <span class="min-w-0">
+                            <span class="block truncate text-meta font-bold text-gold">{{ slot.title }}</span>
+                            <span class="mt-0.5 block truncate text-micro text-ink-muted tabular-fa">ساعت {{ slot.from_time }} تا {{ slot.to_time }}</span>
                           </span>
                         </span>
                         <span
-                          class="shrink-0 text-[11px] font-bold"
+                          class="shrink-0 text-left text-[10.5px] font-bold leading-tight"
                           :class="slotPriceLabel(slot) === 'رایگان' ? 'text-emerald-600' : 'text-ink-muted'"
+                          style="max-width: 90px"
                         >
                           {{ slotPriceLabel(slot) }}
                         </span>
@@ -1475,15 +1476,15 @@ const primaryDisabled = computed(() => {
 
                 <Transition name="fade-slide">
                   <p v-if="infoError" class="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-3 text-[13px] font-medium text-red-600" role="alert">
-                    <Icon name="tabler:alert-circle" class="text-[16px]" /> {{ infoError }}
+                    <Icon name="tabler:alert-circle" class="shrink-0 text-[16px]" /> {{ infoError }}
                   </p>
                 </Transition>
 
-                <div class="flex justify-between gap-2">
-                  <UiBaseButton variant="secondary" @click="backToCart">
+                <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+                  <UiBaseButton variant="secondary" class="w-full sm:w-auto" @click="backToCart">
                     <Icon name="tabler:arrow-right" class="ml-1.5" /> بازگشت
                   </UiBaseButton>
-                  <UiBaseButton class="group" @click="goToPayment">
+                  <UiBaseButton class="group w-full sm:w-auto" @click="goToPayment">
                     ذخیره و ادامه
                     <Icon name="tabler:arrow-left" class="mr-1.5 transition-transform group-hover:-translate-x-1" />
                   </UiBaseButton>
@@ -1492,9 +1493,9 @@ const primaryDisabled = computed(() => {
 
               <!-- ============= STEP 3: PAYMENT ============= -->
               <div v-else key="payment" class="space-y-5">
-                <div class="rounded-[20px] border border-line bg-white p-5 shadow-sm">
+                <div class="rounded-[20px] border border-line bg-white p-4 shadow-sm sm:p-5">
                   <h3 class="mb-4 flex items-center gap-2 font-black text-gold">
-                    <span class="grid h-8 w-8 place-items-center rounded-xl bg-gold/15 text-gold-deep">
+                    <span class="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-gold/15 text-gold-deep">
                       <Icon name="tabler:credit-card" class="text-[16px]" />
                     </span>
                     روش پرداخت
@@ -1503,7 +1504,7 @@ const primaryDisabled = computed(() => {
                     <label
                       v-for="opt in paymentProcedures"
                       :key="opt.pp_id + '-' + (opt.gateway_id || '')"
-                      class="flex cursor-pointer items-start gap-4 rounded-2xl border p-4 transition-all duration-200"
+                      class="flex cursor-pointer items-start gap-3 rounded-2xl border p-3.5 transition-all duration-200 sm:gap-4 sm:p-4"
                       :class="
                         paymentMethod === opt
                           ? 'border-gold bg-gold/8 ring-2 ring-gold/20'
@@ -1527,11 +1528,11 @@ const primaryDisabled = computed(() => {
                         />
                       </span>
                       <div class="min-w-0 flex-1">
-                        <span class="text-[14px] font-bold text-gold">
+                        <span class="block truncate text-[13.5px] font-bold text-gold sm:text-[14px]">
                           {{ opt.pp_title }}<span v-if="opt.gateway_title"> ({{ opt.gateway_title }})</span>
                         </span>
-                        <p v-if="opt.pp_d1 === 'walletPayment'" class="mt-0.5 flex items-center gap-1 text-meta text-ink-muted">
-                          <Icon name="tabler:coin" class="text-[13px] text-gold-deep" />
+                        <p v-if="opt.pp_d1 === 'walletPayment'" class="mt-0.5 flex flex-wrap items-center gap-1 text-meta text-ink-muted">
+                          <Icon name="tabler:coin" class="shrink-0 text-[13px] text-gold-deep" />
                           موجودی: {{ faPrice(walletInfo.balance || 0) }}
                         </p>
                       </div>
@@ -1565,15 +1566,15 @@ const primaryDisabled = computed(() => {
                         <Icon name="tabler:alert-triangle" class="shrink-0 text-[16px]" />
                         موجودی کیف پول کافی نیست. {{ faPrice(walletShortfall) }} کسری دارید.
                       </p>
-                      <UiBaseButton variant="secondary" size="sm" class="shrink-0" @click="openIncreaseBalanceDialog">
+                      <UiBaseButton variant="secondary" size="sm" class="w-full shrink-0 sm:w-auto" @click="openIncreaseBalanceDialog">
                         افزایش موجودی
                       </UiBaseButton>
                     </div>
                   </Transition>
                 </div>
 
-                <div class="rounded-[20px] border border-line bg-white p-5 shadow-sm">
-                  <label class="mb-1.5 flex items-center gap-1.5 text-meta font-bold text-ink-muted">
+                <div class="rounded-[20px] border border-line bg-white p-4 shadow-sm sm:p-5">
+                  <label class="mb-1.5 flex flex-wrap items-center gap-1.5 text-meta font-bold text-ink-muted">
                     <Icon name="tabler:message-2" class="text-[14px]" />
                     توضیحات سفارش <span class="text-[10px] font-normal text-ink-faint">(اختیاری)</span>
                   </label>
@@ -1583,17 +1584,18 @@ const primaryDisabled = computed(() => {
 
                 <Transition name="fade-slide">
                   <p v-if="paymentError" class="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-3 text-[13px] font-medium text-red-600" role="alert">
-                    <Icon name="tabler:alert-circle" class="text-[16px]" /> {{ paymentError }}
+                    <Icon name="tabler:alert-circle" class="shrink-0 text-[16px]" /> {{ paymentError }}
                   </p>
                 </Transition>
 
-                <div class="flex justify-between gap-2">
-                  <UiBaseButton variant="secondary" @click="backToInfo">
+                <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+                  <UiBaseButton variant="secondary" class="w-full sm:w-auto" @click="backToInfo">
                     <Icon name="tabler:arrow-right" class="ml-1.5" /> بازگشت
                   </UiBaseButton>
                   <UiBaseButton
                     :disabled="paymentMethod?.pp_d1 === 'walletPayment' && walletShortfall !== 0"
                     :loading="submitting"
+                    class="w-full sm:w-auto"
                     @click="submitOrder"
                   >
                     {{ paymentMethod?.pp_d1 === 'offlinePayment' ? 'ثبت سفارش' : 'پرداخت و ثبت سفارش' }}
@@ -1619,7 +1621,7 @@ const primaryDisabled = computed(() => {
                 </div>
 
                 <ul v-if="step !== 'cart'" class="scrollbar-thin max-h-48 space-y-3 overflow-y-auto border-b border-line pb-4">
-                  <li v-for="item in invoiceDetails" :key="item.id" class="flex gap-3 p-px">
+                  <li v-for="item in invoiceDetails" :key="item.id" class="flex gap-3 p-0.5">
                     <div class="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-cream ring-1 ring-gold/60">
                       <img v-if="item.products?.cover_image" :src="item.products.cover_image" class="h-full w-full object-cover" />
                     </div>
@@ -1878,7 +1880,7 @@ const primaryDisabled = computed(() => {
                     <p v-if="addressErrors.street" class="err">{{ addressErrors.street }}</p>
                   </div>
 
-                  <div class="grid grid-cols-3 gap-3">
+                  <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
                     <div>
                       <label class="mb-1.5 block text-meta font-bold text-ink-muted">پلاک <span class="text-danger">*</span></label>
                       <input v-model="newAddress.plaque" type="text" class="field" :class="addressErrors.plaque && 'field-error'" />
@@ -1888,7 +1890,7 @@ const primaryDisabled = computed(() => {
                       <label class="mb-1.5 block text-meta font-bold text-ink-muted">واحد</label>
                       <input v-model="newAddress.unit" type="text" class="field" />
                     </div>
-                    <div>
+                    <div class="col-span-2 sm:col-span-1">
                       <label class="mb-1.5 block text-meta font-bold text-ink-muted">کد پستی <span class="text-danger">*</span></label>
                       <input v-model="newAddress.postal_code" type="text" inputmode="numeric" maxlength="10" dir="ltr" class="field text-left" :class="addressErrors.postal_code && 'field-error'" placeholder="1234567890" />
                       <p v-if="addressErrors.postal_code" class="err">{{ addressErrors.postal_code }}</p>

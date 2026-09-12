@@ -37,6 +37,14 @@ const resendPulse = ref(false);
 
 const authCode = computed(() => digits.value.join(""));
 
+watch(loading, (isLoading) => {
+  if (!isLoading && !successState.value) {
+    nextTick(() => {
+      inputs.value[0]?.focus();
+    });
+  }
+});
+
 onMounted(() => {
   if (!props.skipInitialSend) {
     SendVerificationCode();
@@ -84,15 +92,15 @@ function SendVerificationCode() {
   useGarnetApiFetch(sendUrl, sendData)
     .then((response) => {
       if (response.code === 2001) {
-        toast.error({ title: "خطا", message: "ارسال کد با خطا مواجه شد" });
+        toast.error("ارسال کد با خطا مواجه شد");
       } else {
-        toast.success({ message: "کد احراز هویت ارسال شد" });
+        toast.success("کد احراز هویت ارسال شد");
         emits("onSendCode");
       }
       loading.value = false;
     })
     .catch((error) => {
-      toast.error({ title: "خطا", message: t(error), position: "topRight", rtl: true });
+      toast.error(t(error));
       loading.value = false;
     });
 }
@@ -135,14 +143,14 @@ function CheckVerificationCode(inputCode) {
           emits("handleComplete", inputCode);
         }, 450);
       } else {
-        toast.error({ title: "خطا", message: t(response.message) });
+        toast.error(t(response.message));
         loading.value = false;
         triggerShake();
         resetDigits();
       }
     })
     .catch((error) => {
-      toast.error({ title: "خطا", message: t(error) });
+      toast.error(t(error));
       loading.value = false;
       triggerShake();
       resetDigits();
@@ -198,7 +206,7 @@ function onInput(index, event) {
 function onKeydown(index, event) {
   if (persianNumberPattern.test(event.key)) {
     event.preventDefault();
-    toast.error({ title: "خطا", message: "فقط اعداد انگلیسی", position: "topRight", rtl: true });
+    toast.error("فقط اعداد انگلیسی");
     triggerShake();
     return;
   }

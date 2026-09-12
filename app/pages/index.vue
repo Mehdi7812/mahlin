@@ -11,7 +11,7 @@
 
   <HomeReccommendProduct />
 
-  <HomeBanners />
+  <HomeBanners :slider-id="1" />
 
   <HomeDeals />
 

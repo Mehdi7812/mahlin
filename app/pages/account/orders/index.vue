@@ -14,16 +14,29 @@
           :class="activeFilter === f.value
             ? 'bg-ink text-cream border-ink'
             : 'bg-cardLight text-inkSoft border-ink/10 hover:border-ink/20'"
-          @click="activeFilter = f.value"
+          @click="changeFilter(f.value)"
         >
           {{ f.label }}
-          <span v-if="f.value !== 'all'" class="opacity-60">({{ faNumber(countByStatus(f.value)) }})</span>
         </button>
       </div>
     </div>
 
     <!-- لیست سفارش‌ها -->
-    <div v-if="filteredOrders.length" class="flex flex-col gap-4">
+    <div v-if="loading" class="flex flex-col gap-4 animate-pulse" aria-busy="true">
+      <div v-for="item in 3" :key="item" class="overflow-hidden rounded-[20px] border border-ink/[0.06] bg-cardLight">
+        <div class="flex items-center justify-between border-b border-ink/[0.06] px-5 py-4">
+          <div class="h-4 w-40 rounded-full bg-ink/10" />
+          <div class="h-6 w-24 rounded-full bg-ink/10" />
+        </div>
+        <div class="flex items-center gap-4 p-5">
+          <div class="h-14 w-14 rounded-xl bg-ink/[0.07]" />
+          <div class="flex-1 space-y-3"><div class="h-4 w-3/5 rounded-full bg-ink/10" /><div class="h-3 w-24 rounded-full bg-ink/[0.07]" /></div>
+          <div class="h-10 w-28 rounded-full bg-ink/[0.07]" />
+        </div>
+      </div>
+    </div>
+
+    <div v-else-if="filteredOrders.length" class="flex flex-col gap-4">
       <div
         v-for="order in filteredOrders"
         :key="order.id"
@@ -102,8 +115,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { ORDERS, ORDER_STATUS_META } from '~/data/account';
+import { ref, computed, onMounted } from 'vue';
+import { toast } from 'vue-sonner';
+import { ORDER_STATUS_META } from '~/data/account';
 import { money, faNumber, faDate, fa } from '~/utils/format.ts';
 
 definePageMeta({ layout: 'account' });
@@ -118,15 +132,67 @@ const filters = [
 ];
 
 const activeFilter = ref('all');
+const orders = ref([]);
+const loading = ref(true);
 
-function countByStatus(status) {
-  return ORDERS.filter((o) => o.status === status).length;
+const statusAliases = {
+  pending: 'pending',
+  processing: 'processing',
+  shipped: 'shipped',
+  delivered: 'delivered',
+  cancelled: 'cancelled',
+};
+
+function normalizeOrder(invoice) {
+  const details = invoice.invoice_details || invoice.details || invoice.items || [];
+  const status = statusAliases[invoice.status] || statusAliases[invoice.status_code] || 'pending';
+  return {
+    id: invoice.id || invoice.invoice_id,
+    code: invoice.code || invoice.invoice_code || invoice.number || `#${invoice.id || invoice.invoice_id}`,
+    date: invoice.date || invoice.created_at || invoice.createdAt,
+    status,
+    total: Number(invoice.total_price ?? invoice.final_price ?? invoice.price ?? 0),
+    items: details.map((detail) => ({
+      title_fa: detail.products?.title_fa || detail.product?.title_fa || detail.title_fa || detail.products?.title || 'محصول',
+      cover_image: detail.products?.cover_image || detail.product?.cover_image || detail.cover_image,
+      qty: Number(detail.amount ?? detail.qty ?? 1),
+      price: Number(detail.unit_price ?? detail.price ?? detail.products?.final_price ?? 0),
+    })),
+  };
 }
 
-const filteredOrders = computed(() => {
-  if (activeFilter.value === 'all') return ORDERS;
-  return ORDERS.filter((o) => o.status === activeFilter.value);
-});
+const filteredOrders = computed(() => orders.value);
+
+function getPurchasesList(statusList = []) {
+  orders.value = [];
+  loading.value = true;
+  useGarnetApiFetch('invoices/indexByUser', { conditions: { status: statusList } })
+    .then((response) => {
+      if (response?.error) {
+        console.error('[Orders] invoices/indexByUser failed', response.error);
+        const apiError = response.error;
+        throw new Error(apiError?.data?.message || apiError?.data?.msg || apiError?.message || 'خطای سرور در دریافت سفارش‌ها');
+      }
+
+      if (response?.code === 2000 || response?.Invoices) {
+        orders.value = (response.Invoices || []).map(normalizeOrder);
+      } else {
+        throw new Error(response?.msg || response?.error || 'خطا در دریافت سفارش‌ها');
+      }
+    })
+    .catch((error) => {
+      console.error('[Orders] Could not load purchases', error);
+      toast.error(error?.message || 'خطا در دریافت سفارش‌ها');
+    })
+    .finally(() => { loading.value = false; });
+}
+
+function changeFilter(value) {
+  activeFilter.value = value;
+  getPurchasesList(value === 'all' ? [] : [value]);
+}
+
+onMounted(() => getPurchasesList());
 </script>
 
 <style scoped>
