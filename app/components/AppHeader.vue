@@ -139,10 +139,10 @@
               <path d="M8.5 7.5 V6 A3.5 3.5 0 0 1 15.5 6 V7.5" />
             </svg>
             <span
-              v-if="count > 0"
+              v-if="customizer.cartCount > 0"
               class="absolute top-0.5 end-0.5 min-w-[17px] h-[17px] rounded-full bg-gold text-card text-[10px] grid place-items-center px-1"
             >
-              {{ fa(count) }}
+              {{ fa(customizer.cartCount) }}
             </span>
           </NuxtLink>
 
@@ -243,8 +243,8 @@
               </svg>
               سبد خرید
             </span>
-            <span v-if="count > 0" class="bg-gold text-card text-xs rounded-full min-w-[20px] h-5 grid place-items-center px-1.5">
-              {{ fa(count) }}
+            <span v-if="customizer.cartCount > 0" class="bg-gold text-card text-xs rounded-full min-w-[20px] h-5 grid place-items-center px-1.5">
+              {{ fa(customizer.cartCount) }}
             </span>
           </NuxtLink>
         </div>
@@ -256,6 +256,8 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { fa } from '~/utils/format.ts';
+
+const customizer = useCustomizerStore()
 
 const { count } = useCart();
 const open = ref(false);
