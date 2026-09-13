@@ -32,6 +32,26 @@
           <p class="font-latin text-[28px] font-bold text-ink">{{ money(selectedWallet.balance) }}</p>
         </div>
       </div>
+
+      <!-- دکمه‌های واریز / برداشت -->
+      <div class="mt-5 flex flex-wrap gap-3">
+        <button
+          type="button"
+          class="flex flex-1 min-w-[140px] items-center justify-center gap-2 rounded-2xl bg-green-600 px-4 py-3 text-[13px] font-bold text-cream transition-opacity hover:opacity-90"
+          @click="openDepositDialog"
+        >
+          <Icon name="tabler:arrow-down" class="text-[16px]" />
+          واریز
+        </button>
+        <button
+          type="button"
+          class="flex flex-1 min-w-[140px] items-center justify-center gap-2 rounded-2xl bg-red-500 px-4 py-3 text-[13px] font-bold text-cream transition-opacity hover:opacity-90"
+          @click="openWithdrawDialog"
+        >
+          <Icon name="tabler:arrow-up" class="text-[16px]" />
+          برداشت
+        </button>
+      </div>
     </div>
 
     <div v-else class="rounded-[22px] border border-dashed border-ink/15 bg-cardLight py-14 text-center">
@@ -102,6 +122,132 @@
         <p class="mt-1 text-[12.5px] text-inkSoft">تراکنش‌های این کیف پول در اینجا نمایش داده می‌شود.</p>
       </div>
     </div>
+
+    <!-- دیالوگ واریز -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="depositDialog" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div class="absolute inset-0 bg-ink/40 backdrop-blur-sm" @click="closeDepositDialog" />
+          <div class="relative w-full max-w-[420px] rounded-[22px] border border-ink/[0.06] bg-cardLight p-6 shadow-2xl">
+            <div class="mb-5 flex items-center justify-between">
+              <h3 class="flex items-center gap-2 font-bold text-ink text-[15px]">
+                <Icon name="tabler:arrow-down" class="text-sage" />
+                واریز به کیف پول
+              </h3>
+              <button type="button" class="text-inkSoft transition-colors hover:text-ink" @click="closeDepositDialog">
+                <Icon name="tabler:x" class="text-[18px]" />
+              </button>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[12px] font-bold text-inkSoft">مبلغ واریزی (تومان)</label>
+              <input
+                :value="depositAmount"
+                type="text"
+                inputmode="numeric"
+                dir="ltr"
+                placeholder="0"
+                class="w-full p-3.5 rounded-xl border border-ink/15 bg-cream text-[14px] font-latin text-ink outline-none focus:border-accent transition-colors"
+                @input="onDepositAmountInput"
+                @keyup.enter="increaseBalance"
+              />
+            </div>
+
+            <div class="mt-6 flex justify-end gap-2">
+              <button type="button" class="px-5 py-2.5 rounded-full border border-ink/10 text-[13px] font-bold text-inkSoft hover:bg-ink/5 transition-colors" @click="closeDepositDialog">
+                انصراف
+              </button>
+              <button
+                type="button"
+                :disabled="depositLoading"
+                class="px-6 py-2.5 rounded-full bg-accent text-cream text-[13px] font-bold hover:bg-accentHover transition-colors disabled:opacity-60"
+                @click="increaseBalance"
+              >
+                <Icon v-if="depositLoading" name="tabler:loader-2" class="ml-1 inline-block animate-spin" />
+                انتقال به درگاه بانک
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- دیالوگ برداشت -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="withdrawDialog" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div class="absolute inset-0 bg-ink/40 backdrop-blur-sm" @click="closeWithdrawDialog" />
+          <div class="relative max-h-[90vh] w-full max-w-[460px] overflow-y-auto rounded-[22px] border border-ink/[0.06] bg-cardLight p-6 shadow-2xl">
+            <div class="mb-5 flex items-center justify-between">
+              <h3 class="flex items-center gap-2 font-bold text-ink text-[15px]">
+                <Icon name="tabler:arrow-up" class="text-blush" />
+                برداشت از کیف پول
+              </h3>
+              <button type="button" class="text-inkSoft transition-colors hover:text-ink" @click="closeWithdrawDialog">
+                <Icon name="tabler:x" class="text-[18px]" />
+              </button>
+            </div>
+
+            <div class="mb-5 rounded-2xl bg-sageLight p-4 text-center">
+              <p class="text-[11.5px] font-bold text-sage">موجودی قابل برداشت</p>
+              <p class="mt-1 cursor-pointer font-latin text-[22px] font-bold text-ink" @click="useMaxWithdrawAmount">
+                {{ money(selectedWallet?.balance || 0) }}
+              </p>
+            </div>
+
+            <div class="mb-3 flex flex-col gap-1.5">
+              <label class="text-[12px] font-bold text-inkSoft">شماره شبا</label>
+              <input
+                :value="irbIbanNumber"
+                type="text"
+                dir="ltr"
+                readonly
+                class="w-full p-3.5 rounded-xl border border-ink/10 bg-ink/[0.03] text-[13px] font-latin text-inkSoft outline-none"
+              />
+            </div>
+
+            <div class="mb-5 grid grid-cols-2 gap-3">
+              <div class="rounded-2xl border border-ink/10 bg-cream p-3.5">
+                <p class="mb-1 text-[11px] text-inkSoft">نام بانک</p>
+                <p class="text-[13px] font-bold text-ink">{{ irbBankName || '—' }}</p>
+              </div>
+              <div class="rounded-2xl border border-ink/10 bg-cream p-3.5">
+                <p class="mb-1 text-[11px] text-inkSoft">صاحب حساب</p>
+                <p class="text-[13px] font-bold text-ink">{{ irbAccountName || '—' }}</p>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[12px] font-bold text-inkSoft">مبلغ برداشت (تومان)</label>
+              <input
+                :value="withdrawAmount"
+                type="text"
+                inputmode="numeric"
+                dir="ltr"
+                placeholder="0"
+                class="w-full p-3.5 rounded-xl border border-ink/15 bg-cream text-[14px] font-latin text-ink outline-none focus:border-accent transition-colors"
+                @input="onWithdrawAmountInput"
+              />
+            </div>
+
+            <div class="mt-6 flex justify-end gap-2">
+              <button type="button" class="px-5 py-2.5 rounded-full border border-ink/10 text-[13px] font-bold text-inkSoft hover:bg-ink/5 transition-colors" @click="closeWithdrawDialog">
+                انصراف
+              </button>
+              <button
+                type="button"
+                :disabled="withdrawLoading"
+                class="px-6 py-2.5 rounded-full bg-blush text-cream text-[13px] font-bold transition-opacity hover:opacity-90 disabled:opacity-60"
+                @click="submitWithdraw"
+              >
+                <Icon v-if="withdrawLoading" name="tabler:loader-2" class="ml-1 inline-block animate-spin" />
+                ثبت درخواست برداشت
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -112,6 +258,9 @@ import { money, faNumber, faDate } from '~/utils/format.ts';
 
 definePageMeta({ layout: 'account' });
 useSeoMeta({ title: 'کیف پول | ماهلین اسکین‌کر' });
+
+const customizer = useCustomizerStore();
+const router = useRouter();
 
 const wallets = ref([]);
 const transactions = ref([]);
@@ -196,7 +345,195 @@ watch(selectedWalletId, (walletId) => {
   }
 });
 
+/* ---------------- واریز / برداشت ---------------- */
+
+const depositDialog = ref(false);
+const withdrawDialog = ref(false);
+const depositAmount = ref('');
+const withdrawAmount = ref('');
+const depositLoading = ref(false);
+const withdrawLoading = ref(false);
+
+const paymentProcedureList = ref([]);
+const selectedGateway = ref(null);
+
+const irbAccountName = ref('');
+const irbBankName = ref('');
+const irbIbanNumber = ref('');
+
+const currentUserCustomers = computed(() => customizer.userInfo?.customers || null);
+
+function addCommas(value) {
+  const digits = String(value ?? '').replace(/[^\d]/g, '');
+  if (!digits) return '';
+  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function onDepositAmountInput(event) {
+  depositAmount.value = addCommas(event.target.value);
+}
+
+function onWithdrawAmountInput(event) {
+  withdrawAmount.value = addCommas(event.target.value);
+}
+
+function getPaymentProcedure() {
+  useGarnetApiFetch('options/indexPaymentProcedure', {
+    language_id: 1,
+    currency_id: 1,
+  })
+    .then((response) => {
+      paymentProcedureList.value = response?.PaymentProcedure || [];
+
+      const onlineProcedure = paymentProcedureList.value.find(
+        (item) => item.dynamic_column_01 === 'onlinePayment' && item.gateways?.length,
+      );
+
+      if (onlineProcedure) {
+        selectedGateway.value = onlineProcedure.gateways[0].id;
+      }
+    })
+    .catch((error) => {
+      console.error('[Wallet] payment procedure failed', error);
+    });
+}
+
+function openDepositDialog() {
+  depositAmount.value = '';
+  depositDialog.value = true;
+}
+
+function closeDepositDialog() {
+  depositDialog.value = false;
+  depositAmount.value = '';
+}
+
+function increaseBalance() {
+  const amount = parseInt(depositAmount.value.replace(/,/g, ''), 10);
+
+  if (!amount) {
+    toast.error('مبلغ را وارد کنید');
+    return;
+  }
+
+  const onlineProcedure = paymentProcedureList.value.find(
+    (item) => item.dynamic_column_01 === 'onlinePayment' && item.gateways?.length,
+  );
+
+  if (!onlineProcedure || !selectedGateway.value) {
+    toast.error('درگاه پرداختی فعالی یافت نشد');
+    return;
+  }
+
+  depositLoading.value = true;
+
+  useGarnetApiFetch('wallets/increaseBalance', {
+    currency_id: selectedWallet.value?.currency_id || 1,
+    selectedPaymentProcedure: onlineProcedure.id,
+    selectedGateway: selectedGateway.value,
+    amount,
+  })
+    .then((response) => {
+      if (response?.code !== 2000) {
+        toast.error(response?.msg || response?.error || 'خطا در ایجاد تراکنش واریز');
+        return;
+      }
+
+      const gatewayTitle = response.GatewayTitle;
+      const paymentUrl =
+        response.GatewayResult?.payment_url ||
+        response.GatewayResult?.data?.payment_url ||
+        response.GatewayResult?.url;
+
+      if (['jibit', 'zibal', 'zarinpal', 'saman'].includes(gatewayTitle)) {
+        if (paymentUrl) {
+          window.location.replace(paymentUrl);
+        } else {
+          toast.error('آدرس درگاه پرداخت یافت نشد');
+        }
+      } else {
+        toast.error('این درگاه پرداخت پشتیبانی نمی‌شود');
+      }
+    })
+    .catch((error) => {
+      toast.error(error?.message || error || 'خطا در ارتباط با درگاه پرداخت');
+    })
+    .finally(() => {
+      depositLoading.value = false;
+    });
+}
+
+function openWithdrawDialog() {
+  const customerInfo = currentUserCustomers.value;
+
+  if (!customerInfo || !customerInfo.irb_iban_number) {
+    toast.error('ابتدا شماره شبای خود را در ناحیه کاربری تنظیم نمایید');
+    router.push('/account/profile');
+    return;
+  }
+
+  irbAccountName.value = customerInfo.irb_account_name || '';
+  irbBankName.value = customerInfo.irb_bank_name || '';
+  irbIbanNumber.value = customerInfo.irb_iban_number || '';
+  withdrawAmount.value = '';
+  withdrawDialog.value = true;
+}
+
+function closeWithdrawDialog() {
+  withdrawDialog.value = false;
+  withdrawAmount.value = '';
+}
+
+function useMaxWithdrawAmount() {
+  withdrawAmount.value = addCommas(Math.floor(selectedWallet.value?.balance || 0));
+}
+
+function submitWithdraw() {
+  const amount = parseInt(withdrawAmount.value.replace(/,/g, ''), 10);
+
+  if (!amount) {
+    toast.error('مبلغ را وارد کنید');
+    return;
+  }
+
+  withdrawLoading.value = true;
+
+  useGarnetApiFetch('wallets/createTransactionsRequest', {
+    amount,
+    dynamic_column_01: irbIbanNumber.value,
+    kind: 2,
+  })
+    .then((response) => {
+      if (response?.code === 2000) {
+        toast.success('درخواست برداشت با موفقیت ثبت شد');
+        closeWithdrawDialog();
+        loadWallets();
+        if (selectedWalletId.value) loadTransactions(selectedWalletId.value);
+      } else {
+        toast.error(response?.msg || response?.error || 'ثبت درخواست برداشت انجام نشد');
+      }
+    })
+    .catch((error) => {
+      toast.error(error?.message || error || 'خطا در ثبت درخواست برداشت');
+    })
+    .finally(() => {
+      withdrawLoading.value = false;
+    });
+}
+
 onMounted(() => {
   loadWallets();
+  getPaymentProcedure();
 });
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

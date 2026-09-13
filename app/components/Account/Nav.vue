@@ -42,14 +42,14 @@
             <img v-if="currentUser.photo" :src="currentUser.photo" alt="تصویر پروفایل" class="w-full h-full object-cover" />
             <span v-else class="font-display text-xl text-gold">{{ userInitial }}</span>
           </div>
-          <span class="absolute -bottom-0.5 -end-0.5 w-5 h-5 rounded-full bg-[#3f3733] grid place-items-center ring-2 ring-[#3f3733]">
+          <!-- <span class="absolute -bottom-0.5 -end-0.5 w-5 h-5 rounded-full bg-[#3f3733] grid place-items-center ring-2 ring-[#3f3733]">
             <span class="w-full h-full rounded-full bg-gradient-to-br from-[#e8b4bc] to-gold grid place-items-center">
               <Icon name="tabler:crown-filled" class="text-[9px] text-ink" />
             </span>
-          </span>
+          </span> -->
         </div>
 
-        <p class="font-bold text-[15px]">{{ (currentUser.first_name || currentUser.last_name) || currentUser.full_name }}</p>
+        <p class="font-bold text-[15px]">{{ currentUser.full_name || (currentUser.first_name + ' ' + currentUser.last_name) }}</p>
         <p class="text-[11px] text-cream/40 mt-1 font-latin" dir="ltr">0{{ currentUser.mobile }}</p>
 
         <!-- استریپ آمار کوچک -->

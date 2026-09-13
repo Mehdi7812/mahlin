@@ -81,9 +81,11 @@
 
           <div class="min-w-0 flex-1">
             <p class="text-[13px] text-ink line-clamp-1">
-              {{ order.items.map(i => i.title_fa).join('، ') }}
+              {{ order.title || 'سفارش' }}
             </p>
-            <p class="text-[11.5px] text-inkSoft mt-1">{{ faNumber(order.items.length) }} قلم کالا</p>
+            <p class="text-[11.5px] text-inkSoft mt-1">
+              {{ order.subtitle || `${faNumber(order.items.length)} قلم کالا` }}
+            </p>
           </div>
 
           <div class="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 shrink-0">
@@ -136,6 +138,7 @@ const orders = ref([]);
 const loading = ref(true);
 
 const statusAliases = {
+  1: 'pending',
   2: 'processing',
   3: 'processing',
   4: 'processing',
@@ -147,6 +150,7 @@ const statusAliases = {
   10: 'returned',
   11: 'returned',
   12: 'returned',
+  awaiting_payment: 'pending',
   pending: 'pending',
   processing: 'processing',
   shipped: 'shipped',
@@ -165,19 +169,39 @@ const filterStatusMap = {
 
 function normalizeOrder(invoice) {
   const details = invoice.invoice_details || invoice.details || invoice.items || [];
-  const status = statusAliases[invoice.status] || statusAliases[invoice.status_code] || 'pending';
+  const status = statusAliases[invoice.status]
+    || statusAliases[invoice.status_code]
+    || statusAliases[invoice.status_text]
+    || 'pending';
+
+  const items = details.map((detail) => ({
+    title_fa: detail.products?.title_fa || detail.product?.title_fa || detail.title_fa || detail.products?.title || 'محصول',
+    cover_image: detail.products?.cover_image || detail.product?.cover_image || detail.cover_image,
+    qty: Number(detail.amount ?? detail.qty ?? 1),
+    price: Number(detail.unit_price ?? detail.price ?? detail.products?.final_price ?? 0),
+  }));
+
+  const fullName = [invoice.user_first_name, invoice.user_last_name].filter(Boolean).join(' ') || invoice.user_full_name || invoice.receiver_name;
+  const title = items.length
+    ? items.map((item) => `${item.title_fa} (${faNumber(item.qty)} عدد)`).join('، ')
+    : (invoice.receiver_name || fullName ? `سفارش برای ${invoice.receiver_name || fullName}` : 'سفارش جدید');
+
+  const subtitleParts = [
+    invoice.send_type || invoice.type_text,
+    invoice.send_date ? `تاریخ ارسال: ${faDate(invoice.send_date)}` : '',
+    invoice.status_text ? `وضعیت: ${invoice.status_text}` : '',
+    invoice.tracking_code ? `کد پیگیری: ${invoice.tracking_code}` : '',
+  ].filter(Boolean);
+
   return {
     id: invoice.id || invoice.invoice_id,
-    code: invoice.code || invoice.invoice_code || invoice.number || `#${invoice.id || invoice.invoice_id}`,
-    date: invoice.date || invoice.created_at || invoice.createdAt,
+    code: invoice.invoice_number || invoice.code || invoice.invoice_code || invoice.number || invoice.tracking_code || `#${invoice.id || invoice.invoice_id}`,
+    date: invoice.document_date || invoice.date || invoice.created_at || invoice.createdAt,
     status,
-    total: Number(invoice.total_price ?? invoice.final_price ?? invoice.price ?? 0),
-    items: details.map((detail) => ({
-      title_fa: detail.products?.title_fa || detail.product?.title_fa || detail.title_fa || detail.products?.title || 'محصول',
-      cover_image: detail.products?.cover_image || detail.product?.cover_image || detail.cover_image,
-      qty: Number(detail.amount ?? detail.qty ?? 1),
-      price: Number(detail.unit_price ?? detail.price ?? detail.products?.final_price ?? 0),
-    })),
+    total: Number(invoice.total_price ?? invoice.total ?? invoice.final_price ?? invoice.price ?? 0),
+    title,
+    subtitle: subtitleParts.join(' • '),
+    items,
   };
 }
 

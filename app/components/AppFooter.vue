@@ -216,7 +216,7 @@
             :key="trust.label"
             class="trust-badge flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-cream/[0.04] border border-cream/[0.07] hover:border-cream/15 transition-all duration-300"
           >
-            <span class="text-xl">{{ trust.icon }}</span>
+            <Icon :name="trust.icon" class="text-xl text-gold" />
             <div>
               <p class="text-xs font-bold text-cream/80">{{ trust.label }}</p>
               <p class="text-[10px] text-cream/40">{{ trust.sub }}</p>
@@ -277,10 +277,10 @@ const companyLinks = [
 ]
 
 const trustBadges = [
-  { icon: '🔒', label: 'پرداخت امن', sub: 'درگاه معتبر بانکی' },
-  { icon: '📦', label: 'ارسال سریع', sub: 'تحویل ۲۴ تا ۷۲ ساعته' },
-  { icon: '↩️', label: 'ضمانت بازگشت', sub: 'تا ۷ روز پس از خرید' },
-  { icon: '🧪', label: 'آزمایش‌شده', sub: 'تایید شده توسط متخصصان' },
+  { icon: 'tabler:shield-check', label: 'پرداخت امن', sub: 'درگاه معتبر بانکی' },
+  { icon: 'tabler:truck-delivery', label: 'ارسال سریع', sub: 'تحویل ۲۴ تا ۷۲ ساعته' },
+  { icon: 'tabler:refresh-dot', label: 'ضمانت بازگشت', sub: 'تا ۷ روز پس از خرید' },
+  { icon: 'tabler:flask', label: 'آزمایش‌شده', sub: 'تایید شده توسط متخصصان' },
 ]
 
 const socials = [

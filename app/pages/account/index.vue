@@ -68,16 +68,16 @@
               <img v-if="currentUser.photo" :src="currentUser.photo" alt="تصویر پروفایل" class="w-full h-full object-cover" />
               <span v-else class="font-display text-2xl text-gold">{{ userInitial }}</span>
             </div>
-            <span class="absolute -bottom-0.5 -end-0.5 w-6 h-6 rounded-full bg-[#3f3733] grid place-items-center ring-2 ring-[#3f3733]">
+            <!-- <span class="absolute -bottom-0.5 -end-0.5 w-6 h-6 rounded-full bg-[#3f3733] grid place-items-center ring-2 ring-[#3f3733]">
               <span class="w-full h-full rounded-full bg-gradient-to-br from-[#e8b4bc] to-gold grid place-items-center">
                 <Icon name="tabler:crown-filled" class="text-[11px] text-ink" />
               </span>
-            </span>
+            </span> -->
           </div>
 
           <div>
             <p class="text-[13px] text-cream/55 mb-1">{{ greeting }}</p>
-            <h2 class="font-display text-2xl md:text-3xl">{{ (currentUser.first_name || currentUser.last_name) || currentUser.full_name }} عزیز</h2>
+            <h2 class="font-display text-2xl md:text-3xl">{{ currentUser.full_name || (currentUser.first_name + ' ' + currentUser.last_name) }} عزیز</h2>
             <div class="flex flex-wrap items-center gap-2 mt-2.5">
               <!-- <span class="inline-flex items-center gap-1.5 text-[11px] font-bold text-gold bg-gradient-to-l from-[#e8b4bc]/15 to-gold/15 border border-gold/20 px-3 py-1 rounded-full">
                 <Icon name="tabler:crown" class="text-[13px]" />
@@ -247,13 +247,13 @@
             </p>
           </div> -->
 
-          <div class="flex items-center justify-between text-[13px] rounded-xl bg-ink/[0.03] px-3.5 py-3">
+          <NuxtLink to="/account/wallet" class="flex items-center justify-between text-[13px] rounded-xl bg-ink/[0.03] px-3.5 py-3">
             <span class="text-inkSoft flex items-center gap-1.5">
               <Icon name="tabler:wallet" class="text-[15px] text-sage" />
               کیف پول
             </span>
             <span class="font-bold text-ink font-latin">{{ money(walletBalance) }} تومان</span>
-          </div>
+          </NuxtLink>
 
           <!-- <NuxtLink
             to="/account/loyalty"

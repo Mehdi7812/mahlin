@@ -1,5 +1,64 @@
 <template>
-  <div v-if="order" class="flex flex-col gap-6">
+  <div v-if="loading" class="flex flex-col gap-6 animate-pulse" aria-busy="true">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div class="space-y-2">
+        <div class="h-3 w-24 rounded-full bg-ink/10" />
+        <div class="h-7 w-40 rounded-full bg-ink/10" />
+        <div class="h-3 w-32 rounded-full bg-ink/[0.08]" />
+      </div>
+      <div class="h-8 w-24 rounded-full bg-ink/10" />
+    </div>
+
+    <div class="rounded-[22px] border border-ink/[0.06] bg-cardLight p-5 md:p-6">
+      <div class="flex items-center min-w-[560px] gap-2">
+        <div v-for="item in 4" :key="item" class="flex flex-1 flex-col items-center">
+          <div class="h-10 w-10 rounded-full bg-ink/10" />
+          <div class="mt-3 h-3 w-14 rounded-full bg-ink/10" />
+        </div>
+      </div>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-5">
+      <div class="lg:col-span-2 rounded-[22px] border border-ink/[0.06] bg-cardLight overflow-hidden">
+        <div class="px-5 py-4 border-b border-ink/[0.06]">
+          <div class="h-4 w-28 rounded-full bg-ink/10" />
+        </div>
+        <div class="divide-y divide-ink/[0.05]">
+          <div v-for="item in 3" :key="item" class="flex items-center gap-4 px-5 py-4">
+            <div class="h-16 w-16 rounded-xl bg-ink/10" />
+            <div class="min-w-0 flex-1 space-y-2">
+              <div class="h-4 w-3/5 rounded-full bg-ink/10" />
+              <div class="h-3 w-24 rounded-full bg-ink/[0.08]" />
+            </div>
+            <div class="h-4 w-16 rounded-full bg-ink/10" />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-5">
+        <div class="rounded-[22px] border border-ink/[0.06] bg-cardLight p-5">
+          <div class="h-4 w-28 rounded-full bg-ink/10" />
+          <div class="mt-4 space-y-2.5">
+            <div class="h-3 w-full rounded-full bg-ink/[0.08]" />
+            <div class="h-3 w-3/4 rounded-full bg-ink/[0.08]" />
+            <div class="h-3 w-5/6 rounded-full bg-ink/[0.08]" />
+          </div>
+        </div>
+
+        <div class="rounded-[22px] border border-ink/[0.06] bg-cardLight p-5">
+          <div class="h-4 w-28 rounded-full bg-ink/10" />
+          <div class="mt-4 space-y-2">
+            <div class="h-3 w-32 rounded-full bg-ink/[0.08]" />
+            <div class="h-3 w-44 rounded-full bg-ink/[0.08]" />
+          </div>
+        </div>
+
+        <div class="h-12 w-full rounded-full bg-ink/10" />
+      </div>
+    </div>
+  </div>
+
+  <div v-else-if="order" class="flex flex-col gap-6">
 
     <!-- هدر -->
     <div class="flex flex-wrap items-start justify-between gap-4">
@@ -107,11 +166,11 @@
             <Icon name="tabler:map-pin" class="text-accent" />
             آدرس تحویل
           </h3>
-          <p class="text-[13px] font-bold text-ink">{{ ADDRESSES[0].title }}</p>
+          <p class="text-[13px] font-bold text-ink">{{ order.receiver.title }}</p>
           <p class="text-[12.5px] text-inkSoft leading-6 mt-1.5">
-            {{ ADDRESSES[0].province }}، {{ ADDRESSES[0].city }} — {{ ADDRESSES[0].description }}
+            {{ order.receiver.province || 'آدرس ثبت نشده' }}
           </p>
-          <p class="text-[12px] text-inkSoft mt-1.5">گیرنده: {{ ADDRESSES[0].receiver_full_name }} — {{ toLatinButShown(ADDRESSES[0].receiver_mobile) }}</p>
+          <p class="text-[12px] text-inkSoft mt-1.5">گیرنده: {{ order.receiver.receiver_full_name || '---' }} — {{ toLatinButShown(order.receiver.receiver_mobile || '') }}</p>
         </div>
 
         <button
@@ -145,14 +204,96 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { ORDERS, ORDER_STATUS_META, ADDRESSES } from '~/data/account';
+import { computed, ref, onMounted } from 'vue';
+import { ORDER_STATUS_META } from '~/data/account';
 import { money, faNumber, faDate, fa } from '~/utils/format.ts';
 
 definePageMeta({ layout: 'account' });
 
-const route = useRoute();
-const order = computed(() => ORDERS.find((o) => String(o.id) === String(route.params.id)));
+const route = useRoute()
+const order = ref(null);
+const loading = ref(true);
+
+const statusAliases = {
+  1: 'pending',
+  2: 'processing',
+  3: 'processing',
+  4: 'processing',
+  5: 'processing',
+  8: 'processing',
+  6: 'delivered',
+  7: 'cancelled',
+  9: 'returned',
+  10: 'returned',
+  11: 'returned',
+  12: 'returned',
+  awaiting_payment: 'pending',
+  pending: 'pending',
+  processing: 'processing',
+  shipped: 'shipped',
+  delivered: 'delivered',
+  cancelled: 'cancelled',
+  returned: 'returned',
+};
+
+function normalizeOrder(invoice) {
+  const details = invoice.invoice_details || invoice.details || invoice.items || [];
+  const normalizedStatus = statusAliases[invoice.status]
+    || statusAliases[invoice.status_code]
+    || statusAliases[invoice.status_text]
+    || 'pending';
+
+  return {
+    id: invoice.id || invoice.invoice_id,
+    code: invoice.invoice_number || invoice.code || invoice.invoice_code || invoice.number || invoice.tracking_code || `#${invoice.id || invoice.invoice_id}`,
+    date: invoice.document_date || invoice.date || invoice.created_at || invoice.createdAt,
+    status: normalizedStatus,
+    total: Number(invoice.total_price ?? invoice.total ?? invoice.final_price ?? invoice.price ?? 0),
+    items: details.map((detail) => ({
+      title_fa: detail.products?.title_fa || detail.product?.title_fa || detail.title_fa || detail.products?.title || 'محصول',
+      cover_image: detail.products?.cover_image || detail.product?.cover_image || detail.cover_image,
+      qty: Number(detail.amount ?? detail.qty ?? 1),
+      price: Number(detail.unit_price ?? detail.price ?? detail.products?.final_price ?? 0),
+    })),
+    receiver: {
+      title: invoice.receiver_name || 'آدرس تحویل',
+      province: invoice.receiver_address || '',
+      city: '',
+      description: invoice.receiver_address || '',
+      receiver_full_name: invoice.receiver_name || '',
+      receiver_mobile: invoice.receiver_contact || '',
+    },
+    tracking: invoice.tracking_code || '',
+  };
+}
+
+async function loadOrder() {
+  loading.value = true;
+
+  try {
+    const response = await useGarnetApiFetch('invoices/show', {
+      invoice_id: Number(route.params.id),
+    });
+
+    if (response?.error) {
+      throw new Error(response.error?.data?.message || response.error?.message || 'خطا در دریافت سفارش');
+    }
+
+    const invoice = response?.Invoice || response?.invoice || null;
+
+    if (!invoice) {
+      order.value = null;
+      return;
+    }
+
+    order.value = normalizeOrder(invoice);
+  } catch (error) {
+    console.error('[Orders detail] Could not load order', error);
+    order.value = null;
+  } finally {
+    loading.value = false;
+  }
+}
 
 useSeoMeta({ title: () => order.value ? `سفارش ${order.value.code} | ماهلین اسکین‌کر` : 'سفارش یافت نشد' });
 
@@ -166,6 +307,10 @@ const trackingSteps = [
 ];
 
 const statusOrder = ['pending', 'processing', 'shipped', 'delivered'];
+
+onMounted(() => {
+  loadOrder();
+});
 
 function stepState(index) {
   if (!order.value) return 'upcoming';

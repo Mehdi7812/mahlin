@@ -22,7 +22,7 @@
 
     <div class="grid lg:grid-cols-3 gap-5">
       <!-- کارت آواتار -->
-      <div class="rounded-[22px] border border-ink/[0.06] bg-cardLight p-6 flex flex-col items-center text-center h-fit">
+      <div class="sticky top-20 rounded-[22px] border border-ink/[0.06] bg-cardLight p-6 flex flex-col items-center text-center h-fit">
         <div class="relative">
           <div class="w-24 h-24 rounded-full bg-accent/10 text-accent flex items-center justify-center font-display text-3xl overflow-hidden">
             <img v-if="currentUser.photo" :src="currentUser.photo" alt="تصویر پروفایل" class="w-full h-full object-cover" />
@@ -40,14 +40,14 @@
           <input ref="profileImageInput" type="file" accept="image/*" class="hidden" @change="uploadBox" />
         </div>
         <p class="mt-4 font-bold text-ink text-[15px]">{{ currentUser.full_name }}</p>
-        <p class="text-[12px] text-inkSoft mt-1 font-latin" dir="ltr">{{ currentUser.mobile }}</p>
+        <p class="text-[12px] text-inkSoft mt-1 font-latin" dir="ltr">0{{ currentUser.mobile }}</p>
 
         <!-- <div class="mt-4 flex items-center gap-1.5 text-[11.5px] font-bold text-gold bg-gold/10 px-3 py-1.5 rounded-full">
           <Icon name="tabler:crown" class="text-[13px]" />
           سطح {{ USER.level }}
         </div> -->
 
-        <p class="mt-4 text-[11.5px] text-inkSoft">عضو ماهلین از {{ faDate(currentUser.member_since) }}</p>
+        <p class="mt-4 text-[11.5px] text-inkSoft">عضو ماهلین از {{ faDate(currentUser.register_date) }}</p>
       </div>
 
       <!-- فرم اطلاعات -->
@@ -124,10 +124,42 @@
 
           <div class="flex flex-col gap-1.5">
             <label class="text-[12px] font-bold text-inkSoft">جنسیت</label>
-            <select v-model.number="form.gender" class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors">
-              <option :value="0">مرد</option>
-              <option :value="1">زن</option>
-            </select>
+            <div class="relative">
+              <button
+                type="button"
+                class="flex w-full items-center justify-between gap-3 rounded-xl border border-ink/15 bg-cream px-3.5 py-3 text-[13px] text-ink outline-none transition-colors hover:border-accent"
+                @click="genderMenuOpen = !genderMenuOpen"
+              >
+                <span>{{ selectedGenderLabel }}</span>
+                <Icon
+                  name="tabler:chevron-down"
+                  class="text-[15px] text-inkSoft transition-transform"
+                  :class="genderMenuOpen && 'rotate-180'"
+                />
+              </button>
+
+              <div
+                v-if="genderMenuOpen"
+                class="absolute left-0 right-0 top-[calc(100%+8px)] z-20 overflow-hidden rounded-xl border border-ink/10 bg-cardLight shadow-[0_16px_28px_-16px_rgba(0,0,0,0.2)]"
+              >
+                <button
+                  v-for="option in genderOptions"
+                  :key="option.value"
+                  type="button"
+                  class="flex w-full items-center justify-between px-3.5 py-2.5 text-right text-[13px] transition-colors"
+                  :class="form.gender === option.value ? 'bg-accent/10 text-accent font-bold' : 'text-ink hover:bg-ink/[0.03]'"
+                  @click="selectGender(option.value)"
+                >
+                  <span>{{ option.label }}</span>
+                  <span
+                    v-if="form.gender === option.value"
+                    class="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-cream"
+                  >
+                    <Icon name="tabler:check" class="text-[12px]" />
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
           <!-- <div class="flex flex-col gap-1.5 sm:col-span-2">
             <label class="text-[12px] font-bold text-inkSoft">نوع پوست</label>
@@ -160,6 +192,35 @@
         امنیت حساب
       </h3>
       <div class="flex flex-col gap-4 rounded-2xl bg-ink/[0.03] p-4">
+        <div class="flex flex-col gap-3">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <p class="text-[13px] font-bold text-ink">شماره شبا</p>
+              <p class="text-[11.5px] text-inkSoft mt-1">برای برداشت از کیف پول، شماره شبا خود را ثبت کنید.</p>
+            </div>
+            <button
+              type="button"
+              :disabled="bankSaveLoading"
+              class="shrink-0 px-5 py-2.5 rounded-full bg-accent text-cream text-[12.5px] font-bold hover:bg-accentHover transition-colors disabled:opacity-60"
+              @click="saveBankInfo"
+            >
+              {{ bankSaveLoading ? 'در حال ثبت...' : 'ثبت شماره شبا' }}
+            </button>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[12px] font-bold text-inkSoft">شماره شبا</label>
+            <input
+              v-model="bankForm.iban_number"
+              type="text"
+              inputmode="numeric"
+              dir="ltr"
+              placeholder="IRXXXXXXXXXXXXXX"
+              class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
+            />
+          </div>
+        </div>
+
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <p class="text-[13px] font-bold text-ink">رمز عبور</p>
@@ -317,11 +378,16 @@ const forgotPasswordOpen = ref(false);
 const forgotPasswordStep = ref('otp');
 const forgotPasswordSubmitLoading = ref(false);
 const passwordSubmitLoading = ref(false);
+const bankSaveLoading = ref(false);
 const forgotVerificationCode = ref('');
 const forgotOtpKey = ref(0);
 const currentUser = computed(() => customizer.userInfo && !Array.isArray(customizer.userInfo)
   ? customizer.userInfo
   : {});
+
+const bankForm = reactive({
+  iban_number: '',
+});
 
 const passwordForm = reactive({
   oldPassword: '',
@@ -344,6 +410,21 @@ const form = reactive({
   skin_type: 'combination',
 });
 
+const genderOptions = [
+  { label: 'مرد', value: 0 },
+  { label: 'زن', value: 1 },
+];
+const genderMenuOpen = ref(false);
+
+const selectedGenderLabel = computed(() => {
+  return genderOptions.find((option) => Number(option.value) === Number(form.gender))?.label || 'انتخاب جنسیت';
+});
+
+function selectGender(value) {
+  form.gender = Number(value);
+  genderMenuOpen.value = false;
+}
+
 function fillForm() {
   const user = currentUser.value;
   Object.assign(form, {
@@ -354,6 +435,9 @@ function fillForm() {
     gender: Number(user.gender ?? 1),
     birth_date: user.birth_date ?? '',
   });
+
+  const ibanValue = user.customers?.irb_iban_number || user.irb_iban_number || user.iban_number || '';
+  bankForm.iban_number = ibanValue;
 }
 
 function resetForm() {
@@ -524,6 +608,82 @@ function uploadBox(event) {
     });
 }
 
+function isValidShebaNumber(input) {
+  if (!input) return false;
+
+  let iban = String(input).trim().replace(/[\s-]/g, '');
+
+  if (/^\d{24}$/.test(iban)) {
+    iban = 'IR' + iban;
+  }
+
+  if (!/^IR\d{24}$/.test(iban)) return false;
+
+  const rearranged = iban.slice(4) + iban.slice(0, 4);
+
+  let expanded = '';
+  for (const ch of rearranged) {
+    const code = ch.charCodeAt(0);
+    if (code >= 65 && code <= 90) {
+      expanded += String(code - 55);
+    } else {
+      expanded += ch;
+    }
+  }
+
+  let remainder = 0;
+  for (let i = 0; i < expanded.length; i++) {
+    remainder = (remainder * 10 + (expanded.charCodeAt(i) - 48)) % 97;
+  }
+
+  return remainder === 1;
+}
+
+function saveBankInfo() {
+  const ibanValue = bankForm.iban_number.trim();
+
+  if (!ibanValue) {
+    toast.error('شماره شبا خود را وارد کنید');
+    return;
+  }
+
+  if (!isValidShebaNumber(ibanValue)) {
+    toast.error('فرمت شماره شبا اشتباه می باشد');
+    return;
+  }
+
+  bankSaveLoading.value = true;
+
+  const normalizedIban = ibanValue.replace(/[\s-]/g, '');
+  const sendData = {
+    irb_iban_number: normalizedIban.startsWith('IR') ? normalizedIban : `IR${normalizedIban}`,
+  };
+
+  useGarnetApiFetch('users/updateIban', sendData)
+    .then((response) => {
+      if (response?.code === 2000) {
+        const savedIban = response?.iban || sendData.irb_iban_number;
+
+        customizer.userInfo = {
+          ...customizer.userInfo,
+          irb_iban_number: savedIban,
+          iban_number: savedIban,
+        };
+
+        bankForm.iban_number = savedIban;
+        toast.success('شماره شبا با موفقیت ثبت شد');
+      } else {
+        toast.error(response?.msg || response?.error || 'خطا در ثبت شماره شبا');
+      }
+    })
+    .catch((error) => {
+      toast.error(error?.message || error || 'خطا در ثبت شماره شبا');
+    })
+    .finally(() => {
+      bankSaveLoading.value = false;
+    });
+}
+
 function saveProfile() {
   saving.value = true;
   const sendData = {
@@ -555,7 +715,7 @@ function saveProfile() {
 
 watch(() => customizer.userInfo, fillForm, { immediate: true });
 
-const initials = computed(() => (currentUser.value.first_name?.[0] || '') + (currentUser.value.last_name?.[0] || ''));
+const initials = computed(() => (currentUser.value.first_name?.[0] || ''));
 
 function toGregorianStr(date) {
   const y = date.getFullYear();
