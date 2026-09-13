@@ -126,9 +126,9 @@ useSeoMeta({ title: 'سفارش‌های من | ماهلین اسکین‌کر' 
 const filters = [
   { value: 'all', label: 'همه' },
   { value: 'processing', label: 'در حال پردازش' },
-  { value: 'shipped', label: 'ارسال شده' },
-  { value: 'delivered', label: 'تحویل شده' },
+  { value: 'delivered', label: 'تحویل داده شده' },
   { value: 'cancelled', label: 'لغو شده' },
+  { value: 'returned', label: 'مرجوعی' },
 ];
 
 const activeFilter = ref('all');
@@ -136,11 +136,31 @@ const orders = ref([]);
 const loading = ref(true);
 
 const statusAliases = {
+  2: 'processing',
+  3: 'processing',
+  4: 'processing',
+  5: 'processing',
+  8: 'processing',
+  6: 'delivered',
+  7: 'cancelled',
+  9: 'returned',
+  10: 'returned',
+  11: 'returned',
+  12: 'returned',
   pending: 'pending',
   processing: 'processing',
   shipped: 'shipped',
   delivered: 'delivered',
   cancelled: 'cancelled',
+  returned: 'returned',
+};
+
+const filterStatusMap = {
+  all: [2, 3, 4, 5, 8],
+  processing: [2, 3, 4, 5, 8],
+  delivered: [6],
+  cancelled: [7],
+  returned: [9, 10, 11, 12],
 };
 
 function normalizeOrder(invoice) {
@@ -189,10 +209,10 @@ function getPurchasesList(statusList = []) {
 
 function changeFilter(value) {
   activeFilter.value = value;
-  getPurchasesList(value === 'all' ? [] : [value]);
+  getPurchasesList(filterStatusMap[value] || []);
 }
 
-onMounted(() => getPurchasesList());
+onMounted(() => getPurchasesList(filterStatusMap.all));
 </script>
 
 <style scoped>

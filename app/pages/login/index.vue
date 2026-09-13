@@ -17,14 +17,67 @@ const password = ref("");
 const password_confirm = ref("");
 const changePass = ref(false);
 
+// بارگذاری داینامیک پکیج تقویم (فقط سمت کلاینت)
+const DatePicker = ref(null);
+if (import.meta.client) {
+  const pickerModule = await import('vue3-persian-datetime-picker');
+  DatePicker.value = pickerModule.default;
+}
+
+// محدوده‌ی مجاز تاریخ تولد
+function toGregorianStr(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+const maxBirthDate = computed(() => toGregorianStr(new Date()));
+const minBirthDate = computed(() => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - 100);
+  return toGregorianStr(d);
+});
+
+// نمایش جلالیِ تاریخ ذخیره‌شده (میلادی) داخل اینپوت
+function toJalaliDisplay(gregorianStr) {
+  if (!gregorianStr) return '';
+  const [y, m, d] = gregorianStr.split('-').map(Number);
+  if (!y || !m || !d) return '';
+
+  const utcDate = new Date(Date.UTC(y, m - 1, d));
+  const parts = new Intl.DateTimeFormat('fa-IR-u-ca-persian-nu-latn', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    timeZone: 'UTC',
+  }).formatToParts(utcDate);
+
+  const get = (type) => parts.find((p) => p.type === type)?.value ?? '';
+  return `${get('year')}/${get('month')}/${get('day')}`;
+}
+const birthDateDisplay = computed(() => toJalaliDisplay(profileForm.birth_date));
+
 const errors = reactive({
   mobile: "",
   password: "",
   presenter: "",
+  first_name: "",
+  last_name: "",
+  national_code: "",
+  birth_date: "",
 });
 
+// فرم مشخصات کاربر جدید
+const profileForm = reactive({
+  first_name: "",
+  last_name: "",
+  birth_date: "",
+  national_code: "",
+});
+const acceptedTerms = ref(false);
+
 const loading = ref(false);
-const formStep = ref("getMobile"); // getMobile | otp | password | changePassword | presenter
+const formStep = ref("getMobile"); // getMobile | otp | profile | password | changePassword | presenter
 const mobileExist = ref(false);
 const lastCheckedMobile = ref(null);
 const otpKey = ref(0);
@@ -47,7 +100,7 @@ const getPresenterInput = ref(null);
 const showPassword = ref(false);
 const showPasswordConfirm = ref(false);
 
-const stepOrder = ["getMobile", "otp", "password", "changePassword", "presenter"];
+const stepOrder = ["getMobile", "otp", "profile", "password", "changePassword", "presenter"];
 const stepIndex = computed(() => {
   const idx = stepOrder.indexOf(formStep.value);
   return idx === -1 ? 0 : idx;
@@ -64,6 +117,8 @@ const stepMeta = computed(() => {
       return { title: "تغییر رمز عبور", subtitle: "یک رمز عبور قوی و امن انتخاب کنید" };
     case "presenter":
       return { title: "ثبت معرف", subtitle: "در صورت داشتن معرف، شماره را وارد کنید" };
+    case "profile":
+      return { title: "تکمیل مشخصات", subtitle: "برای ادامه، اطلاعات هویتی‌تان را وارد کنید" };
     default:
       return { title: allowRegister.value ? "ورود | ثبت‌نام" : "ورود", subtitle: "به دنیای ماهلین خوش آمدید" };
   }
@@ -184,7 +239,7 @@ function submitLogin() {
   if (errors.mobile || errors.password) return;
 
   loading.value = true;
-  useGarnetApiFetch("auth/loginMobile", { mobile: mobile.value, password: password.value })
+  useGarnetApiFetch("auth/loginMobile", { mobile: mobile.value, password: password.value, callBackInfo: true, callBackToken: true })
     .then(async (response) => {
       if (response.code === 2000) {
         customizer.token = response.token;
@@ -221,14 +276,13 @@ function submitLogin() {
     });
 }
 
+// جایگزین تابع changePassword قبلی
 const changePassword = () => {
   errors.password = !password.value ? t("required") : "";
 
-  // بررسی حداقل طول رمز عبور
-  if (!errors.password && password.value.length < 8) {
-    errors.password = "رمز عبور باید حداقل ۸ کاراکتر باشد";
+  if (!errors.password && password.value.length < 6) {
+    errors.password = "رمز عبور باید حداقل 6 کاراکتر باشد";
   }
-
   if (errors.password) return;
 
   if (password.value !== password_confirm.value) {
@@ -236,6 +290,13 @@ const changePassword = () => {
     return;
   }
 
+  // کاربر جدید: مشخصات + رمز با هم به createUnAuth ارسال می‌شود
+  if (!mobileExist.value) {
+    submitRegister();
+    return;
+  }
+
+  // مسیر قبلی: فراموشی رمز عبور برای کاربر موجود (بدون تغییر)
   loading.value = true;
   useGarnetApiFetch("users/forgetPasswordByVerificationCode", {
     mobile: mobile.value,
@@ -272,10 +333,66 @@ const changePassword = () => {
     });
 };
 
+// ثبت‌نام کامل کاربر جدید (مشخصات + رمز عبور)، معادل register() ولی هماهنگ با این فایل
+const submitRegister = () => {
+  loading.value = true;
+
+  useGarnetApiFetch("users/createUnAuth", {
+    mobile: mobile.value,
+    first_name: profileForm.first_name.trim(),
+    last_name: profileForm.last_name.trim(),
+    birth_date: profileForm.birth_date,
+    national_code: profileForm.national_code,
+    verificationCode: verificationCode.value,
+    password: password.value,
+    callBackInfo: true,
+  })
+    .then((response) => {
+      switch (response.code) {
+        case 2000: {
+          customizer.token = response.token;
+          customizer.Set_Token(response.token);
+          customizer.Set_Auth(true);
+          if (typeof localStorage !== "undefined") {
+            localStorage.setItem("g-auth-token", response.token);
+          } else if (typeof sessionStorage !== "undefined") {
+            sessionStorage.setItem("g-auth-token", response.token);
+          }
+
+          customizer.userInfo = response?.userInfo ?? response?.User ?? {};
+          customizer.auth = true;
+
+          toast.success("ثبت‌نام با موفقیت انجام شد");
+
+          if (getPresenter.value) {
+            formStep.value = "presenter";
+          } else {
+            router.push(backTo.value);
+          }
+          break;
+        }
+        case 2009:
+          toast.error("شماره موبایل و کد ملی متعلق به یک نفر نیست");
+          break;
+        case 2001:
+          toast.error("این کد ملی از قبل ثبت شده است");
+          break;
+        default:
+          toast.error(response.message || response.msg || t(response.error));
+      }
+    })
+    .catch((error) => {
+      toast.error(t(error));
+    })
+    .finally(() => {
+      loading.value = false;
+    });
+};
+
 const verificationCodePassed = (e) => {
   if (!mobileExist.value) {
     verificationCode.value = e;
-    formStep.value = "changePassword";
+    formStep.value = "profile"; // قبلاً: changePassword
   } else if (getPresenter.value) {
     formStep.value = "presenter";
   } else {
@@ -349,6 +466,47 @@ const setPresenter = async () => {
       loading.value = false;
       toast.error(t(error));
     });
+};
+
+// اعتبارسنجی کد ملی (الگوریتم استاندارد چک‌دیجیت)
+const validateNationalCode = () => {
+  const code = convertPersianToEnglish(profileForm.national_code || "").trim();
+  errors.national_code = "";
+
+  if (!/^\d{10}$/.test(code)) {
+    errors.national_code = "کد ملی باید ۱۰ رقم باشد";
+    return false;
+  }
+
+  const check = +code[9];
+  const sum = Array.from({ length: 9 }).reduce((acc, _, i) => acc + +code[i] * (10 - i), 0);
+  const remainder = sum % 11;
+  const isValid = remainder < 2 ? check === remainder : check === 11 - remainder;
+
+  if (!isValid) {
+    errors.national_code = "کد ملی نامعتبر است";
+    return false;
+  }
+
+  profileForm.national_code = code;
+  return true;
+};
+
+// اعتبارسنجی و عبور از مرحله‌ی مشخصات به مرحله‌ی رمز عبور
+const submitProfile = () => {
+  errors.first_name = !profileForm.first_name.trim() ? "نام را وارد کنید" : "";
+  errors.last_name = !profileForm.last_name.trim() ? "نام خانوادگی را وارد کنید" : "";
+  errors.birth_date = !profileForm.birth_date ? "تاریخ تولد را وارد کنید" : "";
+
+  if (errors.first_name || errors.last_name || errors.birth_date) return;
+  if (!validateNationalCode()) return;
+
+  if (!acceptedTerms.value) {
+    toast.warning("لطفاً قوانین و شرایط را مطالعه و تایید کنید.");
+    return;
+  }
+
+  formStep.value = "changePassword";
 };
 </script>
 
@@ -622,13 +780,113 @@ const setPresenter = async () => {
             </div>
           </div>
 
+          <!-- تکمیل مشخصات (فقط کاربر جدید) -->
+          <div v-else-if="formStep === 'profile'" key="profile" class="px-7 pb-8 pt-2">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <input
+                  v-model="profileForm.first_name"
+                  type="text"
+                  placeholder="نام"
+                  class="w-full rounded-2xl border bg-white/70 py-3.5 px-4 text-sm text-ink outline-none transition-all duration-200 placeholder:text-inkSoft/50"
+                  :class="errors.first_name ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-ink/10 focus:border-accent focus:ring-4 focus:ring-accent/10'"
+                  @keyup="errors.first_name = ''"
+                />
+                <p v-if="errors.first_name" class="mt-1.5 text-xs text-red-500">{{ errors.first_name }}</p>
+              </div>
+              <div>
+                <input
+                  v-model="profileForm.last_name"
+                  type="text"
+                  placeholder="نام خانوادگی"
+                  class="w-full rounded-2xl border bg-white/70 py-3.5 px-4 text-sm text-ink outline-none transition-all duration-200 placeholder:text-inkSoft/50"
+                  :class="errors.last_name ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-ink/10 focus:border-accent focus:ring-4 focus:ring-accent/10'"
+                  @keyup="errors.last_name = ''"
+                />
+                <p v-if="errors.last_name" class="mt-1.5 text-xs text-red-500">{{ errors.last_name }}</p>
+              </div>
+            </div>
+
+            <div class="mt-3">
+              <input
+                v-model="profileForm.national_code"
+                type="text"
+                inputmode="numeric"
+                maxlength="10"
+                dir="ltr"
+                placeholder="کد ملی"
+                class="w-full rounded-2xl border bg-white/70 py-3.5 px-4 text-sm text-ink outline-none transition-all duration-200 placeholder:text-inkSoft/50"
+                :class="errors.national_code ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-ink/10 focus:border-accent focus:ring-4 focus:ring-accent/10'"
+                @keyup="errors.national_code = ''"
+              />
+              <p v-if="errors.national_code" class="mt-1.5 text-xs text-red-500">{{ errors.national_code }}</p>
+            </div>
+
+            <div class="mt-3">
+              <ClientOnly>
+                <div class="relative">
+                  <input
+                    id="birth-date-input"
+                    type="text"
+                    readonly
+                    :value="birthDateDisplay"
+                    placeholder="تاریخ تولد (۱۳۷۰/۰۱/۰۱)"
+                    class="w-full rounded-2xl border bg-white/70 py-3.5 px-4 pl-10 text-sm text-ink outline-none transition-all duration-200 placeholder:text-inkSoft/50 cursor-pointer"
+                    :class="errors.birth_date ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-ink/10 focus:border-accent focus:ring-4 focus:ring-accent/10'"
+                  />
+                  <svg class="pointer-events-none absolute inset-y-0 left-3 flex items-center my-auto text-inkSoft/60" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                    <path d="M16 2v4M8 2v4M3 10h18" stroke-linecap="round" />
+                  </svg>
+                  <DatePicker
+                    v-if="DatePicker"
+                    v-model="profileForm.birth_date"
+                    type="date"
+                    locale="fa"
+                    simple
+                    :max="maxBirthDate"
+                    :min="minBirthDate"
+                    format="YYYY-MM-DD"
+                    display-format="jYYYY/jMM/jDD"
+                    custom-input="#birth-date-input"
+                    @change="errors.birth_date = ''"
+                  />
+                </div>
+                <template #fallback>
+                  <input
+                    type="text"
+                    :value="profileForm.birth_date"
+                    placeholder="تاریخ تولد (۱۳۷۰/۰۱/۰۱)"
+                    disabled
+                    class="w-full rounded-2xl border border-ink/10 bg-white/70 py-3.5 px-4 text-sm text-ink outline-none opacity-70"
+                  />
+                </template>
+              </ClientOnly>
+              <p v-if="errors.birth_date" class="mt-1.5 text-xs text-red-500">{{ errors.birth_date }}</p>
+            </div>
+
+            <label class="mt-4 flex cursor-pointer items-start gap-2 text-xs text-inkSoft">
+              <input v-model="acceptedTerms" type="checkbox" class="mt-0.5 accent-accent" />
+              <span>قوانین و شرایط استفاده از خدمات ماهلین را مطالعه کرده و می‌پذیرم</span>
+            </label>
+
+            <button
+              type="button"
+              :disabled="loading"
+              class="group relative mt-5 flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-l from-accent to-accentHover py-3.5 text-sm font-medium text-white shadow-lg shadow-accent/25 transition-all duration-200 hover:shadow-xl hover:shadow-accent/30 active:scale-[0.98] disabled:opacity-60"
+              @click="submitProfile()"
+            >
+              <span class="relative z-10">ادامه</span>
+            </button>
+          </div>
+
           <!-- 4) تغییر رمز عبور -->
           <div v-else-if="formStep === 'changePassword'" key="changePassword" class="px-7 pb-8 pt-2">
             <p class="mb-5 flex items-center justify-center gap-1.5 text-center text-xs text-inkSoft">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                 <circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" />
               </svg>
-              رمز عبور باید حداقل ۸ حرفی باشد
+              رمز عبور باید حداقل 6 حرفی باشد
             </p>
 
             <div class="mb-3">
@@ -842,5 +1100,41 @@ const setPresenter = async () => {
 }
 .animate-ping-slow {
   animation: pingSlow 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+</style>
+
+<style>
+.vpd-content,
+.vpd-addon-wrapper {
+  background: theme('colors.cardLight') !important;
+  border: 1px solid theme('colors.ink / 8%') !important;
+  border-radius: 18px !important;
+  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, .25) !important;
+  overflow: hidden;
+  font-family: inherit;
+}
+.vpd-header {
+  background: theme('colors.accent') !important;
+  color: theme('colors.cream') !important;
+}
+.vpd-day-text {
+  color: theme('colors.ink');
+}
+.vpd-day.vpd-selected .vpd-day-effect {
+  background-color: theme('colors.accent') !important;
+}
+.vpd-day.vpd-selected .vpd-day-text {
+  color: theme('colors.cream') !important;
+}
+.vpd-addon-list-item {
+  color: theme('colors.inkSoft');
+}
+.vpd-addon-list-item.vpd-selected {
+  background-color: theme('colors.accent') !important;
+  color: theme('colors.cream') !important;
+  border-radius: 10px;
+}
+.vpd-actions button {
+  color: theme('colors.accent') !important;
 }
 </style>

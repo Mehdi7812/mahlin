@@ -21,6 +21,7 @@
     "pinia": "^4.0.3",
     "swiper": "^14.2.0",
     "vue-sonner": "^2.0.9",
+    "vue3-persian-datetime-picker": "^1.2.2",
     "zod": "^4.5.4"
   }
 }

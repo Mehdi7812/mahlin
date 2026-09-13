@@ -77,7 +77,7 @@
 
           <div>
             <p class="text-[13px] text-cream/55 mb-1">{{ greeting }}</p>
-            <h2 class="font-display text-2xl md:text-3xl">{{ currentUser.full_name }} عزیز</h2>
+            <h2 class="font-display text-2xl md:text-3xl">{{ (currentUser.first_name || currentUser.last_name) || currentUser.full_name }} عزیز</h2>
             <div class="flex flex-wrap items-center gap-2 mt-2.5">
               <!-- <span class="inline-flex items-center gap-1.5 text-[11px] font-bold text-gold bg-gradient-to-l from-[#e8b4bc]/15 to-gold/15 border border-gold/20 px-3 py-1 rounded-full">
                 <Icon name="tabler:crown" class="text-[13px]" />
@@ -100,15 +100,15 @@
       <!-- استریپ آمار کوچک داخل بنر -->
       <div class="relative grid grid-cols-3 gap-3 mt-6 pt-5 border-t border-white/[0.08]">
         <div class="text-center sm:text-right">
-          <p class="font-latin text-lg font-bold text-gold">{{ faNumber(ORDERS.length) }}</p>
+          <p class="font-latin text-lg font-bold text-gold">{{ faNumber(totalOrdersCount) }}</p>
           <p class="text-[10.5px] text-cream/45 mt-0.5">کل سفارش‌ها</p>
         </div>
         <div class="text-center sm:text-right border-x border-white/[0.08] px-2">
-          <p class="font-latin text-lg font-bold text-[#e8b4bc]">{{ faNumber(LOYALTY.points) }}</p>
-          <p class="text-[10.5px] text-cream/45 mt-0.5">امتیاز باشگاه</p>
+          <p class="font-latin text-lg font-bold text-[#e8b4bc]">{{ faNumber(currentUser.ticket_count ?? 0) }}</p>
+          <p class="text-[10.5px] text-cream/45 mt-0.5">تیکت‌ها</p>
         </div>
         <div class="text-center sm:text-right">
-            <p class="font-latin text-lg font-bold text-sage">{{ money(currentUser.wallet_balance) }}</p>
+            <p class="font-latin text-lg font-bold text-sage">{{ money(walletBalance) }}</p>
           <p class="text-[10.5px] text-cream/45 mt-0.5">موجودی کیف پول</p>
         </div>
       </div>
@@ -147,7 +147,7 @@
       <div class="lg:col-span-2 flex flex-col gap-5">
 
         <!-- روند خرید -->
-        <div class="rounded-[22px] border border-ink/[0.06] bg-cardLight p-5">
+        <!-- <div class="rounded-[22px] border border-ink/[0.06] bg-cardLight p-5">
           <div class="flex items-center justify-between mb-5">
             <h3 class="flex items-center gap-2 font-bold text-ink text-[14px]">
               <Icon name="tabler:chart-bar" class="text-accent" />
@@ -172,7 +172,7 @@
               <span class="text-[10px] text-inkSoft font-latin" dir="ltr">{{ faDateShort(bar.date) }}</span>
             </div>
           </div>
-        </div>
+        </div> -->
 
         <!-- سفارش‌های اخیر -->
         <div class="rounded-[22px] border border-ink/[0.06] bg-cardLight overflow-hidden">
@@ -186,7 +186,7 @@
             </NuxtLink>
           </div>
 
-          <div class="divide-y divide-ink/[0.05]">
+          <div v-if="recentOrders.length" class="divide-y divide-ink/[0.05]">
             <NuxtLink
               v-for="order in recentOrders"
               :key="order.id"
@@ -195,10 +195,14 @@
             >
               <div class="w-12 h-12 shrink-0 rounded-xl bg-cream overflow-hidden">
                 <img
+                  v-if="order.items[0]?.cover_image"
                   :src="order.items[0].cover_image"
                   class="w-full h-full object-contain p-1.5 transition-transform duration-300 group-hover:scale-110"
                   alt=""
                 />
+                <div v-else class="grid h-full w-full place-items-center bg-ink/[0.04] text-ink/30">
+                  <Icon name="tabler:package" class="text-[18px]" />
+                </div>
               </div>
               <div class="min-w-0 flex-1">
                 <p class="text-[13px] font-bold text-ink font-latin" dir="ltr">{{ order.code }}</p>
@@ -214,6 +218,10 @@
                 </span>
               </div>
             </NuxtLink>
+          </div>
+
+          <div v-else class="px-5 py-6 text-center text-[12.5px] text-inkSoft">
+            سفارشی برای نمایش وجود ندارد.
           </div>
         </div>
       </div>
@@ -244,7 +252,7 @@
               <Icon name="tabler:wallet" class="text-[15px] text-sage" />
               کیف پول
             </span>
-            <span class="font-bold text-ink font-latin">{{ money(currentUser.wallet_balance) }} تومان</span>
+            <span class="font-bold text-ink font-latin">{{ money(walletBalance) }} تومان</span>
           </div>
 
           <!-- <NuxtLink
@@ -307,7 +315,8 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { USER, ORDERS, ORDER_STATUS_META, LOYALTY, ADDRESSES } from '~/data/account';
+import { toast } from 'vue-sonner';
+import { USER, ORDERS, ORDER_STATUS_META, LOYALTY } from '~/data/account';
 import { money, faNumber, faDate, faDateShort } from '~/utils/format.ts';
 
 definePageMeta({ layout: 'account' });
@@ -326,26 +335,92 @@ const currentUser = computed(() => customizer.userInfo && !Array.isArray(customi
   ? customizer.userInfo
   : {});
 const addresses = ref([]);
+const walletBalance = ref(0);
+const totalOrdersCount = ref(0);
+const processingOrdersCount = ref(0);
+
+async function loadCurrentUser() {
+  // if (customizer.userInfo && !Array.isArray(customizer.userInfo) && Object.keys(customizer.userInfo).length) {
+  //   return;
+  // }
+
+  try {
+    const response = await useGarnetApiFetch('users/userInfo');
+    const user = response?.User ?? response?.userInfo;
+
+    if (user) {
+      customizer.userInfo = user;
+      customizer.auth = true;
+    }
+  } catch (error) {
+    console.error('[Account Dashboard] Could not load user info', error);
+  }
+}
 
 const userInitial = computed(() => (currentUser.value.full_name || 'م').trim().charAt(0));
 
-const recentOrders = computed(() => ORDERS.slice(0, 3));
+const recentOrders = ref([]);
+
+const statusByCode = {
+  6: 'delivered',
+  5: 'shipped',
+  4: 'processing',
+  3: 'pending',
+  2: 'pending',
+  1: 'pending',
+  0: 'pending',
+};
+
+function normalizeRecentOrder(invoice) {
+  const details = invoice.invoice_details || invoice.details || invoice.items || [];
+  const normalizedStatus = statusByCode[invoice.status] || statusByCode[invoice.status_code] || 'pending';
+
+  return {
+    id: invoice.id || invoice.invoice_id,
+    code: invoice.invoice_number || invoice.code || invoice.invoice_code || invoice.number || `#${invoice.id || invoice.invoice_id}`,
+    date: invoice.document_date || invoice.date || invoice.created_at || invoice.createdAt,
+    status: normalizedStatus,
+    total: Number(invoice.total_price ?? invoice.final_price ?? invoice.price ?? 0),
+    items: details.map((detail) => ({
+      title_fa: detail.products?.title_fa || detail.product?.title_fa || detail.title_fa || detail.products?.title || 'محصول',
+      cover_image: detail.products?.cover_image || detail.product?.cover_image || detail.cover_image,
+      qty: Number(detail.amount ?? detail.qty ?? 1),
+      price: Number(detail.unit_price ?? detail.price ?? detail.products?.final_price ?? 0),
+    })),
+  };
+}
+
+function loadRecentOrders() {
+  useGarnetApiFetch('invoices/indexByUser', { conditions: { status: [6] } })
+    .then((response) => {
+      if (response?.error) {
+        throw new Error(response.error?.data?.message || response.error?.message || 'خطا در دریافت سفارش‌های اخیر');
+      }
+
+      recentOrders.value = (response?.Invoices || []).slice(0, 3).map(normalizeRecentOrder);
+    })
+    .catch((error) => {
+      console.error('[Account Dashboard] Could not load recent orders', error);
+      recentOrders.value = [];
+      toast.error(error?.message || 'خطا در دریافت سفارش‌های اخیر');
+    });
+}
 
 const defaultAddress = computed(() => {
   const liveDefault = addresses.value.find((address) => address.is_default === true || address.is_default === 1)
     || addresses.value[0]
     || null;
 
-  if (liveDefault) {
-    return {
-      title: liveDefault.title || 'خانه',
-      province: liveDefault.province || '',
-      city: liveDefault.city || '',
-      description: liveDefault.description || '',
-    };
+  if (!liveDefault) {
+    return null;
   }
 
-  return ADDRESSES.find((a) => a.is_default) || ADDRESSES[0] || null;
+  return {
+    title: liveDefault.title || 'خانه',
+    province: liveDefault.province || '',
+    city: liveDefault.city || '',
+    description: liveDefault.description || '',
+  };
 });
 
 function loadDefaultAddress() {
@@ -354,12 +429,56 @@ function loadDefaultAddress() {
       addresses.value = response?.UserAddress || [];
     })
     .catch(() => {
-      addresses.value = ADDRESSES;
+      addresses.value = [];
     });
 }
 
-onMounted(() => {
+async function loadWalletBalance() {
+  try {
+    const response = await useGarnetApiFetch('wallets/getBalance');
+
+    if (response?.error) {
+      throw new Error(response.error?.data?.message || response.error?.message || 'خطا در دریافت موجودی کیف پول');
+    }
+
+    const wallet = (response?.Wallets || []).find((item) => Number(item.currency_id) === 1)
+      || (response?.Wallets || [])[0]
+      || null;
+
+    walletBalance.value = Number(wallet?.balance ?? 0);
+  } catch (error) {
+    console.error('[Account Dashboard] Could not load wallet balance', error);
+    walletBalance.value = 0;
+  }
+}
+
+async function loadOrderStats() {
+  try {
+    const response = await useGarnetApiFetch('invoices/indexByUser', {
+      conditions: { status: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
+    });
+
+    if (response?.error) {
+      throw new Error(response.error?.data?.message || response.error?.message || 'خطا در دریافت آمار سفارش‌ها');
+    }
+
+    const invoices = response?.Invoices || [];
+
+    totalOrdersCount.value = Number(response?.TotalCount ?? invoices.length ?? 0);
+    processingOrdersCount.value = invoices.filter((invoice) => [2, 3, 4, 5, 8].includes(Number(invoice.status))).length;
+  } catch (error) {
+    console.error('[Account Dashboard] Could not load order stats', error);
+    totalOrdersCount.value = 0;
+    processingOrdersCount.value = 0;
+  }
+}
+
+onMounted(async () => {
+  await loadCurrentUser();
   loadDefaultAddress();
+  loadRecentOrders();
+  loadWalletBalance();
+  loadOrderStats();
 });
 
 const progressPercent = computed(() =>
@@ -380,10 +499,10 @@ const spendingBars = computed(() => {
 });
 
 const stats = computed(() => [
-  { label: 'کل سفارش‌ها', value: faNumber(ORDERS.length), icon: 'tabler:package', bg: 'rgba(143,193,217,0.14)', color: '#6BA5C4', delta: '+۲ این ماه', deltaType: 'up' },
-  { label: 'در حال پردازش', value: faNumber(ORDERS.filter(o => ['pending','processing','shipped'].includes(o.status)).length), icon: 'tabler:truck-delivery', bg: 'rgba(185,166,222,0.14)', color: '#9C87C4' },
-  { label: 'امتیاز باشگاه', value: faNumber(currentUser.value.points ?? 0), icon: 'tabler:sparkles', bg: 'rgba(224,183,88,0.16)', color: '#C29A45', delta: '+۱۹۸', deltaType: 'up' },
-  { label: 'موجودی کیف پول', value: faNumber(currentUser.value.wallet_balance ?? 0), icon: 'tabler:wallet', bg: 'rgba(156,191,160,0.16)', color: '#7BA582' },
+  { label: 'کل سفارش‌ها', value: faNumber(totalOrdersCount.value), icon: 'tabler:package', bg: 'rgba(143,193,217,0.14)', color: '#6BA5C4', delta: '+۲ این ماه', deltaType: 'up' },
+  { label: 'در حال پردازش', value: faNumber(processingOrdersCount.value), icon: 'tabler:truck-delivery', bg: 'rgba(185,166,222,0.14)', color: '#9C87C4' },
+  { label: 'تیکت‌ها', value: faNumber(currentUser.value.ticket_count ?? 0), icon: 'tabler:headset', bg: 'rgba(224,183,88,0.16)', color: '#C29A45', delta: 'تیکت', deltaType: 'up' },
+  { label: 'موجودی کیف پول', value: faNumber(walletBalance.value), icon: 'tabler:wallet', bg: 'rgba(156,191,160,0.16)', color: '#7BA582' },
 ]);
 
 const quickLinks = [

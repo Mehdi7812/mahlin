@@ -69,20 +69,59 @@
           <div class="flex flex-col gap-1.5">
             <label class="text-[12px] font-bold text-inkSoft">شماره موبایل</label>
             <div class="relative">
-              <input v-model="form.mobile" type="tel" dir="ltr" disabled class="w-full p-3.5 rounded-xl border border-ink/10 bg-ink/[0.03] text-[13px] text-inkSoft outline-none" />
+              <input v-model="form.mobile" type="tel" dir="rtl" disabled class="w-full p-3.5 rounded-xl border border-ink/10 bg-ink/[0.03] text-[13px] text-inkSoft outline-none" />
               <span class="absolute inset-y-0 left-3 flex items-center text-[10.5px] text-sage font-bold">
                 <Icon name="tabler:circle-check" class="text-[13px]" />
               </span>
             </div>
           </div>
+
           <div class="flex flex-col gap-1.5">
             <label class="text-[12px] font-bold text-inkSoft">تاریخ تولد</label>
-            <input v-model="form.birth_date" type="text" placeholder="۱۳۷۰/۰۱/۰۱" class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors" />
+            <ClientOnly>
+              <div class="relative">
+                <input
+                  id="birth-date-input"
+                  type="text"
+                  readonly
+                  :value="birthDateDisplay"
+                  placeholder="۱۳۷۰/۰۱/۰۱"
+                  class="w-full p-3.5 pl-10 rounded-xl border border-ink/15 bg-cream text-[13px] text-ink outline-none focus:border-accent transition-colors cursor-pointer"
+                />
+                <Icon
+                  name="tabler:calendar-event"
+                  class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-inkSoft text-[15px] place-self-center place-items-center"
+                />
+                <DatePicker
+                  v-if="DatePicker"
+                  v-model="form.birth_date"
+                  type="date"
+                  locale="fa"
+                  simple
+                  :max="maxBirthDate"
+                  :min="minBirthDate"
+                  format="YYYY-MM-DD"
+                  display-format="jYYYY/jMM/jDD"
+                  custom-input="#birth-date-input"
+                />
+              </div>
+              <template #fallback>
+                <input
+                  type="text"
+                  :value="form.birth_date"
+                  placeholder="۱۳۷۰/۰۱/۰۱"
+                  disabled
+                  class="w-full p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none opacity-70"
+                />
+              </template>
+            </ClientOnly>
           </div>
+
           <div class="flex flex-col gap-1.5">
             <label class="text-[12px] font-bold text-inkSoft">کد ملی</label>
             <input v-model="form.national_code" type="text" inputmode="numeric" maxlength="10" dir="ltr" class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors" />
           </div>
+
           <div class="flex flex-col gap-1.5">
             <label class="text-[12px] font-bold text-inkSoft">جنسیت</label>
             <select v-model.number="form.gender" class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors">
@@ -120,14 +159,135 @@
         <Icon name="tabler:shield-lock" class="text-accent" />
         امنیت حساب
       </h3>
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-2xl bg-ink/[0.03] p-4">
-        <div>
-          <p class="text-[13px] font-bold text-ink">رمز عبور</p>
-          <p class="text-[11.5px] text-inkSoft mt-1">برای امنیت بیشتر، رمز عبور خود را به‌طور دوره‌ای تغییر دهید.</p>
+      <div class="flex flex-col gap-4 rounded-2xl bg-ink/[0.03] p-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <p class="text-[13px] font-bold text-ink">رمز عبور</p>
+            <p class="text-[11.5px] text-inkSoft mt-1">برای امنیت بیشتر، رمز عبور خود را به‌طور دوره‌ای تغییر دهید.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              class="shrink-0 px-5 py-2.5 rounded-full border border-ink/15 text-[12.5px] font-bold text-ink hover:bg-ink/5 transition-colors"
+              @click="togglePasswordChange"
+            >
+              {{ passwordChangeOpen ? 'بستن فرم' : 'تغییر رمز عبور' }}
+            </button>
+            <button
+              type="button"
+              class="shrink-0 px-5 py-2.5 rounded-full bg-accent text-cream text-[12.5px] font-bold hover:bg-accentHover transition-colors"
+              @click="openForgotPasswordFlow"
+            >
+              فراموشی رمز عبور
+            </button>
+          </div>
         </div>
-        <button type="button" class="shrink-0 px-5 py-2.5 rounded-full border border-ink/15 text-[12.5px] font-bold text-ink hover:bg-ink/5 transition-colors">
-          تغییر رمز عبور
-        </button>
+
+        <div v-if="passwordChangeOpen" class="rounded-2xl border border-ink/10 bg-cardLight p-4">
+          <div class="grid gap-3">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[12px] font-bold text-inkSoft">رمز عبور فعلی</label>
+              <input
+                v-model="passwordForm.oldPassword"
+                type="password"
+                placeholder="رمز عبور فعلی"
+                class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
+              />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[12px] font-bold text-inkSoft">رمز عبور جدید</label>
+              <input
+                v-model="passwordForm.password"
+                type="password"
+                placeholder="حداقل ۶ کاراکتر"
+                class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
+              />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[12px] font-bold text-inkSoft">تکرار رمز عبور جدید</label>
+              <input
+                v-model="passwordForm.confirmPassword"
+                type="password"
+                placeholder="حداقل ۶ کاراکتر"
+                class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
+              />
+            </div>
+          </div>
+
+          <div class="mt-4 flex justify-end gap-2">
+            <button
+              type="button"
+              class="px-4 py-2.5 rounded-full border border-ink/10 text-[12.5px] font-bold text-inkSoft hover:bg-ink/5 transition-colors"
+              @click="closePasswordChangeForm"
+            >
+              انصراف
+            </button>
+            <button
+              type="button"
+              :disabled="passwordSubmitLoading"
+              class="px-5 py-2.5 rounded-full bg-accent text-cream text-[12.5px] font-bold hover:bg-accentHover transition-colors disabled:opacity-60"
+              @click="submitPasswordChange"
+            >
+              {{ passwordSubmitLoading ? 'در حال ذخیره...' : 'ذخیره رمز جدید' }}
+            </button>
+          </div>
+        </div>
+
+        <div v-if="forgotPasswordOpen" class="rounded-2xl border border-ink/10 bg-cardLight p-4">
+          <div v-if="forgotPasswordStep === 'otp'" class="space-y-3">
+            <p class="text-[12.5px] text-inkSoft">
+              کد تایید به شماره
+              <span class="font-bold text-ink" dir="ltr">{{ currentUser.mobile }}</span>
+              ارسال می‌شود.
+            </p>
+            <LoginOtpInput
+              :key="`forgot-password-otp-${forgotOtpKey}`"
+              :fields="5"
+              :target="currentUser.mobile || ''"
+              send-type="Forget"
+              @handle-complete="verificationCodePassedForget"
+            />
+          </div>
+
+          <div v-else class="space-y-3">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[12px] font-bold text-inkSoft">رمز عبور جدید</label>
+              <input
+                v-model="forgotPasswordForm.password"
+                type="password"
+                placeholder="حداقل ۶ کاراکتر"
+                class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
+              />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[12px] font-bold text-inkSoft">تکرار رمز عبور جدید</label>
+              <input
+                v-model="forgotPasswordForm.confirmPassword"
+                type="password"
+                placeholder="تکرار رمز عبور جدید"
+                class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
+              />
+            </div>
+
+            <div class="flex justify-end gap-2 pt-1">
+              <button
+                type="button"
+                class="px-4 py-2.5 rounded-full border border-ink/10 text-[12.5px] font-bold text-inkSoft hover:bg-ink/5 transition-colors"
+                @click="closeForgotPasswordFlow"
+              >
+                انصراف
+              </button>
+              <button
+                type="button"
+                :disabled="forgotPasswordSubmitLoading"
+                class="px-5 py-2.5 rounded-full bg-accent text-cream text-[12.5px] font-bold hover:bg-accentHover transition-colors disabled:opacity-60"
+                @click="submitForgotPassword"
+              >
+                {{ forgotPasswordSubmitLoading ? 'در حال ثبت...' : 'ثبت رمز جدید' }}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -138,6 +298,13 @@ import { reactive, computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { faDate } from '~/utils/format.ts';
 
+const DatePicker = ref(null);
+
+if (import.meta.client) {
+  const pickerModule = await import('vue3-persian-datetime-picker');
+  DatePicker.value = pickerModule.default;
+}
+
 definePageMeta({ layout: 'account' });
 useSeoMeta({ title: 'اطلاعات حساب | ماهلین اسکین‌کر' });
 
@@ -145,9 +312,27 @@ const customizer = useCustomizerStore();
 const saving = ref(false);
 const fileLoading = ref(false);
 const profileImageInput = ref(null);
+const passwordChangeOpen = ref(false);
+const forgotPasswordOpen = ref(false);
+const forgotPasswordStep = ref('otp');
+const forgotPasswordSubmitLoading = ref(false);
+const passwordSubmitLoading = ref(false);
+const forgotVerificationCode = ref('');
+const forgotOtpKey = ref(0);
 const currentUser = computed(() => customizer.userInfo && !Array.isArray(customizer.userInfo)
   ? customizer.userInfo
   : {});
+
+const passwordForm = reactive({
+  oldPassword: '',
+  password: '',
+  confirmPassword: '',
+});
+
+const forgotPasswordForm = reactive({
+  password: '',
+  confirmPassword: '',
+});
 
 const form = reactive({
   first_name: '',
@@ -173,6 +358,122 @@ function fillForm() {
 
 function resetForm() {
   fillForm();
+}
+
+function togglePasswordChange() {
+  passwordChangeOpen.value = !passwordChangeOpen.value;
+  if (passwordChangeOpen.value) {
+    forgotPasswordOpen.value = false;
+  }
+}
+
+function closePasswordChangeForm() {
+  passwordChangeOpen.value = false;
+  passwordForm.oldPassword = '';
+  passwordForm.password = '';
+  passwordForm.confirmPassword = '';
+}
+
+function openForgotPasswordFlow() {
+  passwordChangeOpen.value = false;
+  forgotPasswordOpen.value = true;
+  forgotPasswordStep.value = 'otp';
+  forgotVerificationCode.value = '';
+  forgotPasswordForm.password = '';
+  forgotPasswordForm.confirmPassword = '';
+  forgotOtpKey.value += 1;
+}
+
+function closeForgotPasswordFlow() {
+  forgotPasswordOpen.value = false;
+  forgotPasswordStep.value = 'otp';
+  forgotVerificationCode.value = '';
+  forgotPasswordForm.password = '';
+  forgotPasswordForm.confirmPassword = '';
+  forgotOtpKey.value += 1;
+}
+
+function verificationCodePassedForget(code) {
+  forgotVerificationCode.value = code;
+  forgotPasswordStep.value = 'new';
+  toast.success('کد تایید پذیرفته شد');
+}
+
+function submitPasswordChange() {
+  if (!passwordForm.oldPassword.trim()) {
+    toast.error('رمز عبور فعلی را وارد کنید');
+    return;
+  }
+
+  if (!passwordForm.password.trim() || passwordForm.password.length < 6) {
+    toast.error('رمز عبور جدید باید حداقل ۶ کاراکتر باشد');
+    return;
+  }
+
+  if (passwordForm.password !== passwordForm.confirmPassword) {
+    toast.error('تکرار رمز عبور جدید با رمز جدید یکسان نیست');
+    return;
+  }
+
+  passwordSubmitLoading.value = true;
+
+  useGarnetApiFetch('users/updatePassword', {
+    oldPassword: passwordForm.oldPassword,
+    password: passwordForm.password,
+  })
+    .then((response) => {
+      if (response?.code === 2000) {
+        toast.success('رمز عبور با موفقیت تغییر کرد');
+        closePasswordChangeForm();
+      } else {
+        toast.error(response?.msg || response?.error || 'رمز عبور فعلی اشتباه است یا تغییر رمز عبور انجام نشد');
+      }
+    })
+    .catch((error) => {
+      toast.error(error?.message || error || 'خطا در تغییر رمز عبور');
+    })
+    .finally(() => {
+      passwordSubmitLoading.value = false;
+    });
+}
+
+function submitForgotPassword() {
+  if (!forgotPasswordForm.password.trim() || forgotPasswordForm.password.length < 6) {
+    toast.error('رمز عبور جدید باید حداقل ۶ کاراکتر باشد');
+    return;
+  }
+
+  if (forgotPasswordForm.password !== forgotPasswordForm.confirmPassword) {
+    toast.error('تکرار رمز عبور جدید با رمز جدید یکسان نیست');
+    return;
+  }
+
+  if (!forgotVerificationCode.value) {
+    toast.error('کد تایید معتبر نیست');
+    return;
+  }
+
+  forgotPasswordSubmitLoading.value = true;
+
+  useGarnetApiFetch('users/forgetPasswordByVerificationCode', {
+    mobile: currentUser.value.mobile,
+    password: forgotPasswordForm.password,
+    verificationCode: forgotVerificationCode.value,
+  })
+    .then((response) => {
+      if (response?.code === 2000) {
+        toast.success('رمز عبور جدید با موفقیت ثبت شد');
+        closeForgotPasswordFlow();
+      } else {
+        toast.error(response?.msg || response?.error || 'ثبت رمز عبور جدید انجام نشد');
+      }
+    })
+    .catch((error) => {
+      toast.error(error?.message || error || 'خطا در ثبت رمز عبور جدید');
+    })
+    .finally(() => {
+      forgotPasswordSubmitLoading.value = false;
+    });
 }
 
 function uploadBox(event) {
@@ -255,4 +556,82 @@ function saveProfile() {
 watch(() => customizer.userInfo, fillForm, { immediate: true });
 
 const initials = computed(() => (currentUser.value.first_name?.[0] || '') + (currentUser.value.last_name?.[0] || ''));
+
+function toGregorianStr(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+const maxBirthDate = computed(() => toGregorianStr(new Date()));
+const minBirthDate = computed(() => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - 100);
+  return toGregorianStr(d);
+});
+
+function toJalaliDisplay(gregorianStr) {
+  if (!gregorianStr) return '';
+  const [y, m, d] = gregorianStr.split('-').map(Number);
+  if (!y || !m || !d) return '';
+
+  const utcDate = new Date(Date.UTC(y, m - 1, d));
+  const parts = new Intl.DateTimeFormat('fa-IR-u-ca-persian-nu-latn', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    timeZone: 'UTC',
+  }).formatToParts(utcDate);
+
+  const get = (type) => parts.find((p) => p.type === type)?.value ?? '';
+  return `${get('year')}/${get('month')}/${get('day')}`;
+}
+
+const birthDateDisplay = computed(() => toJalaliDisplay(form.birth_date));
 </script>
+
+<style>
+/* باکس پاپ‌آپ تقویم/لیست‌ها (در حالت simple) */
+.vpd-content,
+.vpd-addon-wrapper {
+  background: theme('colors.cardLight') !important;
+  border: 1px solid theme('colors.ink / 8%') !important;
+  border-radius: 18px !important;
+  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, .25) !important;
+  overflow: hidden;
+  font-family: inherit;
+}
+
+/* هدر (ماه/سال) */
+.vpd-header {
+  background: theme('colors.accent') !important;
+  color: theme('colors.cream') !important;
+}
+
+/* روزهای تقویم */
+.vpd-day-text {
+  color: theme('colors.ink');
+}
+.vpd-day.vpd-selected .vpd-day-effect {
+  background-color: theme('colors.accent') !important;
+}
+.vpd-day.vpd-selected .vpd-day-text {
+  color: theme('colors.cream') !important;
+}
+
+/* آیتم‌های لیست در حالت simple (روز/ماه/سال) */
+.vpd-addon-list-item {
+  color: theme('colors.inkSoft');
+}
+.vpd-addon-list-item.vpd-selected {
+  background-color: theme('colors.accent') !important;
+  color: theme('colors.cream') !important;
+  border-radius: 10px;
+}
+
+/* دکمه‌های پایین (امروز/تایید و ...) */
+.vpd-actions button {
+  color: theme('colors.accent') !important;
+}
+</style>

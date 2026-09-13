@@ -118,8 +118,8 @@ function CheckVerificationCode(inputCode) {
     prefixMobile: props.prefixMobile,
     withUsername: props.withUsername,
     withEmail: props.sendType === "ByEmail",
-    callBackInfo: props.callBackInfo,
-    callBackToken: props.callBackToken,
+    callBackInfo: false,
+    callBackToken: false,
     verifyAccount: true,
   })
     .then((response) => {

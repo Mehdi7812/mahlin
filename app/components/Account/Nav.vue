@@ -49,8 +49,8 @@
           </span>
         </div>
 
-        <p class="font-bold text-[15px]">{{ currentUser.full_name }}</p>
-        <p class="text-[11px] text-cream/40 mt-1 font-latin" dir="ltr">{{ currentUser.mobile }}</p>
+        <p class="font-bold text-[15px]">{{ (currentUser.first_name || currentUser.last_name) || currentUser.full_name }}</p>
+        <p class="text-[11px] text-cream/40 mt-1 font-latin" dir="ltr">0{{ currentUser.mobile }}</p>
 
         <!-- استریپ آمار کوچک -->
         <!-- <div class="flex items-center justify-center gap-2 mt-4">
@@ -98,13 +98,13 @@
             class="absolute start-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-full bg-gradient-to-b from-[#e8b4bc] to-gold"
           />
           <span class="relative flex-1 text-right truncate">{{ item.label }}</span>
-          <span
+          <!-- <span
             v-if="item.badge"
             class="relative text-[10px] font-bold min-w-[18px] h-[18px] px-1 rounded-full grid place-items-center font-latin shrink-0"
             :class="isActive(item.to) ? 'bg-gradient-to-br from-[#e8b4bc] to-gold text-ink' : 'bg-white/[0.08] text-cream/60'"
           >
             {{ faNumber(item.badge) }}
-          </span>
+          </span> -->
           <span
             class="relative w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300"
             :class="isActive(item.to) ? 'bg-gradient-to-br from-[#e8b4bc]/25 to-gold/25 text-gold' : 'bg-white/[0.04] text-cream/40 group-hover:bg-white/[0.07]'"
@@ -117,7 +117,7 @@
 
         <NuxtLink
           to="/tickets"
-          class="group flex items-center gap-3 px-3.5 py-3.5 rounded-2xl text-[13.5px] font-semibold text-cream/50 hover:text-cream/80 transition-colors"
+          class="group flex items-center gap-3 px-3 py-2 rounded-2xl text-[13.5px] font-semibold text-cream/50 hover:text-cream/80 transition-colors"
         >
           <span class="flex-1 text-right">تیکت</span>
           <span class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-white/[0.04] text-cream/40 group-hover:bg-white/[0.07] transition-colors">
@@ -127,7 +127,7 @@
 
         <button
           type="button"
-          class="group w-full flex items-center gap-3 px-3.5 py-3.5 rounded-2xl text-[13.5px] font-semibold text-[#e29a9a] hover:text-[#f0b3b3] transition-colors"
+          class="group w-full flex items-center gap-3 px-3 py-2 rounded-2xl text-[13.5px] font-semibold text-[#e29a9a] hover:text-[#f0b3b3] transition-colors"
           @click="$emit('logout')"
         >
           <span class="flex-1 text-right">خروج از حساب</span>
@@ -194,6 +194,7 @@ const items = computed(() => [
   { to: '/account/orders', label: 'سفارش‌های من', icon: 'tabler:package', badge: pendingOrdersCount.value },
   { to: '/account/favorites', label: 'علاقه‌مندی‌ها', icon: 'tabler:heart' },
   { to: '/account/addresses', label: 'آدرس‌ها', icon: 'tabler:map-pin' },
+  { to: '/account/wallet', label: 'کیف پول', icon: 'tabler:wallet' },
   // { to: '/account/loyalty', label: 'باشگاه مشتریان', icon: 'tabler:sparkles' },
   { to: '/account/profile', label: 'اطلاعات حساب', icon: 'tabler:user' },
 ]);
