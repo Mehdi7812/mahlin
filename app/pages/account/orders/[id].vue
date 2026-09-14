@@ -173,13 +173,13 @@
           <p class="text-[12px] text-inkSoft mt-1.5">گیرنده: {{ order.receiver.receiver_full_name || '---' }} — {{ toLatinButShown(order.receiver.receiver_mobile || '') }}</p>
         </div>
 
-        <button
+        <!-- <button
           v-if="order.status !== 'cancelled' && order.status !== 'delivered'"
           type="button"
           class="w-full py-3 rounded-full border border-red-200 text-red-500 text-[13px] font-bold hover:bg-red-50 transition-colors"
         >
           درخواست لغو سفارش
-        </button>
+        </button> -->
         <NuxtLink
           v-if="order.status === 'delivered'"
           to="/shop"

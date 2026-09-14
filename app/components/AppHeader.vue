@@ -54,7 +54,6 @@
         <form
           class="flex items-center gap-2.5 w-full max-w-[720px] transform-gpu pe-14 md:pe-0"
           style="backface-visibility: hidden;"
-          @submit.prevent="onSearch"
         >
           <div class="relative flex-1 min-w-0">
             <svg
@@ -73,13 +72,76 @@
               @keydown.esc.prevent="closeSearch"
             />
           </div>
-          <button
-            type="submit"
-            class="hidden sm:inline-flex bg-ink text-cream px-6 py-3 rounded-full text-sm font-bold hover:bg-ink/90 transition-colors whitespace-nowrap"
-          >
-            جستجو
-          </button>
         </form>
+
+        <Transition
+          enter-active-class="transition-all duration-200 ease-out"
+          enter-from-class="opacity-0 translate-y-1.5 scale-95"
+          enter-to-class="opacity-100 translate-y-0 scale-100"
+          leave-active-class="transition-all duration-150 ease-in"
+          leave-from-class="opacity-100 translate-y-0 scale-100"
+          leave-to-class="opacity-0 translate-y-1.5 scale-95"
+        >
+          <div
+            v-if="showSearchDropdown"
+            class="absolute inset-x-0 top-full mt-2 bg-cream border border-ink/[0.08] rounded-[22px] shadow-[0_20px_45px_rgba(0,0,0,0.10)] z-50 overflow-hidden transform-gpu"
+          >
+            <div v-if="searchLoading" class="p-4 space-y-3">
+              <div v-for="n in 3" :key="n" class="flex items-center gap-3 animate-pulse">
+                <div class="w-12 h-12 rounded-xl bg-ink/[0.06] shrink-0"></div>
+                <div class="flex-1 space-y-2">
+                  <div class="h-3 w-3/4 bg-ink/[0.06] rounded-full"></div>
+                  <div class="h-2.5 w-1/3 bg-ink/[0.06] rounded-full"></div>
+                </div>
+              </div>
+            </div>
+
+            <div v-else-if="searchResults.length" class="max-h-[420px] overflow-y-auto">
+              <button
+                v-for="r in searchResults"
+                :key="r.id"
+                type="button"
+                class="w-full flex items-center gap-3 px-4 py-3 hover:bg-ink/[0.02] transition-colors text-right border-b border-ink/[0.04] last:border-b-0"
+                @click="goToSearchResult(r)"
+              >
+                <img
+                  :src="r.cover_image"
+                  :alt="r.title_fa"
+                  class="w-12 h-12 rounded-xl object-cover shrink-0 bg-ink/[0.04]"
+                  @error="(e) => e.target.style.opacity = '0.3'"
+                />
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs sm:text-sm font-bold text-ink truncate">{{ r.title_fa }}</p>
+                  <p class="text-[10px] text-ink/40 mt-0.5">{{ r.category_title_fa }}</p>
+                </div>
+                <div class="text-left shrink-0">
+                  <div v-if="r.discount > 0" class="text-[10px] text-ink/35 line-through font-latin">
+                    {{ money(r.price) }}
+                  </div>
+                  <div class="text-xs font-bold font-latin text-gold">
+                    {{ money(r.final_price) }} <span class="text-[9px] text-ink/40 font-sans">تومان</span>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                class="w-full text-center py-3 text-xs font-bold text-gold hover:bg-ink/[0.02] transition-colors"
+                @click="submitFullSearch"
+              >
+                مشاهده همه نتایج برای «{{ searchQuery.trim() }}» ←
+              </button>
+            </div>
+
+            <div v-else class="flex flex-col items-center justify-center text-center py-8 px-4">
+              <svg class="w-8 h-8 text-ink/20 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="11" cy="11" r="7"/>
+                <path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
+              </svg>
+              <p class="text-xs text-ink/45">نتیجه‌ای برای «{{ searchQuery.trim() }}» یافت نشد</p>
+            </div>
+          </div>
+        </Transition>
       </div>
 
       <!-- آیکون‌ها (ستون سمت راست - با z-30 جهت دسترسی دائمی به دکمه ضربدر بستن) -->
@@ -255,7 +317,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { fa } from '~/utils/format.ts';
+import { fa, money } from '~/utils/format.ts';
 
 const customizer = useCustomizerStore()
 
@@ -264,8 +326,12 @@ const open = ref(false);
 const searchOpen = ref(false);
 const searchQuery = ref('');
 const searchInput = ref(null);
+const searchResults = ref([]);
+const searchLoading = ref(false);
+const showSearchDropdown = ref(false);
 const route = useRoute();
 const router = useRouter();
+let searchTimer = null;
 
 /* ===================================================================
    🔐 وضعیت لاگین کاربر (از localStorage با کلید "g-auth-token")
@@ -320,6 +386,13 @@ function openSearch() {
 function closeSearch() {
   searchOpen.value = false;
   searchQuery.value = '';
+  searchResults.value = [];
+  searchLoading.value = false;
+  showSearchDropdown.value = false;
+  if (searchTimer) {
+    clearTimeout(searchTimer);
+    searchTimer = null;
+  }
 }
 
 watch(searchOpen, (val) => {
@@ -330,6 +403,45 @@ watch(searchOpen, (val) => {
       }, 310);
     }
   }
+});
+
+watch(searchQuery, (val) => {
+  clearTimeout(searchTimer);
+
+  const trimmed = val.trim();
+
+  if (!trimmed) {
+    searchResults.value = [];
+    searchLoading.value = false;
+    showSearchDropdown.value = false;
+    return;
+  }
+
+  showSearchDropdown.value = true;
+  searchLoading.value = true;
+
+  searchTimer = setTimeout(async () => {
+    try {
+      const response = await useGarnetApiFetch('reports/search', {
+        amount: 5,
+        direction: 'desc',
+        order: 'id',
+        page: 1,
+        searchWord: trimmed,
+      });
+
+      if (response?.code === 2000) {
+        searchResults.value = response.Result || [];
+      } else {
+        searchResults.value = [];
+      }
+    } catch (error) {
+      console.error('[AppHeader] خطا در جستجوی سریع:', error);
+      searchResults.value = [];
+    } finally {
+      searchLoading.value = false;
+    }
+  }, 300);
 });
 
 watch(open, (val) => {
@@ -364,9 +476,15 @@ onUnmounted(() => {
   }
 });
 
-function onSearch() {
-  if (!searchQuery.value.trim()) return;
-  router.push({ path: '/shop', query: { q: searchQuery.value.trim() } });
+function goToSearchResult(item) {
   closeSearch();
+  router.push(`/product/${item.id}/${item.slug_fa}`);
 }
+
+function submitFullSearch() {
+  if (!searchQuery.value.trim()) return;
+  closeSearch();
+  router.push({ path: '/shop', query: { q: searchQuery.value.trim() } });
+}
+
 </script>

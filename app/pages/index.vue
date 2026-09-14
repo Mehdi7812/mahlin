@@ -5,7 +5,7 @@
 
   <HomeBrands />
 
-  <HomeSkinQuiz />
+  <!-- <HomeSkinQuiz /> -->
 
   <HomeCategory />
 
