@@ -2,6 +2,7 @@
   "name": "mahlin-skincare",
   "private": true,
   "type": "module",
+  "version": "1.0.1",
   "scripts": {
     "dev": "nuxt dev --port 4040 --open",
     "build": "nuxt build",

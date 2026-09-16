@@ -63,57 +63,87 @@
     <!-- هدر -->
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div>
-        <NuxtLink to="/account/orders" class="inline-flex items-center gap-1.5 text-[12.5px] text-inkSoft hover:text-accent mb-2">
-          <Icon name="tabler:arrow-right" class="text-[14px] rtl:rotate-180" />
-          بازگشت به سفارش‌ها
-        </NuxtLink>
+        <span
+          class="flex items-center gap-1.5 text-[12px] font-bold px-3 py-1.5 rounded-full w-fit"
+          :class="[meta.bg, meta.text]"
+        >
+          <span class="w-1.5 h-1.5 rounded-full" :class="meta.dot" />
+          {{ meta.label }}
+        </span>
+        
         <h2 class="font-display text-xl md:text-2xl text-ink flex items-center gap-2 flex-wrap">
           سفارش
           <span class="font-latin text-accent" dir="ltr">{{ order.code }}</span>
         </h2>
         <p class="text-[12.5px] text-inkSoft mt-1">ثبت‌شده در {{ faDate(order.date) }}</p>
       </div>
-      <span
-        class="flex items-center gap-1.5 text-[12px] font-bold px-3 py-1.5 rounded-full"
-        :class="[meta.bg, meta.text]"
-      >
-        <span class="w-1.5 h-1.5 rounded-full" :class="meta.dot" />
-        {{ meta.label }}
-      </span>
+      
+      <NuxtLink to="/account/orders" class="inline-flex items-center gap-1.5 text-[12.5px] text-inkSoft hover:text-accent mb-2">
+        بازگشت به سفارش‌ها
+        <Icon name="tabler:arrow-right" class="text-[14px] rtl:rotate-180" />
+      </NuxtLink>
     </div>
+    
 
     <!-- مراحل پیگیری سفارش -->
-    <div class="rounded-[22px] border border-ink/[0.06] bg-cardLight p-5 md:p-6 overflow-x-auto">
-      <div class="flex items-center min-w-[560px]">
+    <div
+      v-if="order.status !== 'cancelled' && order.status !== 'returned'"
+      class="rounded-[22px] border border-ink/[0.06] bg-cardLight p-5 md:p-6 overflow-x-auto"
+    >
+      <div class="mb-5 flex items-center justify-between gap-4">
+        <div>
+          <h3 class="flex items-center gap-2 text-[14px] font-bold text-ink">
+            <Icon name="tabler:route" class="text-accent" />
+            مراحل سفارش
+          </h3>
+          <p class="mt-1 text-[11.5px] text-inkSoft">{{ currentStepLabel }}</p>
+        </div>
+        <span class="shrink-0 rounded-full bg-accent/10 px-3 py-1 text-[11px] font-bold text-accent">
+          مرحله {{ faNumber(progressIndex + 1) }} از {{ faNumber(trackingSteps.length) }}
+        </span>
+      </div>
+
+      <div class="flex min-w-[560px] gap-4 items-start">
         <template v-for="(step, i) in trackingSteps" :key="step.key">
-          <div class="flex flex-col items-center flex-1 text-center">
+          <div
+            class="flex flex-col items-center text-center"
+            :aria-current="stepState(i) === 'current' ? 'step' : undefined"
+          >
             <span
-              class="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+              class="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border-4 border-cardLight transition-all duration-300"
               :class="stepState(i) === 'done'
-                ? 'bg-sage text-white'
+                ? 'bg-sage text-white shadow-[0_5px_14px_-7px_rgba(92,138,97,0.8)]'
                 : stepState(i) === 'current'
-                  ? 'bg-accent text-cream ring-4 ring-accent/15'
+                  ? 'bg-accent text-cream ring-4 ring-accent/15 shadow-[0_5px_14px_-7px_rgba(177,125,67,0.9)]'
                   : 'bg-ink/[0.06] text-inkSoft'"
             >
               <Icon :name="stepState(i) === 'done' ? 'tabler:check' : step.icon" class="text-[16px]" />
             </span>
-            <p class="mt-2 text-[11.5px] font-bold" :class="stepState(i) === 'upcoming' ? 'text-inkSoft' : 'text-ink'">
+            <span class="mt-2 text-[10px] font-bold text-inkSoft">مرحله {{ faNumber(i + 1) }}</span>
+            <p class="mt-1 text-[11.5px] font-bold" :class="stepState(i) === 'upcoming' ? 'text-inkSoft' : 'text-ink'">
               {{ step.label }}
             </p>
           </div>
           <div
             v-if="i < trackingSteps.length - 1"
-            class="h-[2px] flex-1 -mt-6"
-            :class="stepState(i) === 'done' ? 'bg-sage' : 'bg-ink/[0.08]'"
-          />
+            class="relative mt-[22px] h-1 flex-1 overflow-hidden rounded-full bg-ink/[0.08]"
+          >
+            <span
+              class="absolute inset-y-0 start-0 rounded-full bg-sage transition-all duration-500"
+              :class="stepState(i) === 'done' ? 'w-full' : 'w-0'"
+            />
+          </div>
         </template>
       </div>
-
-      <p v-if="order.status === 'cancelled'" class="mt-5 flex items-center gap-2 rounded-xl bg-red-50 px-4 py-3 text-[12.5px] text-red-500">
-        <Icon name="tabler:info-circle" class="text-[15px] shrink-0" />
-        این سفارش لغو شده است.
-      </p>
     </div>
+
+    <p
+      v-if="order.status === 'cancelled' || order.status === 'returned'"
+      class="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-3 text-[12.5px] text-red-500"
+    >
+      <Icon name="tabler:info-circle" class="text-[15px] shrink-0" />
+      {{ order.status === 'cancelled' ? 'این سفارش لغو شده است.' : 'این سفارش در فرایند مرجوعی قرار دارد.' }}
+    </p>
 
     <div class="grid lg:grid-cols-3 gap-5">
       <!-- اقلام سفارش -->
@@ -148,11 +178,17 @@
           <div class="flex flex-col gap-2.5 text-[13px]">
             <div class="flex justify-between">
               <span class="text-inkSoft">جمع کالاها</span>
-              <span class="font-latin">{{ money(order.total) }}</span>
+              <span class="font-latin">{{ money(order.subtotal) }}</span>
             </div>
             <div class="flex justify-between">
               <span class="text-inkSoft">هزینه ارسال</span>
-              <span class="font-latin text-sage font-bold">رایگان</span>
+              <span class="font-latin" :class="order.shipping ? 'text-ink' : 'text-sage font-bold'">
+                {{ order.shipping ? `${money(order.shipping)} تومان` : 'رایگان' }}
+              </span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-inkSoft">مالیات</span>
+              <span class="font-latin">{{ money(order.tax) }} تومان</span>
             </div>
             <div class="flex justify-between pt-2.5 border-t border-ink/[0.06] text-[14px] font-bold text-ink">
               <span>مبلغ نهایی</span>
@@ -180,13 +216,15 @@
         >
           درخواست لغو سفارش
         </button> -->
-        <NuxtLink
+        <button
           v-if="order.status === 'delivered'"
-          to="/shop"
-          class="w-full text-center py-3 rounded-full bg-accent text-cream text-[13px] font-bold hover:bg-accentHover transition-colors"
+          type="button"
+          :disabled="reordering"
+          @click="reorderItems"
+          class="w-full rounded-full bg-accent py-3 text-center text-[13px] font-bold text-cream transition-colors hover:bg-accentHover disabled:cursor-not-allowed disabled:opacity-60"
         >
-          خرید مجدد این اقلام
-        </NuxtLink>
+          {{ reordering ? 'در حال افزودن به سبد...' : 'خرید مجدد این اقلام' }}
+        </button>
       </div>
     </div>
   </div>
@@ -205,7 +243,9 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue';
+import { toast } from 'vue-sonner';
 import { ORDER_STATUS_META } from '~/data/account';
+import { assertGarnetOk, getOrderProgressIndex, resolveOrderStatus } from '~/data/orderStatus';
 import { money, faNumber, faDate, fa } from '~/utils/format.ts';
 
 definePageMeta({ layout: 'account' });
@@ -213,43 +253,23 @@ definePageMeta({ layout: 'account' });
 const route = useRoute()
 const order = ref(null);
 const loading = ref(true);
-
-const statusAliases = {
-  1: 'pending',
-  2: 'processing',
-  3: 'processing',
-  4: 'processing',
-  5: 'processing',
-  8: 'processing',
-  6: 'delivered',
-  7: 'cancelled',
-  9: 'returned',
-  10: 'returned',
-  11: 'returned',
-  12: 'returned',
-  awaiting_payment: 'pending',
-  pending: 'pending',
-  processing: 'processing',
-  shipped: 'shipped',
-  delivered: 'delivered',
-  cancelled: 'cancelled',
-  returned: 'returned',
-};
+const reordering = ref(false);
 
 function normalizeOrder(invoice) {
   const details = invoice.invoice_details || invoice.details || invoice.items || [];
-  const normalizedStatus = statusAliases[invoice.status]
-    || statusAliases[invoice.status_code]
-    || statusAliases[invoice.status_text]
-    || 'pending';
+  const normalizedStatus = resolveOrderStatus(invoice);
 
   return {
     id: invoice.id || invoice.invoice_id,
     code: invoice.invoice_number || invoice.code || invoice.invoice_code || invoice.number || invoice.tracking_code || `#${invoice.id || invoice.invoice_id}`,
     date: invoice.document_date || invoice.date || invoice.created_at || invoice.createdAt,
     status: normalizedStatus,
+    subtotal: Number(invoice.impure_price ?? invoice.total ?? invoice.total_price ?? 0),
+    shipping: Number(invoice.send_price ?? 0),
+    tax: Number(invoice.tax_price ?? 0),
     total: Number(invoice.total_price ?? invoice.total ?? invoice.final_price ?? invoice.price ?? 0),
     items: details.map((detail) => ({
+      productId: detail.products?.id || detail.product?.id || detail.product_id,
       title_fa: detail.products?.title_fa || detail.product?.title_fa || detail.title_fa || detail.products?.title || 'محصول',
       cover_image: detail.products?.cover_image || detail.product?.cover_image || detail.cover_image,
       qty: Number(detail.amount ?? detail.qty ?? 1),
@@ -302,11 +322,15 @@ const meta = computed(() => ORDER_STATUS_META[order.value?.status] || ORDER_STAT
 const trackingSteps = [
   { key: 'placed', label: 'ثبت سفارش', icon: 'tabler:receipt' },
   { key: 'processing', label: 'آماده‌سازی', icon: 'tabler:package' },
-  { key: 'shipped', label: 'ارسال', icon: 'tabler:truck-delivery' },
-  { key: 'delivered', label: 'تحویل', icon: 'tabler:home-check' },
+  { key: 'shipped', label: 'درحال ارسال', icon: 'tabler:truck-delivery' },
+  { key: 'delivered', label: 'ارسال شده', icon: 'tabler:home-check' },
 ];
 
-const statusOrder = ['pending', 'processing', 'shipped', 'delivered'];
+const progressIndex = computed(() => getOrderProgressIndex(order.value?.status || 'pending'));
+const currentStepLabel = computed(() => {
+  if (order.value?.status === 'delivered') return 'سفارش شما تحویل شده است.';
+  return `سفارش شما در مرحله «${trackingSteps[progressIndex.value].label}» قرار دارد.`;
+});
 
 onMounted(() => {
   loadOrder();
@@ -315,10 +339,36 @@ onMounted(() => {
 function stepState(index) {
   if (!order.value) return 'upcoming';
   if (order.value.status === 'cancelled') return index === 0 ? 'done' : 'upcoming';
-  const currentIndex = Math.max(statusOrder.indexOf(order.value.status), 0);
+  if (order.value.status === 'delivered') return 'done';
+  const currentIndex = getOrderProgressIndex(order.value.status);
   if (index < currentIndex) return 'done';
   if (index === currentIndex) return 'current';
   return 'upcoming';
+}
+
+async function reorderItems() {
+  if (!order.value || reordering.value) return;
+  reordering.value = true;
+
+  try {
+    for (const item of order.value.items) {
+      if (!item.productId) continue;
+
+      const response = await useGarnetApiFetch('invoices/create', {
+        product_id: item.productId,
+        amount: item.qty,
+      });
+
+      assertGarnetOk(response, 'افزودن این محصول به سبد ممکن نشد');
+    }
+
+    await navigateTo('/cart');
+  } catch (error) {
+    console.error('[Order detail] reorder failed', error);
+    toast.error(error?.message || 'سفارش مجدد انجام نشد');
+  } finally {
+    reordering.value = false;
+  }
 }
 
 // شماره موبایل را با اعداد فارسی نمایش می‌دهد

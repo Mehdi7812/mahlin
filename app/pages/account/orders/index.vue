@@ -120,6 +120,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { toast } from 'vue-sonner';
 import { ORDER_STATUS_META } from '~/data/account';
+import { resolveOrderStatus } from '~/data/orderStatus';
 import { money, faNumber, faDate, fa } from '~/utils/format.ts';
 
 definePageMeta({ layout: 'account' });
@@ -127,7 +128,9 @@ useSeoMeta({ title: 'سفارش‌های من | ماهلین اسکین‌کر' 
 
 const filters = [
   { value: 'all', label: 'همه' },
-  { value: 'processing', label: 'در حال پردازش' },
+  // { value: 'pending', label: 'در انتظار تأیید' },
+  { value: 'preparing', label: 'در حال آماده‌سازی' },
+  { value: 'shipped', label: 'ارسال شده' },
   { value: 'delivered', label: 'تحویل داده شده' },
   { value: 'cancelled', label: 'لغو شده' },
   { value: 'returned', label: 'مرجوعی' },
@@ -137,31 +140,11 @@ const activeFilter = ref('all');
 const orders = ref([]);
 const loading = ref(true);
 
-const statusAliases = {
-  1: 'pending',
-  2: 'processing',
-  3: 'processing',
-  4: 'processing',
-  5: 'processing',
-  8: 'processing',
-  6: 'delivered',
-  7: 'cancelled',
-  9: 'returned',
-  10: 'returned',
-  11: 'returned',
-  12: 'returned',
-  awaiting_payment: 'pending',
-  pending: 'pending',
-  processing: 'processing',
-  shipped: 'shipped',
-  delivered: 'delivered',
-  cancelled: 'cancelled',
-  returned: 'returned',
-};
-
 const filterStatusMap = {
-  all: [2, 3, 4, 5, 8],
-  processing: [2, 3, 4, 5, 8],
+  all: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+  pending: [0, 1],
+  preparing: [2, 3, 4, 8],
+  shipped: [5],
   delivered: [6],
   cancelled: [7],
   returned: [9, 10, 11, 12],
@@ -169,10 +152,7 @@ const filterStatusMap = {
 
 function normalizeOrder(invoice) {
   const details = invoice.invoice_details || invoice.details || invoice.items || [];
-  const status = statusAliases[invoice.status]
-    || statusAliases[invoice.status_code]
-    || statusAliases[invoice.status_text]
-    || 'pending';
+  const status = resolveOrderStatus(invoice);
 
   const items = details.map((detail) => ({
     title_fa: detail.products?.title_fa || detail.product?.title_fa || detail.title_fa || detail.products?.title || 'محصول',

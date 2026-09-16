@@ -21,13 +21,6 @@
           <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-sageLight text-sage">
             <Icon name="tabler:wallet" class="text-[18px]" />
           </span>
-          <div>
-            <p class="text-[11px] text-inkSoft">کیف پول انتخابی</p>
-            <p class="text-[14px] font-bold text-ink">{{ selectedWallet.currency_name }}</p>
-          </div>
-        </div>
-
-        <div class="text-left">
           <p class="text-[11px] text-inkSoft">موجودی کنونی</p>
           <p class="font-latin text-[28px] font-bold text-ink">{{ money(selectedWallet.balance) }}</p>
         </div>
@@ -35,17 +28,17 @@
 
       <!-- دکمه‌های واریز / برداشت -->
       <div class="mt-5 flex flex-wrap gap-3">
-        <button
+        <!-- <button
           type="button"
           class="flex flex-1 min-w-[140px] items-center justify-center gap-2 rounded-2xl bg-green-600 px-4 py-3 text-[13px] font-bold text-cream transition-opacity hover:opacity-90"
           @click="openDepositDialog"
         >
           <Icon name="tabler:arrow-down" class="text-[16px]" />
           واریز
-        </button>
+        </button> -->
         <button
           type="button"
-          class="flex flex-1 min-w-[140px] items-center justify-center gap-2 rounded-2xl bg-red-500 px-4 py-3 text-[13px] font-bold text-cream transition-opacity hover:opacity-90"
+          class="flex min-w-[140px] items-center justify-center gap-2 rounded-2xl bg-red-500 px-4 py-3 text-[13px] font-bold text-cream transition-opacity hover:opacity-90"
           @click="openWithdrawDialog"
         >
           <Icon name="tabler:arrow-up" class="text-[16px]" />
@@ -62,12 +55,27 @@
     </div>
 
     <div class="rounded-[22px] border border-ink/[0.06] bg-cardLight overflow-hidden">
-      <div class="flex items-center justify-between border-b border-ink/[0.06] px-5 py-4">
+      <div class="flex flex-col gap-4 border-b border-ink/[0.06] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
         <h3 class="flex items-center gap-2 font-bold text-ink text-[14px]">
           <Icon name="tabler:history" class="text-accent" />
           تاریخچه تراکنش‌ها
         </h3>
         <span v-if="selectedWallet" class="text-[11px] text-inkSoft">{{ selectedWallet.currency_name }}</span>
+      </div>
+
+      <div class="flex gap-2 overflow-x-auto border-b border-ink/[0.05] px-5 py-3 no-scrollbar">
+        <button
+          v-for="tab in transactionStatusTabs"
+          :key="tab.value"
+          type="button"
+          class="shrink-0 rounded-full border px-3.5 py-2 text-[11.5px] font-bold transition-colors"
+          :class="activeTransactionStatus === tab.value
+            ? 'border-ink bg-ink text-cream'
+            : 'border-ink/10 bg-cardLight text-inkSoft hover:border-ink/20 hover:text-ink'"
+          @click="selectTransactionStatus(tab.value)"
+        >
+          {{ tab.label }}
+        </button>
       </div>
 
       <div v-if="historyLoading" class="divide-y divide-ink/[0.05]" aria-busy="true">
@@ -91,12 +99,12 @@
             class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
             :class="isIncoming(transaction) ? 'bg-sageLight text-sage' : 'bg-blushLight text-blush'"
           >
-            <Icon :name="isIncoming(transaction) ? 'tabler:plus' : 'tabler:minus'" class="text-[16px]" />
+            <Icon :name="isIncoming(transaction) ? 'tabler:arrow-down-left' : 'tabler:arrow-up-right'" class="text-[16px]" />
           </span>
 
           <div class="min-w-0 flex-1">
             <p class="text-[13px] font-bold text-ink line-clamp-1">
-              {{ transaction.kind_text || transaction.payment_procedure_title || 'تراکنش' }}
+              {{ t(transaction.kind_text) || t(transaction.payment_procedure_title) || 'تراکنش' }}
             </p>
             <p class="mt-0.5 text-[11px] text-inkSoft">
               {{ faDate(transaction.document_date || transaction.created_at) }}
@@ -111,7 +119,7 @@
               {{ isIncoming(transaction) ? '+' : '-' }}{{ money(Math.abs(Number(transaction.amount ?? 0))) }}
             </p>
             <p class="mt-0.5 text-[10.5px] text-inkSoft">
-              {{ transaction.status_text || 'نامشخص' }}
+              {{ t(transaction.status_text) || 'نامشخص' }}
             </p>
           </div>
         </div>
@@ -237,7 +245,7 @@
               <button
                 type="button"
                 :disabled="withdrawLoading"
-                class="px-6 py-2.5 rounded-full bg-blush text-cream text-[13px] font-bold transition-opacity hover:opacity-90 disabled:opacity-60"
+                class="px-6 py-2.5 rounded-full bg-red-500 text-white text-[13px] font-bold transition-opacity hover:opacity-90 disabled:opacity-60"
                 @click="submitWithdraw"
               >
                 <Icon v-if="withdrawLoading" name="tabler:loader-2" class="ml-1 inline-block animate-spin" />
@@ -254,7 +262,9 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
-import { money, faNumber, faDate } from '~/utils/format.ts';
+import { money, faDate } from '~/utils/format.ts';
+
+const { t } = useI18n();
 
 definePageMeta({ layout: 'account' });
 useSeoMeta({ title: 'کیف پول | ماهلین اسکین‌کر' });
@@ -267,6 +277,16 @@ const transactions = ref([]);
 const selectedWalletId = ref(null);
 const loading = ref(true);
 const historyLoading = ref(false);
+const activeTransactionStatus = ref('all');
+
+const transactionStatusTabs = [
+  { value: 'all', label: 'همه' },
+  { value: 1, label: 'در انتظار' },
+  { value: 2, label: 'تأیید شده' },
+  { value: 3, label: 'لغو شده' },
+  { value: 4, label: 'رد شده' },
+  { value: 5, label: 'خطا' },
+];
 
 const selectedWallet = computed(() => {
   if (!wallets.value.length) return null;
@@ -285,7 +305,26 @@ function normalizeWallet(wallet) {
 
 function isIncoming(transaction) {
   const kindText = String(transaction.kind_text || '').toLowerCase();
-  if (kindText === 'deposit' || kindText === 'reward' || kindText === 'refund') return true;
+  const kind = Number(transaction.kind);
+
+  if (
+    kindText.includes('withdraw')
+    || kindText.includes('برداشت')
+    || kindText.includes('purchase')
+    || kindText.includes('خرید')
+    || kind === 7
+    || kind === 2
+  ) return false;
+
+  if (
+    kindText.includes('deposit')
+    || kindText.includes('واریز')
+    || kindText.includes('reward')
+    || kindText.includes('پاداش')
+    || kindText.includes('refund')
+    || kindText.includes('بازگشت')
+  ) return true;
+
   return Number(transaction.in_line_balance ?? 0) > 0;
 }
 
@@ -314,7 +353,7 @@ async function loadWallets() {
   }
 }
 
-async function loadTransactions(walletId) {
+async function loadTransactions(walletId, status = activeTransactionStatus.value) {
   if (!walletId) {
     transactions.value = [];
     return;
@@ -323,7 +362,8 @@ async function loadTransactions(walletId) {
   historyLoading.value = true;
 
   try {
-    const response = await useGarnetApiFetch('wallets/showTransactions', { wallet_id: walletId });
+    const statuses = status === 'all' ? [1, 2, 3, 4, 5] : [status];
+    const response = await useGarnetApiFetch('wallets/showTransactions', { wallet_id: walletId, status: statuses });
 
     if (response?.error) {
       throw new Error(response.error?.data?.message || response.error?.message || 'خطا در دریافت تاریخچه تراکنش‌ها');
@@ -337,6 +377,11 @@ async function loadTransactions(walletId) {
   } finally {
     historyLoading.value = false;
   }
+}
+
+function selectTransactionStatus(status) {
+  activeTransactionStatus.value = status;
+  if (selectedWalletId.value) loadTransactions(selectedWalletId.value, status);
 }
 
 watch(selectedWalletId, (walletId) => {
@@ -528,6 +573,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s ease;

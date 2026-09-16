@@ -1,3 +1,5 @@
+import pkg from "./package.json";
+
 export default defineNuxtConfig({
   compatibilityDate: "2024-08-01",
 
@@ -26,6 +28,8 @@ export default defineNuxtConfig({
         },
       ],
     },
+
+    buildAssetsDir: `/_nuxt_${pkg.version}/`,
   },
 
   pinia: {
@@ -50,5 +54,29 @@ export default defineNuxtConfig({
         '/account/favorites', '/account/loyalty',
       ]
     }
+  },
+
+  i18n: {
+    strategy: "no_prefix",
+    langDir: "locales/",
+    locales: [
+      {
+        code: "fa",
+        file: "fa.json",
+        dir: "rtl",
+      },
+      {
+        code: "en",
+        file: "en.json",
+      },
+      {
+        code: "ar",
+        file: "ar.json",
+      },
+    ],
+    defaultLocale: "fa",
+    defaultDirection: "rtl",
+    detectBrowserLanguage: false,
+    vueI18n: "./i18n.config.ts",
   },
 });

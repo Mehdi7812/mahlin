@@ -175,7 +175,7 @@
         </div> -->
 
         <!-- سفارش‌های اخیر -->
-        <div class="rounded-[22px] border border-ink/[0.06] bg-cardLight overflow-hidden">
+        <div class="rounded-[22px] border border-ink/[0.06] bg-cardLight overflow-hidden h-full">
           <div class="flex items-center justify-between px-5 py-4 border-b border-ink/[0.06]">
             <h3 class="flex items-center gap-2 font-bold text-ink text-[14px]">
               <Icon name="tabler:package" class="text-accent" />
