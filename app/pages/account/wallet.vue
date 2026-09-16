@@ -335,7 +335,7 @@ async function loadWallets() {
     const response = await useGarnetApiFetch('wallets/getBalance');
 
     if (response?.error) {
-      throw new Error(response.error?.data?.message || response.error?.message || 'خطا در دریافت موجودی کیف پول');
+      throw new Error(t(response.error?.data?.message) || t(response.error?.message) || 'خطا در دریافت موجودی کیف پول');
     }
 
     wallets.value = (response?.Wallets || []).map(normalizeWallet).slice(0, 1);
@@ -345,7 +345,7 @@ async function loadWallets() {
     }
   } catch (error) {
     console.error('[Wallet] wallet balance failed', error);
-    toast.error(error?.message || 'خطا در دریافت موجودی کیف پول');
+    toast.error(t(error?.message) || 'خطا در دریافت موجودی کیف پول');
     wallets.value = [];
     selectedWalletId.value = null;
   } finally {
@@ -372,7 +372,7 @@ async function loadTransactions(walletId, status = activeTransactionStatus.value
     transactions.value = response?.WalletTransactions || [];
   } catch (error) {
     console.error('[Wallet] transactions failed', error);
-    toast.error(error?.message || 'خطا در دریافت تاریخچه تراکنش‌ها');
+    toast.error(t(error?.message) || 'خطا در دریافت تاریخچه تراکنش‌ها');
     transactions.value = [];
   } finally {
     historyLoading.value = false;
@@ -480,7 +480,7 @@ function increaseBalance() {
   })
     .then((response) => {
       if (response?.code !== 2000) {
-        toast.error(response?.msg || response?.error || 'خطا در ایجاد تراکنش واریز');
+        toast.error(t(response?.msg) || t(response?.error) || 'خطا در ایجاد تراکنش واریز');
         return;
       }
 
@@ -501,7 +501,7 @@ function increaseBalance() {
       }
     })
     .catch((error) => {
-      toast.error(error?.message || error || 'خطا در ارتباط با درگاه پرداخت');
+      toast.error(t(error?.message) || t(error) || 'خطا در ارتباط با درگاه پرداخت');
     })
     .finally(() => {
       depositLoading.value = false;
@@ -512,7 +512,7 @@ function openWithdrawDialog() {
   const customerInfo = currentUserCustomers.value;
 
   if (!customerInfo || !customerInfo.irb_iban_number) {
-    toast.error('ابتدا شماره شبای خود را در ناحیه کاربری تنظیم نمایید');
+    toast.error(t('ابتدا شماره شبای خود را در ناحیه کاربری تنظیم نمایید'));
     router.push('/account/profile');
     return;
   }
@@ -555,11 +555,11 @@ function submitWithdraw() {
         loadWallets();
         if (selectedWalletId.value) loadTransactions(selectedWalletId.value);
       } else {
-        toast.error(response?.msg || response?.error || 'ثبت درخواست برداشت انجام نشد');
+        toast.error(t(response?.msg) || t(response?.error) || 'ثبت درخواست برداشت انجام نشد');
       }
     })
     .catch((error) => {
-      toast.error(error?.message || error || 'خطا در ثبت درخواست برداشت');
+      toast.error(t(error?.message) || t(error) || 'خطا در ثبت درخواست برداشت');
     })
     .finally(() => {
       withdrawLoading.value = false;

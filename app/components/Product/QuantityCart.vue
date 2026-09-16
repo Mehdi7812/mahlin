@@ -188,6 +188,8 @@ import { ref, computed } from 'vue';
 import { fa } from '~/utils/format';
 import { toast } from 'vue-sonner';
 
+const { t } = useI18n();
+
 const props = defineProps({
   qty:        { type: Number,  default: 1     },
   minQty:     { type: Number,  default: 1     },
@@ -273,7 +275,7 @@ async function handleAdd() {
       if (route.name === 'cart') router.go();
 
     } else if (response?.code === 2005) {
-      toast.error(response.error || 'خطا در افزودن به سبد');
+      toast.error(t(response.error) || 'خطا در افزودن به سبد');
     } else {
       toast.error('خطایی رخ داد، لطفاً دوباره تلاش کنید');
     }

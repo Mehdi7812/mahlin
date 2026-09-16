@@ -196,7 +196,7 @@ const item = computed(() => {
     price:     hasDiscount ? p.final_price : p.price,
     oldPrice:  hasDiscount ? p.price : null,
     size:      p.unit_text ? `${fa(p.capacity)} ${p.unit_text}` : null,
-    img:       p.cover_image,
+    img:       p.cover_image || '/assets/founder-portrait.png',
     images:    (p.product_images || []).map((im) => im.file),
     inStock:   p.allow_sale === 1,
     stockCount: p.stock,
@@ -456,7 +456,7 @@ function saveToRecentlyViewed() {
       id:                Product.value.id,
       title_fa:          Product.value.title_fa,
       slug_fa:           Product.value.slug_fa,
-      cover_image:       Product.value.cover_image,
+      cover_image:       Product.value.cover_image || '/assets/founder-portrait.png',
       price:             Product.value.price,
       final_price:       Product.value.final_price,
       discount_percent:  Product.value.discount_percent,
@@ -520,7 +520,7 @@ async function getProductDetail() {
     }));
 
     isWishlisted.value = !!Product.value.is_fave;
-    activeImage.value  = Product.value.cover_image
+    activeImage.value  = Product.value.cover_image || '/assets/founder-portrait.png'
       || Product.value.product_images?.[0]?.file
       || null;
     qty.value = Product.value.minimum_sale_quantity || 1;

@@ -18,7 +18,7 @@ export const USER = {
 
 // وضعیت‌های سفارش و متادیتای نمایشی هرکدام
 export const ORDER_STATUS_META = {
-  pending: { label: 'در انتظار پرداخت', bg: 'bg-peachLight', text: 'text-[#B9722E]', dot: 'bg-peach' },
+  pending: { label: 'در انتظار پرداخت', bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' },
   preparing: { label: 'در حال آماده‌سازی', bg: 'bg-lilacLight', text: 'text-[#7A64AE]', dot: 'bg-lilac' },
   processing: { label: 'در حال آماده‌سازی', bg: 'bg-lilacLight', text: 'text-[#7A64AE]', dot: 'bg-lilac' },
   shipped: { label: 'در حال ارسال', bg: 'bg-skyLight', text: 'text-[#3E7C99]', dot: 'bg-sky' },

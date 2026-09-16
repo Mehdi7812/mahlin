@@ -105,31 +105,41 @@
                 @click="goToSearchResult(r)"
               >
                 <img
-                  :src="r.cover_image"
+                  :src="r.cover_image || '/assets/founder-portrait.png'"
                   :alt="r.title_fa"
                   class="w-12 h-12 rounded-xl object-cover shrink-0 bg-ink/[0.04]"
-                  @error="(e) => e.target.style.opacity = '0.3'"
+                  @error="(e) => { e.target.src = '/assets/founder-portrait.png'; e.target.onerror = null }"
                 />
                 <div class="flex-1 min-w-0">
                   <p class="text-xs sm:text-sm font-bold text-ink truncate">{{ r.title_fa }}</p>
-                  <p class="text-[10px] text-ink/40 mt-0.5">{{ r.category_title_fa }}</p>
+                  <p v-if="r.category_title_fa" class="mt-0.5 flex items-center gap-1 truncate text-[10px] text-ink/45">
+                    <Icon name="tabler:category-2" class="shrink-0 text-[11px]" />
+                    {{ r.category_title_fa }}
+                  </p>
+                  <p v-if="r.summary_fa" class="mt-1 line-clamp-1 text-[10px] leading-4 text-ink/50">
+                    {{ r.summary_fa }}
+                  </p>
                 </div>
                 <div class="text-left shrink-0">
-                  <div v-if="r.discount > 0" class="text-[10px] text-ink/35 line-through font-latin">
+                  <div v-if="r.discount > 0 && r.price != null" class="text-[10px] text-ink/35 line-through font-latin">
                     {{ money(r.price) }}
                   </div>
-                  <div class="text-xs font-bold font-latin text-gold">
-                    {{ money(r.final_price) }} <span class="text-[9px] text-ink/40 font-sans">تومان</span>
+                  <div v-if="r.final_price != null || r.price != null" class="text-xs font-bold font-latin text-gold">
+                    {{ money(r.final_price ?? r.price) }} <span class="text-[9px] text-ink/40 font-sans">تومان</span>
                   </div>
+                  <div v-else class="text-[10px] font-bold text-accent">مشاهده جزئیات</div>
                 </div>
               </button>
 
               <button
+                v-if="searchPage < searchTotalPages"
                 type="button"
-                class="w-full text-center py-3 text-xs font-bold text-gold hover:bg-ink/[0.02] transition-colors"
-                @click="submitFullSearch"
+                class="flex w-full items-center justify-center gap-1.5 border-t border-ink/[0.06] px-4 py-3 text-xs font-bold text-accent transition-colors hover:bg-ink/[0.02] disabled:cursor-not-allowed disabled:opacity-60"
+                :disabled="searchLoadingMore"
+                @click="loadMoreSearchResults"
               >
-                مشاهده همه نتایج برای «{{ searchQuery.trim() }}» ←
+                <Icon v-if="searchLoadingMore" name="tabler:loader-2" class="animate-spin text-[14px]" />
+                {{ searchLoadingMore ? 'در حال دریافت...' : 'مشاهده بیشتر' }}
               </button>
             </div>
 
@@ -328,6 +338,9 @@ const searchQuery = ref('');
 const searchInput = ref(null);
 const searchResults = ref([]);
 const searchLoading = ref(false);
+const searchLoadingMore = ref(false);
+const searchPage = ref(1);
+const searchTotalPages = ref(1);
 const showSearchDropdown = ref(false);
 const route = useRoute();
 const router = useRouter();
@@ -388,6 +401,9 @@ function closeSearch() {
   searchQuery.value = '';
   searchResults.value = [];
   searchLoading.value = false;
+  searchLoadingMore.value = false;
+  searchPage.value = 1;
+  searchTotalPages.value = 1;
   showSearchDropdown.value = false;
   if (searchTimer) {
     clearTimeout(searchTimer);
@@ -413,6 +429,8 @@ watch(searchQuery, (val) => {
   if (!trimmed) {
     searchResults.value = [];
     searchLoading.value = false;
+    searchPage.value = 1;
+    searchTotalPages.value = 1;
     showSearchDropdown.value = false;
     return;
   }
@@ -432,17 +450,53 @@ watch(searchQuery, (val) => {
 
       if (response?.code === 2000) {
         searchResults.value = response.Result || [];
+        searchPage.value = 1;
+        const totalCount = Number(response.TotalCount);
+        searchTotalPages.value = Number.isFinite(totalCount) && totalCount > 0
+          ? Math.ceil(totalCount / 5)
+          : (searchResults.value.length === 5 ? 2 : 1);
       } else {
         searchResults.value = [];
+        searchTotalPages.value = 1;
       }
     } catch (error) {
       console.error('[AppHeader] خطا در جستجوی سریع:', error);
       searchResults.value = [];
+      searchTotalPages.value = 1;
     } finally {
       searchLoading.value = false;
     }
   }, 300);
 });
+
+async function loadMoreSearchResults() {
+  const trimmed = searchQuery.value.trim();
+  if (!trimmed || searchLoadingMore.value || searchPage.value >= searchTotalPages.value) return;
+
+  searchLoadingMore.value = true;
+  const nextPage = searchPage.value + 1;
+
+  try {
+    const response = await useGarnetApiFetch('reports/search', {
+      amount: 5,
+      direction: 'desc',
+      order: 'id',
+      page: nextPage,
+      searchWord: trimmed,
+    });
+
+    if (response?.code === 2000) {
+      const existingIds = new Set(searchResults.value.map((item) => item.id));
+      const nextResults = (response.Result || []).filter((item) => !existingIds.has(item.id));
+      searchResults.value = [...searchResults.value, ...nextResults];
+      searchPage.value = nextPage;
+    }
+  } catch (error) {
+    console.error('[AppHeader] خطا در دریافت ادامه نتایج جستجو:', error);
+  } finally {
+    searchLoadingMore.value = false;
+  }
+}
 
 watch(open, (val) => {
   if (import.meta.client) {

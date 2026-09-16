@@ -49,6 +49,8 @@ import { onMounted, ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { faNumber } from '~/utils/format.ts';
 
+const { t } = useI18n();
+
 definePageMeta({ layout: 'account' });
 useSeoMeta({ title: 'علاقه‌مندی‌ها | ماهلین اسکین‌کر' });
 
@@ -84,7 +86,7 @@ function getProducts() {
         getProducts();
       } else {
         favorites.value = [];
-        toast.error(error?.message || error || 'خطا در دریافت علاقه‌مندی‌ها');
+        toast.error(t(error?.message) || t(error) || 'خطا در دریافت علاقه‌مندی‌ها');
       }
     })
     .finally(() => {

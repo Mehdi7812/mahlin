@@ -53,6 +53,7 @@
           :alt="'تصویر ' + product.title_fa"
           loading="lazy"
           class="absolute inset-6 w-[calc(100%-48px)] h-[calc(100%-48px)] object-contain rounded-tr-[24px] transition-transform duration-500 ease-out group-hover:scale-105 transform-gpu"
+          @error="(event) => { event.target.src = PLACEHOLDER_IMG; event.target.onerror = null }"
         />
 
         <!-- پوشش ناموجود -->

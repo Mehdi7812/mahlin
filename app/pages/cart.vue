@@ -6,8 +6,7 @@ import { toast } from 'vue-sonner';
 
 useSeoMeta({ title: 'سبد خرید | سوشیا' })
 
-// const { t } = useI18n()
-const t = (value: string) => value
+const { t } = useI18n()
 const customizer = useCustomizerStore()
 const router = useRouter()
 const route = useRoute()
@@ -1216,10 +1215,10 @@ const primaryDisabled = computed(() => {
                   >
                     <div class="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-cream ring-1 ring-line/60 sm:h-20 sm:w-20">
                       <img
-                        v-if="item.products?.cover_image"
-                        :src="item.products.cover_image"
+                        :src="item.products?.cover_image || '/assets/founder-portrait.png'"
                         :alt="item.products.title_fa"
                         class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        @error="(event) => { event.target.src = '/assets/founder-portrait.png'; event.target.onerror = null }"
                       />
                       <span class="absolute bottom-0 right-0 rounded-tl-lg bg-gold/90 px-1.5 py-0.5 text-[10px] font-bold text-white tabular-fa">
                         × {{ faNumber(item.amount) }}
@@ -1623,7 +1622,11 @@ const primaryDisabled = computed(() => {
                 <ul v-if="step !== 'cart'" class="scrollbar-thin max-h-48 space-y-3 overflow-y-auto border-b border-line pb-4">
                   <li v-for="item in invoiceDetails" :key="item.id" class="flex gap-3 p-0.5">
                     <div class="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-cream ring-1 ring-gold/60">
-                      <img v-if="item.products?.cover_image" :src="item.products.cover_image" class="h-full w-full object-cover" />
+                      <img
+                        :src="item.products?.cover_image || '/assets/founder-portrait.png'"
+                        class="h-full w-full object-cover"
+                        @error="(event) => { event.target.src = '/assets/founder-portrait.png'; event.target.onerror = null }"
+                      />
                     </div>
                     <div class="min-w-0 flex-1">
                       <p class="line-clamp-1 text-[13px] font-bold text-gold">{{ item.products?.title_fa }}</p>

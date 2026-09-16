@@ -157,7 +157,12 @@
         <div class="divide-y divide-ink/[0.05]">
           <div v-for="(item, idx) in order.items" :key="idx" class="flex items-center gap-4 px-5 py-4">
             <div class="w-16 h-16 shrink-0 rounded-xl bg-cream overflow-hidden">
-              <img :src="item.cover_image" class="w-full h-full object-contain p-2" alt="" />
+              <img
+                :src="item.cover_image || '/assets/founder-portrait.png'"
+                class="w-full h-full object-contain p-2"
+                alt=""
+                @error="(event) => { event.target.src = '/assets/founder-portrait.png'; event.target.onerror = null }"
+              />
             </div>
             <div class="min-w-0 flex-1">
               <p class="text-[13.5px] font-bold text-ink line-clamp-1">{{ item.title_fa }}</p>
@@ -202,11 +207,18 @@
             <Icon name="tabler:map-pin" class="text-accent" />
             آدرس تحویل
           </h3>
-          <p class="text-[13px] font-bold text-ink">{{ order.receiver.title }}</p>
-          <p class="text-[12.5px] text-inkSoft leading-6 mt-1.5">
-            {{ order.receiver.province || 'آدرس ثبت نشده' }}
+          <p class="text-[13px] font-bold text-ink">
+            گیرنده: {{ order.receiver.receiver_full_name || '---' }}
           </p>
-          <p class="text-[12px] text-inkSoft mt-1.5">گیرنده: {{ order.receiver.receiver_full_name || '---' }} — {{ toLatinButShown(order.receiver.receiver_mobile || '') }}</p>
+          <p class="text-[12.5px] text-inkSoft leading-6 mt-1.5">
+            {{ order.receiver.address || 'آدرس ثبت نشده' }}
+          </p>
+          <p v-if="order.receiver.postal_code" class="text-[12px] text-inkSoft mt-1.5">
+            کد پستی: {{ fa(order.receiver.postal_code) }}
+          </p>
+          <p class="text-[12px] text-inkSoft mt-1.5">
+            تماس: {{ toLatinButShown(order.receiver.receiver_mobile || '---') }}
+          </p>
         </div>
 
         <!-- <button
@@ -248,6 +260,8 @@ import { ORDER_STATUS_META } from '~/data/account';
 import { assertGarnetOk, getOrderProgressIndex, resolveOrderStatus } from '~/data/orderStatus';
 import { money, faNumber, faDate, fa } from '~/utils/format.ts';
 
+const { t } = useI18n();
+
 definePageMeta({ layout: 'account' });
 
 const route = useRoute()
@@ -271,17 +285,15 @@ function normalizeOrder(invoice) {
     items: details.map((detail) => ({
       productId: detail.products?.id || detail.product?.id || detail.product_id,
       title_fa: detail.products?.title_fa || detail.product?.title_fa || detail.title_fa || detail.products?.title || 'محصول',
-      cover_image: detail.products?.cover_image || detail.product?.cover_image || detail.cover_image,
+      cover_image: detail.products?.cover_image || detail.product?.cover_image || detail.cover_image || '/assets/founder-portrait.png',
       qty: Number(detail.amount ?? detail.qty ?? 1),
       price: Number(detail.unit_price ?? detail.price ?? detail.products?.final_price ?? 0),
     })),
     receiver: {
-      title: invoice.receiver_name || 'آدرس تحویل',
-      province: invoice.receiver_address || '',
-      city: '',
-      description: invoice.receiver_address || '',
-      receiver_full_name: invoice.receiver_name || '',
-      receiver_mobile: invoice.receiver_contact || '',
+      address: invoice.receiver_address || '',
+      receiver_full_name: invoice.receiver_name || invoice.user_full_name || '',
+      receiver_mobile: invoice.receiver_contact || invoice.user_mobile || '',
+      postal_code: invoice.receiver_postal_code || '',
     },
     tracking: invoice.tracking_code || '',
   };
@@ -307,6 +319,31 @@ async function loadOrder() {
     }
 
     order.value = normalizeOrder(invoice);
+
+    if (!order.value.receiver.address) {
+      const addressResponse = await useGarnetApiFetch('users/userAddress');
+      const addresses = Array.isArray(addressResponse?.UserAddress)
+        ? addressResponse.UserAddress
+        : [];
+      const fallbackAddress = addresses.find((address) => address.is_default) || addresses[0];
+
+      if (fallbackAddress) {
+        order.value.receiver.address = [
+          fallbackAddress.province,
+          fallbackAddress.city,
+          fallbackAddress.description,
+        ].filter(Boolean).join('، ');
+        order.value.receiver.receiver_full_name = order.value.receiver.receiver_full_name
+          || fallbackAddress.receiver_full_name
+          || '';
+        order.value.receiver.receiver_mobile = order.value.receiver.receiver_mobile
+          || fallbackAddress.receiver_mobile
+          || '';
+        order.value.receiver.postal_code = order.value.receiver.postal_code
+          || fallbackAddress.postal_code
+          || '';
+      }
+    }
   } catch (error) {
     console.error('[Orders detail] Could not load order', error);
     order.value = null;
@@ -365,7 +402,7 @@ async function reorderItems() {
     await navigateTo('/cart');
   } catch (error) {
     console.error('[Order detail] reorder failed', error);
-    toast.error(error?.message || 'سفارش مجدد انجام نشد');
+    toast.error(t((error?.message) || t(error)) || 'سفارش مجدد انجام نشد');
   } finally {
     reordering.value = false;
   }

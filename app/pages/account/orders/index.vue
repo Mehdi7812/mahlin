@@ -69,7 +69,12 @@
               :key="idx"
               class="w-14 h-14 rounded-xl bg-cream border-2 border-cardLight overflow-hidden shrink-0"
             >
-              <img :src="item.cover_image" class="w-full h-full object-contain p-1.5" alt="" />
+              <img
+                :src="item.cover_image || '/assets/founder-portrait.png'"
+                class="w-full h-full object-contain p-1.5"
+                alt=""
+                @error="(event) => { event.target.src = '/assets/founder-portrait.png'; event.target.onerror = null }"
+              />
             </div>
             <div
               v-if="order.items.length > 4"
@@ -98,7 +103,7 @@
               class="flex items-center gap-1.5 text-[12.5px] font-bold text-cream bg-accent px-4 py-2.5 rounded-full hover:bg-accentHover transition-colors whitespace-nowrap"
             >
               جزئیات سفارش
-              <Icon name="tabler:chevron-left" class="text-[13px] rtl:rotate-180" />
+              <Icon name="tabler:chevron-left" class="text-[13px]" />
             </NuxtLink>
           </div>
         </div>
@@ -122,6 +127,8 @@ import { toast } from 'vue-sonner';
 import { ORDER_STATUS_META } from '~/data/account';
 import { resolveOrderStatus } from '~/data/orderStatus';
 import { money, faNumber, faDate, fa } from '~/utils/format.ts';
+
+const { t } = useI18n();
 
 definePageMeta({ layout: 'account' });
 useSeoMeta({ title: 'سفارش‌های من | ماهلین اسکین‌کر' });
@@ -156,7 +163,7 @@ function normalizeOrder(invoice) {
 
   const items = details.map((detail) => ({
     title_fa: detail.products?.title_fa || detail.product?.title_fa || detail.title_fa || detail.products?.title || 'محصول',
-    cover_image: detail.products?.cover_image || detail.product?.cover_image || detail.cover_image,
+    cover_image: detail.products?.cover_image || detail.product?.cover_image || detail.cover_image || '/assets/founder-portrait.png',
     qty: Number(detail.amount ?? detail.qty ?? 1),
     price: Number(detail.unit_price ?? detail.price ?? detail.products?.final_price ?? 0),
   }));
@@ -206,7 +213,7 @@ function getPurchasesList(statusList = []) {
     })
     .catch((error) => {
       console.error('[Orders] Could not load purchases', error);
-      toast.error(error?.message || 'خطا در دریافت سفارش‌ها');
+      toast.error(t((error?.message) || t(error)) || 'خطا در دریافت سفارش‌ها');
     })
     .finally(() => { loading.value = false; });
 }

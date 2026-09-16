@@ -71,10 +71,10 @@
                   @click="goToSearchResult(r)"
                 >
                   <img
-                    :src="r.cover_image"
+                    :src="r.cover_image || '/assets/founder-portrait.png'"
                     :alt="r.title_fa"
                     class="w-12 h-12 rounded-xl object-cover shrink-0 bg-ink/[0.04]"
-                    @error="(e) => e.target.style.opacity = '0.3'"
+                    @error="(e) => { e.target.src = '/assets/founder-portrait.png'; e.target.onerror = null }"
                   />
                   <div class="flex-1 min-w-0">
                     <p class="text-xs sm:text-sm font-bold text-ink truncate">{{ r.title_fa }}</p>

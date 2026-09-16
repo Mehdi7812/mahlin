@@ -359,6 +359,8 @@ import { reactive, computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { faDate } from '~/utils/format.ts';
 
+const { t } = useI18n();
+
 const DatePicker = ref(null);
 
 if (import.meta.client) {
@@ -510,11 +512,11 @@ function submitPasswordChange() {
         toast.success('رمز عبور با موفقیت تغییر کرد');
         closePasswordChangeForm();
       } else {
-        toast.error(response?.msg || response?.error || 'رمز عبور فعلی اشتباه است یا تغییر رمز عبور انجام نشد');
+        toast.error(t(response?.msg) || t(response?.error) || 'رمز عبور فعلی اشتباه است یا تغییر رمز عبور انجام نشد');
       }
     })
     .catch((error) => {
-      toast.error(error?.message || error || 'خطا در تغییر رمز عبور');
+      toast.error(t((error?.message) || t(error)) || 'خطا در تغییر رمز عبور');
     })
     .finally(() => {
       passwordSubmitLoading.value = false;
@@ -549,11 +551,11 @@ function submitForgotPassword() {
         toast.success('رمز عبور جدید با موفقیت ثبت شد');
         closeForgotPasswordFlow();
       } else {
-        toast.error(response?.msg || response?.error || 'ثبت رمز عبور جدید انجام نشد');
+        toast.error(t(response?.msg) || t(response?.error) || 'ثبت رمز عبور جدید انجام نشد');
       }
     })
     .catch((error) => {
-      toast.error(error?.message || error || 'خطا در ثبت رمز عبور جدید');
+      toast.error(t(error?.message) || t(error) || 'خطا در ثبت رمز عبور جدید');
     })
     .finally(() => {
       forgotPasswordSubmitLoading.value = false;
@@ -600,7 +602,7 @@ function uploadBox(event) {
       toast.success('تصویر پروفایل با موفقیت به‌روزرسانی شد');
     })
     .catch((error) => {
-      toast.error(error?.message || error || 'خطا در آپلود');
+      toast.error(t(error?.message) || t(error) || 'خطا در آپلود');
     })
     .finally(() => {
       fileLoading.value = false;
@@ -673,11 +675,11 @@ function saveBankInfo() {
         bankForm.iban_number = savedIban;
         toast.success('شماره شبا با موفقیت ثبت شد');
       } else {
-        toast.error(response?.msg || response?.error || 'خطا در ثبت شماره شبا');
+        toast.error(t((response?.msg) || t(response?.error)) || 'خطا در ثبت شماره شبا');
       }
     })
     .catch((error) => {
-      toast.error(error?.message || error || 'خطا در ثبت شماره شبا');
+      toast.error(t(error?.message) || t(error) || 'خطا در ثبت شماره شبا');
     })
     .finally(() => {
       bankSaveLoading.value = false;
@@ -702,11 +704,11 @@ function saveProfile() {
         customizer.userInfo = response.User;
         fillForm();
       } else {
-        toast.error(response.msg || response.error || 'ذخیره اطلاعات انجام نشد');
+        toast.error(t(response.msg) || t(response.error) || 'ذخیره اطلاعات انجام نشد');
       }
     })
     .catch((error) => {
-      toast.error(error?.message || error || 'خطا در ذخیره اطلاعات');
+      toast.error(t((error?.message) || t(error)) || 'خطا در ذخیره اطلاعات');
     })
     .finally(() => {
       saving.value = false;

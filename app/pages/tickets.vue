@@ -468,6 +468,8 @@ import { ref, computed, reactive, onMounted, onUnmounted, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import { faDate, faNumber, faDigits } from '~/utils/format.ts';
 
+const { t } = useI18n();
+
 definePageMeta({ layout: 'account' });
 useSeoMeta({ title: 'تیکت‌های پشتیبانی | ماهلین اسکین‌کر' });
 
@@ -493,7 +495,7 @@ function loadTickets() {
       if (response?.error) throw new Error(response.error?.data?.message || response.error?.message || 'خطا در دریافت تیکت‌ها');
       tickets.value = response.Tickets || [];
     })
-    .catch((error) => toast.error(error?.message || 'خطا در دریافت تیکت‌ها'))
+    .catch((error) => toast.error(t(error?.message) || 'خطا در دریافت تیکت‌ها'))
     .finally(() => { loading.value = false; });
 }
 
@@ -538,7 +540,7 @@ function loadDepartments() {
       if (response?.error) throw new Error(response.error?.data?.message || 'خطا در دریافت دپارتمان‌ها');
       departments.value = (response.TicketDepartments || []).map((d) => ({ id: d.id, title: d.title }));
     })
-    .catch((error) => toast.error(error?.message || 'خطا در دریافت دپارتمان‌ها'))
+    .catch((error) => toast.error(t(error?.message) || 'خطا در دریافت دپارتمان‌ها'))
     .finally(() => { departmentsLoading.value = false; });
 }
 
@@ -618,7 +620,7 @@ function submitNewTicket() {
       toast.success('تیکت شما با موفقیت ثبت شد');
       newTicketModal.value = false;
     })
-    .catch((error) => toast.error(error?.message || 'خطا در ارسال تیکت'))
+    .catch((error) => toast.error(t(error?.message) || 'خطا در ارسال تیکت'))
     .finally(() => { creating.value = false; });
 }
 
@@ -635,7 +637,7 @@ function uploadFiles(fileList, targetRef, loadingRef) {
       response.UploadedImages.forEach((url) => targetRef.value.push({ file: url }));
       toast.success('فایل با موفقیت آپلود شد');
     })
-    .catch((error) => toast.error(error?.message || 'خطا در آپلود فایل'))
+    .catch((error) => toast.error(t(error?.message) || 'خطا در آپلود فایل'))
     .finally(() => { loadingRef.value = false; });
 }
 function onNewFilesChange(e) {
@@ -674,7 +676,7 @@ function openDetail(item) {
       detailTicket.value = { ...response.Ticket, ticket_details: response.TicketDetail || [] };
     })
     .catch((error) => {
-      toast.error(error?.message || 'خطا در دریافت جزئیات تیکت');
+      toast.error(t(error?.message) || 'خطا در دریافت جزئیات تیکت');
       detailModal.value = false;
     })
     .finally(() => { detailLoading.value = false; });
@@ -714,7 +716,7 @@ function sendReply() {
         };
       }
     })
-    .catch((error) => toast.error(error?.message || 'خطا در ارسال پاسخ'))
+    .catch((error) => toast.error(t(error?.message) || 'خطا در ارسال پاسخ'))
     .finally(() => { replySending.value = false; });
 }
 
@@ -757,7 +759,7 @@ function confirmClose() {
       toast.success('تیکت با موفقیت بسته شد');
       closeModal.value = false;
     })
-    .catch((error) => toast.error(error?.message || 'خطا در بستن تیکت'))
+    .catch((error) => toast.error(t(error?.message) || 'خطا در بستن تیکت'))
     .finally(() => { closing.value = false; });
 }
 

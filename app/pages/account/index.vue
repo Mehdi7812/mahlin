@@ -195,14 +195,11 @@
             >
               <div class="w-12 h-12 shrink-0 rounded-xl bg-cream overflow-hidden">
                 <img
-                  v-if="order.items[0]?.cover_image"
-                  :src="order.items[0].cover_image"
+                  :src="order.items[0]?.cover_image || '/assets/founder-portrait.png'"
                   class="w-full h-full object-contain p-1.5 transition-transform duration-300 group-hover:scale-110"
                   alt=""
+                  @error="(event) => { event.target.src = '/assets/founder-portrait.png'; event.target.onerror = null }"
                 />
-                <div v-else class="grid h-full w-full place-items-center bg-ink/[0.04] text-ink/30">
-                  <Icon name="tabler:package" class="text-[18px]" />
-                </div>
               </div>
               <div class="min-w-0 flex-1">
                 <p class="text-[13px] font-bold text-ink font-latin" dir="ltr">{{ order.code }}</p>
@@ -319,6 +316,8 @@ import { toast } from 'vue-sonner';
 import { USER, ORDERS, ORDER_STATUS_META, LOYALTY } from '~/data/account';
 import { money, faNumber, faDate, faDateShort } from '~/utils/format.ts';
 
+const { t } = useI18n();
+
 definePageMeta({ layout: 'account' });
 useSeoMeta({ title: 'داشبورد | ماهلین اسکین‌کر' });
 
@@ -383,7 +382,7 @@ function normalizeRecentOrder(invoice) {
     total: Number(invoice.total_price ?? invoice.final_price ?? invoice.price ?? 0),
     items: details.map((detail) => ({
       title_fa: detail.products?.title_fa || detail.product?.title_fa || detail.title_fa || detail.products?.title || 'محصول',
-      cover_image: detail.products?.cover_image || detail.product?.cover_image || detail.cover_image,
+      cover_image: detail.products?.cover_image || detail.product?.cover_image || detail.cover_image || '/assets/founder-portrait.png',
       qty: Number(detail.amount ?? detail.qty ?? 1),
       price: Number(detail.unit_price ?? detail.price ?? detail.products?.final_price ?? 0),
     })),
@@ -402,7 +401,7 @@ function loadRecentOrders() {
     .catch((error) => {
       console.error('[Account Dashboard] Could not load recent orders', error);
       recentOrders.value = [];
-      toast.error(error?.message || 'خطا در دریافت سفارش‌های اخیر');
+      toast.error(t(error?.message) || 'خطا در دریافت سفارش‌های اخیر');
     });
 }
 
