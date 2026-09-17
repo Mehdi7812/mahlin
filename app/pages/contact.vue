@@ -153,7 +153,7 @@
 
             <div>
               <span class="block text-xs font-bold text-ink/40 mb-1">شماره تماس پشتیبانی</span>
-              <a dir="ltr" href="tel:02191000000" class="text-sm font-bold text-ink hover:text-gold transition-colors font-latin">021 - 91000000</a>
+              <a dir="ltr" href="tel:+989922655520" class="text-sm font-bold text-ink hover:text-gold transition-colors font-latin">0992 - 265 - 5520</a>
             </div>
           </div>
 

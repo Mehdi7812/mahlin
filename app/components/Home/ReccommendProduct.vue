@@ -115,7 +115,7 @@
 
             <ProductCard
               :product="p"
-              class="h-full hover:-translate-y-1.5 hover:shadow-[0_1px_5px_rgba(0,0,0,0.08)] transition-all duration-300 transform-gpu"
+              class="h-full hover:shadow-[0_1px_5px_rgba(0,0,0,0.08)] transition-all duration-300 transform-gpu"
             />
           </div>
         </SwiperSlide>

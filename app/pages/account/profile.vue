@@ -50,307 +50,318 @@
         <p class="mt-4 text-[11.5px] text-inkSoft">عضو ماهلین از {{ faDate(currentUser.register_date) }}</p>
       </div>
 
-      <!-- فرم اطلاعات -->
-      <div class="lg:col-span-2 rounded-[22px] border border-ink/[0.06] bg-cardLight p-6">
-        <h3 class="flex items-center gap-2 font-bold text-ink text-[14px] mb-5">
-          <Icon name="tabler:id" class="text-accent" />
-          مشخصات فردی
-        </h3>
-
-        <form class="grid sm:grid-cols-2 gap-4" @submit.prevent="saveProfile">
-          <div class="flex flex-col gap-1.5">
-            <label class="text-[12px] font-bold text-inkSoft">نام</label>
-            <input v-model="form.first_name" type="text" class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors" />
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <label class="text-[12px] font-bold text-inkSoft">نام خانوادگی</label>
-            <input v-model="form.last_name" type="text" class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors" />
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <label class="text-[12px] font-bold text-inkSoft">شماره موبایل</label>
-            <div class="relative">
-              <input v-model="form.mobile" type="tel" dir="rtl" disabled class="w-full p-3.5 rounded-xl border border-ink/10 bg-ink/[0.03] text-[13px] text-inkSoft outline-none" />
-              <span class="absolute inset-y-0 left-3 flex items-center text-[10.5px] text-sage font-bold">
-                <Icon name="tabler:circle-check" class="text-[13px]" />
-              </span>
+      <div class="lg:col-span-2 flex flex-col gap-5">
+        <!-- فرم اطلاعات -->
+        <div class="rounded-[22px] border border-ink/[0.06] bg-cardLight p-6">
+          <h3 class="flex items-center gap-2 font-bold text-ink text-[14px] mb-5">
+            <Icon name="tabler:id" class="text-accent" />
+            مشخصات فردی
+          </h3>
+  
+          <form class="grid sm:grid-cols-2 gap-4" @submit.prevent="saveProfile">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[12px] font-bold text-inkSoft">نام</label>
+              <input v-model="form.first_name" type="text" class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors" />
             </div>
-          </div>
-
-          <div class="flex flex-col gap-1.5">
-            <label class="text-[12px] font-bold text-inkSoft">تاریخ تولد</label>
-            <ClientOnly>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[12px] font-bold text-inkSoft">نام خانوادگی</label>
+              <input v-model="form.last_name" type="text" class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors" />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[12px] font-bold text-inkSoft">شماره موبایل</label>
               <div class="relative">
+                <input v-model="form.mobile" type="tel" dir="rtl" disabled class="w-full p-3.5 rounded-xl border border-ink/10 bg-ink/[0.03] text-[13px] text-inkSoft outline-none" />
+                <span class="absolute inset-y-0 left-3 flex items-center text-[10.5px] text-sage font-bold">
+                  <Icon name="tabler:circle-check" class="text-[13px]" />
+                </span>
+              </div>
+            </div>
+  
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[12px] font-bold text-inkSoft">تاریخ تولد</label>
+              <ClientOnly>
+                <div class="relative">
+                  <input
+                    id="birth-date-input"
+                    type="text"
+                    readonly
+                    :value="birthDateDisplay"
+                    placeholder="۱۳۷۰/۰۱/۰۱"
+                    class="w-full p-3.5 pl-10 rounded-xl border border-ink/15 bg-cream text-[13px] text-ink outline-none focus:border-accent transition-colors cursor-pointer"
+                  />
+                  <Icon
+                    name="tabler:calendar-event"
+                    class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-inkSoft text-[15px] place-self-center place-items-center"
+                  />
+                  <DatePicker
+                    v-if="DatePicker"
+                    v-model="form.birth_date"
+                    type="date"
+                    locale="fa"
+                    simple
+                    :max="maxBirthDate"
+                    :min="minBirthDate"
+                    format="YYYY-MM-DD"
+                    display-format="jYYYY/jMM/jDD"
+                    custom-input="#birth-date-input"
+                  />
+                </div>
+                <template #fallback>
+                  <input
+                    type="text"
+                    :value="form.birth_date"
+                    placeholder="۱۳۷۰/۰۱/۰۱"
+                    disabled
+                    class="w-full p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none opacity-70"
+                  />
+                </template>
+              </ClientOnly>
+            </div>
+  
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[12px] font-bold text-inkSoft">کد ملی</label>
+              <input v-model="form.national_code" type="text" inputmode="numeric" maxlength="10" dir="ltr" class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors" />
+            </div>
+  
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[12px] font-bold text-inkSoft">جنسیت</label>
+              <div class="relative">
+                <button
+                  type="button"
+                  class="flex w-full items-center justify-between gap-3 rounded-xl border border-ink/15 bg-cream px-3.5 py-3 text-[13px] text-ink outline-none transition-colors hover:border-accent"
+                  @click="genderMenuOpen = !genderMenuOpen"
+                >
+                  <span>{{ selectedGenderLabel }}</span>
+                  <Icon
+                    name="tabler:chevron-down"
+                    class="text-[15px] text-inkSoft transition-transform"
+                    :class="genderMenuOpen && 'rotate-180'"
+                  />
+                </button>
+  
+                <div
+                  v-if="genderMenuOpen"
+                  class="absolute left-0 right-0 top-[calc(100%+8px)] z-20 overflow-hidden rounded-xl border border-ink/10 bg-cardLight shadow-[0_16px_28px_-16px_rgba(0,0,0,0.2)]"
+                >
+                  <button
+                    v-for="option in genderOptions"
+                    :key="option.value"
+                    type="button"
+                    class="flex w-full items-center justify-between px-3.5 py-2.5 text-right text-[13px] transition-colors"
+                    :class="form.gender === option.value ? 'bg-accent/10 text-accent font-bold' : 'text-ink hover:bg-ink/[0.03]'"
+                    @click="selectGender(option.value)"
+                  >
+                    <span>{{ option.label }}</span>
+                    <span
+                      v-if="form.gender === option.value"
+                      class="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-cream"
+                    >
+                      <Icon name="tabler:check" class="text-[12px]" />
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- <div class="flex flex-col gap-1.5 sm:col-span-2">
+              <label class="text-[12px] font-bold text-inkSoft">نوع پوست</label>
+              <select v-model="form.skin_type" class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors">
+                <option value="normal">نرمال</option>
+                <option value="dry">خشک</option>
+                <option value="oily">چرب</option>
+                <option value="combination">مختلط</option>
+                <option value="sensitive">حساس</option>
+              </select>
+            </div> -->
+  
+            <div class="sm:col-span-2 flex justify-end gap-2 pt-2">
+              <button type="button" class="px-5 py-2.5 rounded-full border border-ink/10 text-[13px] font-bold text-inkSoft hover:bg-ink/5 transition-colors" @click="resetForm">
+                انصراف
+              </button>
+              <button type="submit" :disabled="saving" class="px-6 py-2.5 rounded-full bg-accent text-cream text-[13px] font-bold hover:bg-accentHover transition-colors disabled:opacity-60">
+                <Icon v-if="saving" name="tabler:loader-2" class="ml-1 inline-block animate-spin" />
+                ذخیره تغییرات
+              </button>
+            </div>
+          </form>
+        </div>
+        <!-- امنیت حساب -->
+        <div class="rounded-[22px] border border-ink/[0.06] bg-cardLight p-6">
+          <h3 class="flex items-center gap-2 font-bold text-ink text-[14px] mb-4">
+            <Icon name="tabler:shield-lock" class="text-accent" />
+            امنیت حساب
+          </h3>
+          <div class="flex flex-col gap-4 rounded-2xl bg-ink/[0.03] p-4">
+            <div class="flex flex-col gap-3">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <p class="text-[13px] font-bold text-ink">شماره شبا</p>
+                  <p class="text-[11.5px] text-inkSoft mt-1">برای برداشت از کیف پول، شماره شبا خود را ثبت کنید.</p>
+                </div>
+                <button
+                  type="button"
+                  :disabled="bankSaveLoading"
+                  class="shrink-0 px-5 py-2.5 rounded-full bg-accent text-cream text-[12.5px] font-bold hover:bg-accentHover transition-colors disabled:opacity-60"
+                  @click="saveBankInfo"
+                >
+                  {{ bankSaveLoading ? 'در حال ثبت...' : 'ثبت شماره شبا' }}
+                </button>
+              </div>
+    
+              <div class="flex flex-col gap-1.5">
+                <label class="text-[12px] font-bold text-inkSoft">شماره شبا</label>
                 <input
-                  id="birth-date-input"
+                  v-model="bankForm.iban_number"
                   type="text"
-                  readonly
-                  :value="birthDateDisplay"
-                  placeholder="۱۳۷۰/۰۱/۰۱"
-                  class="w-full p-3.5 pl-10 rounded-xl border border-ink/15 bg-cream text-[13px] text-ink outline-none focus:border-accent transition-colors cursor-pointer"
-                />
-                <Icon
-                  name="tabler:calendar-event"
-                  class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-inkSoft text-[15px] place-self-center place-items-center"
-                />
-                <DatePicker
-                  v-if="DatePicker"
-                  v-model="form.birth_date"
-                  type="date"
-                  locale="fa"
-                  simple
-                  :max="maxBirthDate"
-                  :min="minBirthDate"
-                  format="YYYY-MM-DD"
-                  display-format="jYYYY/jMM/jDD"
-                  custom-input="#birth-date-input"
+                  inputmode="numeric"
+                  dir="ltr"
+                  placeholder="IRXXXXXXXXXXXXXX"
+                  class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
                 />
               </div>
-              <template #fallback>
-                <input
-                  type="text"
-                  :value="form.birth_date"
-                  placeholder="۱۳۷۰/۰۱/۰۱"
-                  disabled
-                  class="w-full p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none opacity-70"
-                />
-              </template>
-            </ClientOnly>
+            </div>
           </div>
-
-          <div class="flex flex-col gap-1.5">
-            <label class="text-[12px] font-bold text-inkSoft">کد ملی</label>
-            <input v-model="form.national_code" type="text" inputmode="numeric" maxlength="10" dir="ltr" class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors" />
-          </div>
-
-          <div class="flex flex-col gap-1.5">
-            <label class="text-[12px] font-bold text-inkSoft">جنسیت</label>
-            <div class="relative">
-              <button
-                type="button"
-                class="flex w-full items-center justify-between gap-3 rounded-xl border border-ink/15 bg-cream px-3.5 py-3 text-[13px] text-ink outline-none transition-colors hover:border-accent"
-                @click="genderMenuOpen = !genderMenuOpen"
-              >
-                <span>{{ selectedGenderLabel }}</span>
-                <Icon
-                  name="tabler:chevron-down"
-                  class="text-[15px] text-inkSoft transition-transform"
-                  :class="genderMenuOpen && 'rotate-180'"
-                />
-              </button>
-
-              <div
-                v-if="genderMenuOpen"
-                class="absolute left-0 right-0 top-[calc(100%+8px)] z-20 overflow-hidden rounded-xl border border-ink/10 bg-cardLight shadow-[0_16px_28px_-16px_rgba(0,0,0,0.2)]"
-              >
+        </div>
+    
+        <!-- مدیریت رمز عبور -->
+        <div class="rounded-[22px] border border-ink/[0.06] bg-cardLight p-6">
+          <h3 class="flex items-center gap-2 font-bold text-ink text-[14px] mb-4">
+            <Icon name="tabler:key" class="text-accent" />
+            رمز عبور و ورود
+          </h3>
+          <div class="flex flex-col gap-4 rounded-2xl bg-ink/[0.03] p-4">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <p class="text-[13px] font-bold text-ink">رمز عبور</p>
+                <!-- <p class="text-[11.5px] text-inkSoft mt-1">برای امنیت بیشتر، رمز عبور خود را به‌طور دوره‌ای تغییر دهید.</p> -->
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
                 <button
-                  v-for="option in genderOptions"
-                  :key="option.value"
                   type="button"
-                  class="flex w-full items-center justify-between px-3.5 py-2.5 text-right text-[13px] transition-colors"
-                  :class="form.gender === option.value ? 'bg-accent/10 text-accent font-bold' : 'text-ink hover:bg-ink/[0.03]'"
-                  @click="selectGender(option.value)"
+                  class="shrink-0 px-5 py-2.5 rounded-full border border-ink/15 text-[12.5px] font-bold text-ink hover:bg-ink/5 transition-colors"
+                  @click="togglePasswordChange"
                 >
-                  <span>{{ option.label }}</span>
-                  <span
-                    v-if="form.gender === option.value"
-                    class="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-cream"
-                  >
-                    <Icon name="tabler:check" class="text-[12px]" />
-                  </span>
+                  {{ passwordChangeOpen ? 'بستن فرم' : 'تغییر رمز عبور' }}
+                </button>
+                <button
+                  type="button"
+                  class="shrink-0 px-5 py-2.5 rounded-full bg-accent text-cream text-[12.5px] font-bold hover:bg-accentHover transition-colors"
+                  @click="openForgotPasswordFlow"
+                >
+                  فراموشی رمز عبور
                 </button>
               </div>
             </div>
-          </div>
-          <!-- <div class="flex flex-col gap-1.5 sm:col-span-2">
-            <label class="text-[12px] font-bold text-inkSoft">نوع پوست</label>
-            <select v-model="form.skin_type" class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors">
-              <option value="normal">نرمال</option>
-              <option value="dry">خشک</option>
-              <option value="oily">چرب</option>
-              <option value="combination">مختلط</option>
-              <option value="sensitive">حساس</option>
-            </select>
-          </div> -->
-
-          <div class="sm:col-span-2 flex justify-end gap-2 pt-2">
-            <button type="button" class="px-5 py-2.5 rounded-full border border-ink/10 text-[13px] font-bold text-inkSoft hover:bg-ink/5 transition-colors" @click="resetForm">
-              انصراف
-            </button>
-            <button type="submit" :disabled="saving" class="px-6 py-2.5 rounded-full bg-accent text-cream text-[13px] font-bold hover:bg-accentHover transition-colors disabled:opacity-60">
-              <Icon v-if="saving" name="tabler:loader-2" class="ml-1 inline-block animate-spin" />
-              ذخیره تغییرات
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- امنیت حساب -->
-    <div class="rounded-[22px] border border-ink/[0.06] bg-cardLight p-6">
-      <h3 class="flex items-center gap-2 font-bold text-ink text-[14px] mb-4">
-        <Icon name="tabler:shield-lock" class="text-accent" />
-        امنیت حساب
-      </h3>
-      <div class="flex flex-col gap-4 rounded-2xl bg-ink/[0.03] p-4">
-        <div class="flex flex-col gap-3">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <p class="text-[13px] font-bold text-ink">شماره شبا</p>
-              <p class="text-[11.5px] text-inkSoft mt-1">برای برداشت از کیف پول، شماره شبا خود را ثبت کنید.</p>
+    
+            <div v-if="passwordChangeOpen" class="rounded-2xl border border-ink/10 bg-cardLight p-4">
+              <div class="grid gap-3">
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-[12px] font-bold text-inkSoft">رمز عبور فعلی</label>
+                  <input
+                    v-model="passwordForm.oldPassword"
+                    type="password"
+                    placeholder="رمز عبور فعلی"
+                    class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-[12px] font-bold text-inkSoft">رمز عبور جدید</label>
+                  <input
+                    v-model="passwordForm.password"
+                    type="password"
+                    placeholder="حداقل ۶ کاراکتر"
+                    class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-[12px] font-bold text-inkSoft">تکرار رمز عبور جدید</label>
+                  <input
+                    v-model="passwordForm.confirmPassword"
+                    type="password"
+                    placeholder="حداقل ۶ کاراکتر"
+                    class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+              </div>
+    
+              <div class="mt-4 flex justify-end gap-2">
+                <button
+                  type="button"
+                  class="px-4 py-2.5 rounded-full border border-ink/10 text-[12.5px] font-bold text-inkSoft hover:bg-ink/5 transition-colors"
+                  @click="closePasswordChangeForm"
+                >
+                  انصراف
+                </button>
+                <button
+                  type="button"
+                  :disabled="passwordSubmitLoading"
+                  class="px-5 py-2.5 rounded-full bg-accent text-cream text-[12.5px] font-bold hover:bg-accentHover transition-colors disabled:opacity-60"
+                  @click="submitPasswordChange"
+                >
+                  {{ passwordSubmitLoading ? 'در حال ذخیره...' : 'ذخیره رمز جدید' }}
+                </button>
+              </div>
             </div>
-            <button
-              type="button"
-              :disabled="bankSaveLoading"
-              class="shrink-0 px-5 py-2.5 rounded-full bg-accent text-cream text-[12.5px] font-bold hover:bg-accentHover transition-colors disabled:opacity-60"
-              @click="saveBankInfo"
-            >
-              {{ bankSaveLoading ? 'در حال ثبت...' : 'ثبت شماره شبا' }}
-            </button>
-          </div>
-
-          <div class="flex flex-col gap-1.5">
-            <label class="text-[12px] font-bold text-inkSoft">شماره شبا</label>
-            <input
-              v-model="bankForm.iban_number"
-              type="text"
-              inputmode="numeric"
-              dir="ltr"
-              placeholder="IRXXXXXXXXXXXXXX"
-              class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
-            />
-          </div>
-        </div>
-
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <p class="text-[13px] font-bold text-ink">رمز عبور</p>
-            <p class="text-[11.5px] text-inkSoft mt-1">برای امنیت بیشتر، رمز عبور خود را به‌طور دوره‌ای تغییر دهید.</p>
-          </div>
-          <div class="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              class="shrink-0 px-5 py-2.5 rounded-full border border-ink/15 text-[12.5px] font-bold text-ink hover:bg-ink/5 transition-colors"
-              @click="togglePasswordChange"
-            >
-              {{ passwordChangeOpen ? 'بستن فرم' : 'تغییر رمز عبور' }}
-            </button>
-            <button
-              type="button"
-              class="shrink-0 px-5 py-2.5 rounded-full bg-accent text-cream text-[12.5px] font-bold hover:bg-accentHover transition-colors"
-              @click="openForgotPasswordFlow"
-            >
-              فراموشی رمز عبور
-            </button>
-          </div>
-        </div>
-
-        <div v-if="passwordChangeOpen" class="rounded-2xl border border-ink/10 bg-cardLight p-4">
-          <div class="grid gap-3">
-            <div class="flex flex-col gap-1.5">
-              <label class="text-[12px] font-bold text-inkSoft">رمز عبور فعلی</label>
-              <input
-                v-model="passwordForm.oldPassword"
-                type="password"
-                placeholder="رمز عبور فعلی"
-                class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
-              />
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="text-[12px] font-bold text-inkSoft">رمز عبور جدید</label>
-              <input
-                v-model="passwordForm.password"
-                type="password"
-                placeholder="حداقل ۶ کاراکتر"
-                class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
-              />
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="text-[12px] font-bold text-inkSoft">تکرار رمز عبور جدید</label>
-              <input
-                v-model="passwordForm.confirmPassword"
-                type="password"
-                placeholder="حداقل ۶ کاراکتر"
-                class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
-              />
-            </div>
-          </div>
-
-          <div class="mt-4 flex justify-end gap-2">
-            <button
-              type="button"
-              class="px-4 py-2.5 rounded-full border border-ink/10 text-[12.5px] font-bold text-inkSoft hover:bg-ink/5 transition-colors"
-              @click="closePasswordChangeForm"
-            >
-              انصراف
-            </button>
-            <button
-              type="button"
-              :disabled="passwordSubmitLoading"
-              class="px-5 py-2.5 rounded-full bg-accent text-cream text-[12.5px] font-bold hover:bg-accentHover transition-colors disabled:opacity-60"
-              @click="submitPasswordChange"
-            >
-              {{ passwordSubmitLoading ? 'در حال ذخیره...' : 'ذخیره رمز جدید' }}
-            </button>
-          </div>
-        </div>
-
-        <div v-if="forgotPasswordOpen" class="rounded-2xl border border-ink/10 bg-cardLight p-4">
-          <div v-if="forgotPasswordStep === 'otp'" class="space-y-3">
-            <p class="text-[12.5px] text-inkSoft">
-              کد تایید به شماره
-              <span class="font-bold text-ink" dir="ltr">{{ currentUser.mobile }}</span>
-              ارسال می‌شود.
-            </p>
-            <LoginOtpInput
-              :key="`forgot-password-otp-${forgotOtpKey}`"
-              :fields="5"
-              :target="currentUser.mobile || ''"
-              send-type="Forget"
-              @handle-complete="verificationCodePassedForget"
-            />
-          </div>
-
-          <div v-else class="space-y-3">
-            <div class="flex flex-col gap-1.5">
-              <label class="text-[12px] font-bold text-inkSoft">رمز عبور جدید</label>
-              <input
-                v-model="forgotPasswordForm.password"
-                type="password"
-                placeholder="حداقل ۶ کاراکتر"
-                class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
-              />
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="text-[12px] font-bold text-inkSoft">تکرار رمز عبور جدید</label>
-              <input
-                v-model="forgotPasswordForm.confirmPassword"
-                type="password"
-                placeholder="تکرار رمز عبور جدید"
-                class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
-              />
-            </div>
-
-            <div class="flex justify-end gap-2 pt-1">
-              <button
-                type="button"
-                class="px-4 py-2.5 rounded-full border border-ink/10 text-[12.5px] font-bold text-inkSoft hover:bg-ink/5 transition-colors"
-                @click="closeForgotPasswordFlow"
-              >
-                انصراف
-              </button>
-              <button
-                type="button"
-                :disabled="forgotPasswordSubmitLoading"
-                class="px-5 py-2.5 rounded-full bg-accent text-cream text-[12.5px] font-bold hover:bg-accentHover transition-colors disabled:opacity-60"
-                @click="submitForgotPassword"
-              >
-                {{ forgotPasswordSubmitLoading ? 'در حال ثبت...' : 'ثبت رمز جدید' }}
-              </button>
+    
+            <div v-if="forgotPasswordOpen" class="rounded-2xl border border-ink/10 bg-cardLight p-4">
+              <div v-if="forgotPasswordStep === 'otp'" class="space-y-3">
+                <p class="text-[12.5px] text-inkSoft">
+                  کد تایید به شماره
+                  <span class="font-bold text-ink" dir="ltr">{{ currentUser.mobile }}</span>
+                  ارسال می‌شود.
+                </p>
+                <LoginOtpInput
+                  :key="`forgot-password-otp-${forgotOtpKey}`"
+                  :fields="5"
+                  :target="currentUser.mobile || ''"
+                  send-type="Forget"
+                  @handle-complete="verificationCodePassedForget"
+                />
+              </div>
+    
+              <div v-else class="space-y-3">
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-[12px] font-bold text-inkSoft">رمز عبور جدید</label>
+                  <input
+                    v-model="forgotPasswordForm.password"
+                    type="password"
+                    placeholder="حداقل ۶ کاراکتر"
+                    class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-[12px] font-bold text-inkSoft">تکرار رمز عبور جدید</label>
+                  <input
+                    v-model="forgotPasswordForm.confirmPassword"
+                    type="password"
+                    placeholder="تکرار رمز عبور جدید"
+                    class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+    
+                <div class="flex justify-end gap-2 pt-1">
+                  <button
+                    type="button"
+                    class="px-4 py-2.5 rounded-full border border-ink/10 text-[12.5px] font-bold text-inkSoft hover:bg-ink/5 transition-colors"
+                    @click="closeForgotPasswordFlow"
+                  >
+                    انصراف
+                  </button>
+                  <button
+                    type="button"
+                    :disabled="forgotPasswordSubmitLoading"
+                    class="px-5 py-2.5 rounded-full bg-accent text-cream text-[12.5px] font-bold hover:bg-accentHover transition-colors disabled:opacity-60"
+                    @click="submitForgotPassword"
+                  >
+                    {{ forgotPasswordSubmitLoading ? 'در حال ثبت...' : 'ثبت رمز جدید' }}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
   </div>
 </template>
 

@@ -123,7 +123,7 @@
             <ProductCard
               :product="p"
               on-dark
-              class="h-full hover:-translate-y-1.5 transition-all duration-300 transform-gpu"
+              class="h-full transition-all duration-300 transform-gpu"
             />
           </SwiperSlide>
         </Swiper>

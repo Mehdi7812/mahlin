@@ -1,6 +1,6 @@
 <template>
   <div
-    class="relative flex flex-col h-full group hover:-translate-y-1 rounded-md rounded-tr-[48px] transition-all duration-400 ease-out transform-gpu"
+    class="relative flex flex-col h-full group rounded-md rounded-tr-[48px] transition-all duration-400 ease-out transform-gpu"
     :class="onDark ? 'bg-cream shadow-[0_20px_45px_-22px_rgba(0,0,0,0.5)]' : 'bg-ink/5'"
     :style="{ '--cat-shadow': catInfo.shadowColor }"
     @mouseenter="hoverShadow = true"

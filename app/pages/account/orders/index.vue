@@ -55,9 +55,14 @@
           </div>
           <span
             class="flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full"
-            :class="[ORDER_STATUS_META[order.status].bg, ORDER_STATUS_META[order.status].text]"
+            :class="order.status === 'pending'
+              ? 'bg-amber-50 text-amber-700'
+              : [ORDER_STATUS_META[order.status].bg, ORDER_STATUS_META[order.status].text]"
           >
-            <span class="w-1.5 h-1.5 rounded-full" :class="ORDER_STATUS_META[order.status].dot" />
+            <span
+              class="h-1.5 w-1.5 rounded-full"
+              :class="order.status === 'pending' ? 'bg-amber-500' : ORDER_STATUS_META[order.status].dot"
+            />
             {{ ORDER_STATUS_META[order.status].label }}
           </span>
         </div>
@@ -174,9 +179,9 @@ function normalizeOrder(invoice) {
     : (invoice.receiver_name || fullName ? `سفارش برای ${invoice.receiver_name || fullName}` : 'سفارش جدید');
 
   const subtitleParts = [
-    invoice.send_type || invoice.type_text,
+    invoice.send_type || t(invoice.type_text),
     invoice.send_date ? `تاریخ ارسال: ${faDate(invoice.send_date)}` : '',
-    invoice.status_text ? `وضعیت: ${invoice.status_text}` : '',
+    invoice.status_text ? `وضعیت: ${t(invoice.status_text)}` : '',
     invoice.tracking_code ? `کد پیگیری: ${invoice.tracking_code}` : '',
   ].filter(Boolean);
 

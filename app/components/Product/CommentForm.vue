@@ -42,7 +42,7 @@
               <path d="M12 2l2.9 6.3 6.9.7-5.2 4.7 1.5 6.8L12 17.1 5.9 20.5l1.5-6.8L2.2 9l6.9-.7z" stroke-linejoin="round"/>
             </svg>
           </button>
-          <span v-if="rate" class="text-xs text-ink/40 mr-1">{{ rate }}/۵</span>
+          <span v-if="rate" class="text-xs text-ink/40 mr-1">{{ rate }}/5</span>
         </div>
       </div>
 

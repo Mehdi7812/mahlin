@@ -4,7 +4,7 @@ import { faPrice, faNumber, faDate } from '~/utils/format.ts'
 import { nationalCodeSchema } from '~/utils/validation'
 import { toast } from 'vue-sonner';
 
-useSeoMeta({ title: 'سبد خرید | سوشیا' })
+useSeoMeta({ title: 'سبد خرید | ماهلین' })
 
 const { t } = useI18n()
 const customizer = useCustomizerStore()
@@ -1007,7 +1007,7 @@ const primaryDisabled = computed(() => {
                 <!-- خط اتصال بین مراحل -->
                 <div
                   v-if="i < STEPS.length - 1"
-                  class="mx-1.5 h-[3px] flex-1 overflow-hidden rounded-full bg-white/35 ring-1 ring-white/50 md:mx-3"
+                  class="mx-1.5 h-[3px] flex-1 overflow-hidden rounded-full bg-white ring-1 ring-white/50 md:mx-3"
                 >
                   <div
                     class="h-full rounded-full bg-gradient-to-l from-emerald-500 to-emerald-600 shadow-[0_0_8px_rgba(0,0,0,0.15)] transition-all duration-700 ease-out"

@@ -733,7 +733,7 @@
 
               <span class="min-w-0">
                 <span class="block text-xs font-bold text-ink">
-                  ۰۲۱-۰۰۰۰۰۰۰۰
+                  0992-265-5520
                 </span>
                 <span class="mt-1 block text-[10px] text-ink/40">
                   تماس با پشتیبانی

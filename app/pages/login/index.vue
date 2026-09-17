@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed, onMounted } from "vue";
+import { ref, reactive, computed, onMounted, nextTick, watch } from "vue";
 
 const props = defineProps({
   additional: { type: String, default: "" },
@@ -95,6 +95,9 @@ const backTo = ref("/");
 
 const getMobileInput = ref(null);
 const getPresenterInput = ref(null);
+const profileFirstNameInput = ref(null);
+const passwordInput = ref(null);
+const newPasswordInput = ref(null);
 
 /* --- UI helper state (فقط برای ظاهر، منطق اصلی رو تغییر نمی‌ده) --- */
 const showPassword = ref(false);
@@ -123,6 +126,31 @@ const stepMeta = computed(() => {
       return { title: allowRegister.value ? "ورود | ثبت‌نام" : "ورود", subtitle: "به دنیای ماهلین خوش آمدید" };
   }
 });
+
+async function focusStepInput(step) {
+  if (!import.meta.client) return;
+  await nextTick();
+
+  const inputByStep = {
+    getMobile: getMobileInput,
+    password: passwordInput,
+    profile: profileFirstNameInput,
+    changePassword: newPasswordInput,
+    presenter: getPresenterInput,
+  };
+
+  const focusInput = () => {
+    if (formStep.value !== step) return;
+    inputByStep[step]?.value?.focus();
+  };
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(focusInput);
+  });
+  setTimeout(focusInput, 350);
+}
+
+watch(formStep, focusStepInput, { immediate: true });
 
 onMounted(() => {
   if (props.additional && props.additional !== "") {
@@ -541,43 +569,35 @@ const submitProfile = () => {
             <img :src="logoSrc" alt="ماهلین" class="h-12 w-auto drop-shadow-sm" />
           </div>
 
-          <!-- آیکون هر مرحله -->
-          <Transition name="pop" mode="out-in">
-            <div
-              :key="formStep"
-              class="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-accent/15 to-accent/5 text-accent"
-            >
-              <svg v-if="formStep === 'getMobile'" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                <rect x="7" y="2" width="10" height="20" rx="2" />
-                <path d="M11 18h2" stroke-linecap="round" />
-              </svg>
-              <svg v-else-if="formStep === 'otp'" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                <path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-              <svg v-else-if="formStep === 'password'" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                <rect x="4" y="10" width="16" height="10" rx="2" />
-                <path d="M8 10V7a4 4 0 018 0v3" />
-              </svg>
-              <svg v-else-if="formStep === 'changePassword'" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                <circle cx="8" cy="14" r="4" />
-                <path d="M11 11l8-8m0 0h-4m4 0v4" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-              <svg v-else width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                <circle cx="9" cy="8" r="3" />
-                <path d="M2 21v-1a6 6 0 016-6h2a6 6 0 016 6v1" />
-                <path d="M17 11a3 3 0 100-6" />
-                <path d="M22 21v-1a5 5 0 00-3-4.6" />
-              </svg>
-            </div>
-          </Transition>
-
-          <Transition name="fade-slide" mode="out-in">
-            <div :key="formStep + '-title'" class="text-center">
-              <h1 class="text-lg font-bold text-ink">{{ stepMeta.title }}</h1>
-              <p class="mt-1 text-xs text-inkSoft">{{ stepMeta.subtitle }}</p>
-            </div>
-          </Transition>
+          <div class="flex items-center gap-3">
+            <!-- آیکون هر مرحله -->
+            <Transition name="pop" mode="out-in">
+              <div
+                :key="formStep"
+                class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-accent/15 to-accent/5 text-accent"
+              >
+                <Icon
+                  :name="formStep === 'getMobile'
+                    ? 'tabler:device-mobile-message'
+                    : formStep === 'otp'
+                      ? 'tabler:shield-check'
+                      : formStep === 'password'
+                        ? 'tabler:lock-password'
+                        : formStep === 'changePassword'
+                          ? 'tabler:key'
+                          : 'tabler:users-plus'"
+                  class="text-[27px]"
+                />
+              </div>
+            </Transition>
+  
+            <Transition name="fade-slide" mode="out-in">
+              <div :key="formStep + '-title'" class="text-center">
+                <h2 class="text-lg font-bold text-ink">{{ stepMeta.title }}</h2>
+                <p class="mt-1 text-xs text-inkSoft">{{ stepMeta.subtitle }}</p>
+              </div>
+            </Transition>
+          </div>
         </div>
 
         <Transition name="fade-slide" mode="out-in">
@@ -586,9 +606,7 @@ const submitProfile = () => {
             <div class="mb-2">
               <div class="relative">
                 <span class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-inkSoft/60">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                    <rect x="7" y="2" width="10" height="20" rx="2" />
-                  </svg>
+                  <Icon name="tabler:device-mobile" class="text-[18px]" />
                 </span>
                 
                 <input
@@ -717,11 +735,10 @@ const submitProfile = () => {
             <div class="mb-2">
               <div class="relative">
                 <span class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-inkSoft/60">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                    <rect x="4" y="10" width="16" height="10" rx="2" /><path d="M8 10V7a4 4 0 018 0v3" />
-                  </svg>
+                  <Icon name="tabler:lock" class="text-[18px]" />
                 </span>
                 <input
+                  ref="passwordInput"
                   v-model="password"
                   :type="showPassword ? 'text' : 'password'"
                   placeholder="رمز عبور"
@@ -736,13 +753,7 @@ const submitProfile = () => {
                   class="absolute inset-y-0 left-3 flex items-center text-inkSoft/60 hover:text-accent"
                   @click="showPassword = !showPassword"
                 >
-                  <svg v-if="!showPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" /><circle cx="12" cy="12" r="3" />
-                  </svg>
-                  <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                    <path d="M17.94 17.94A10.94 10.94 0 0112 19c-7 0-11-7-11-7a21.6 21.6 0 015.06-5.94M9.9 4.24A10.4 10.4 0 0112 4c7 0 11 7 11 7a21.6 21.6 0 01-2.16 3.19M14.12 14.12a3 3 0 11-4.24-4.24" />
-                    <path d="M1 1l22 22" />
-                  </svg>
+                  <Icon :name="showPassword ? 'tabler:eye-off' : 'tabler:eye'" class="text-[18px]" />
                 </button>
               </div>
               <Transition name="fade-slide">
@@ -785,6 +796,7 @@ const submitProfile = () => {
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <input
+                  ref="profileFirstNameInput"
                   v-model="profileForm.first_name"
                   type="text"
                   placeholder="نام"
@@ -834,10 +846,7 @@ const submitProfile = () => {
                     class="w-full rounded-2xl border bg-white/70 py-3.5 px-4 pl-10 text-sm text-ink outline-none transition-all duration-200 placeholder:text-inkSoft/50 cursor-pointer"
                     :class="errors.birth_date ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-ink/10 focus:border-accent focus:ring-4 focus:ring-accent/10'"
                   />
-                  <svg class="pointer-events-none absolute inset-y-0 left-3 flex items-center my-auto text-inkSoft/60" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                    <rect x="3" y="4" width="18" height="18" rx="2" />
-                    <path d="M16 2v4M8 2v4M3 10h18" stroke-linecap="round" />
-                  </svg>
+                  <Icon name="tabler:calendar-event" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-inkSoft/60" />
                   <DatePicker
                     v-if="DatePicker"
                     v-model="profileForm.birth_date"
@@ -849,6 +858,7 @@ const submitProfile = () => {
                     format="YYYY-MM-DD"
                     display-format="jYYYY/jMM/jDD"
                     custom-input="#birth-date-input"
+                    append-to="body"
                     @change="errors.birth_date = ''"
                   />
                 </div>
@@ -882,7 +892,7 @@ const submitProfile = () => {
 
           <!-- 4) تغییر رمز عبور -->
           <div v-else-if="formStep === 'changePassword'" key="changePassword" class="px-7 pb-8 pt-2">
-            <p class="mb-5 flex items-center justify-center gap-1.5 text-center text-xs text-inkSoft">
+            <p class="my-5 flex items-center justify-center gap-1.5 text-center text-xs text-inkSoft">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                 <circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" />
               </svg>
@@ -892,11 +902,10 @@ const submitProfile = () => {
             <div class="mb-3">
               <div class="relative">
                 <span class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-inkSoft/60">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                    <circle cx="8" cy="14" r="4" /><path d="M11 11l8-8m0 0h-4m4 0v4" />
-                  </svg>
+                  <Icon name="tabler:key" class="text-[18px]" />
                 </span>
                 <input
+                  ref="newPasswordInput"
                   v-model="password"
                   :type="showPassword ? 'text' : 'password'"
                   placeholder="رمز عبور جدید"
@@ -910,13 +919,7 @@ const submitProfile = () => {
                   class="absolute inset-y-0 left-3 flex items-center text-inkSoft/60 hover:text-accent"
                   @click="showPassword = !showPassword"
                 >
-                  <svg v-if="!showPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" /><circle cx="12" cy="12" r="3" />
-                  </svg>
-                  <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                    <path d="M17.94 17.94A10.94 10.94 0 0112 19c-7 0-11-7-11-7a21.6 21.6 0 015.06-5.94M9.9 4.24A10.4 10.4 0 0112 4c7 0 11 7 11 7a21.6 21.6 0 01-2.16 3.19M14.12 14.12a3 3 0 11-4.24-4.24" />
-                    <path d="M1 1l22 22" />
-                  </svg>
+                  <Icon :name="showPassword ? 'tabler:eye-off' : 'tabler:eye'" class="text-[18px]" />
                 </button>
               </div>
               <Transition name="fade-slide">
@@ -927,9 +930,7 @@ const submitProfile = () => {
             <div class="mb-2">
               <div class="relative">
                 <span class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-inkSoft/60">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                    <circle cx="8" cy="14" r="4" /><path d="M11 11l8-8m0 0h-4m4 0v4" />
-                  </svg>
+                  <Icon name="tabler:key" class="text-[18px]" />
                 </span>
                 <input
                   v-model="password_confirm"
@@ -943,13 +944,7 @@ const submitProfile = () => {
                   class="absolute inset-y-0 left-3 flex items-center text-inkSoft/60 hover:text-accent"
                   @click="showPasswordConfirm = !showPasswordConfirm"
                 >
-                  <svg v-if="!showPasswordConfirm" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" /><circle cx="12" cy="12" r="3" />
-                  </svg>
-                  <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                    <path d="M17.94 17.94A10.94 10.94 0 0112 19c-7 0-11-7-11-7a21.6 21.6 0 015.06-5.94M9.9 4.24A10.4 10.4 0 0112 4c7 0 11 7 11 7a21.6 21.6 0 01-2.16 3.19M14.12 14.12a3 3 0 11-4.24-4.24" />
-                    <path d="M1 1l22 22" />
-                  </svg>
+                  <Icon :name="showPasswordConfirm ? 'tabler:eye-off' : 'tabler:eye'" class="text-[18px]" />
                 </button>
               </div>
             </div>
@@ -974,9 +969,7 @@ const submitProfile = () => {
             <div class="mb-2">
               <div class="relative">
                 <span class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-inkSoft/60">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                    <circle cx="9" cy="8" r="3" /><path d="M2 21v-1a6 6 0 016-6h2a6 6 0 016 6v1" />
-                  </svg>
+                  <Icon name="tabler:user-plus" class="text-[18px]" />
                 </span>
                 <input
                   ref="getPresenterInput"
