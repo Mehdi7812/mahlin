@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-1">
-
     <!-- توضیحات کامل -->
     <div v-if="item.long" class="border-b border-ink/[0.06] py-3">
       <button
@@ -34,6 +33,7 @@
           <span class="absolute w-[1.5px] h-3.5 bg-gold rounded transition-transform duration-300" :class="modelValue === 'attrs' ? 'rotate-90 opacity-0' : 'rotate-0'"></span>
         </span>
       </button>
+
       <div class="grid transition-[grid-template-rows,opacity,padding] duration-300 ease-out transform-gpu will-change-[grid-template-rows,opacity]" :class="modelValue === 'attrs' ? 'grid-rows-[1fr] opacity-100 pt-1 pb-3' : 'grid-rows-[0fr] opacity-0 pt-0 pb-0'">
         <div class="overflow-hidden">
           <div class="py-2 grid sm:grid-cols-2 gap-3">
@@ -82,7 +82,6 @@
         </div>
       </div>
     </div>
-
   </div>
 </template>
 

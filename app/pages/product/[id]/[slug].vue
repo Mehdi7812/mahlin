@@ -67,6 +67,7 @@
 
         <div v-if="avgRating" class="flex items-center gap-3 bg-card px-4 py-2.5 rounded-full w-fit">
           <span class="text-xl font-bold text-ink font-latin">{{ avgRating }}</span>
+          
           <div class="flex gap-0.5 text-gold text-sm">
             <span v-for="s in 5" :key="s">★</span>
           </div>
@@ -415,10 +416,18 @@ function loadMoreComments() {
 }
 
 const avgRating = computed(() => {
-  const rated = comments.value.filter((c) => c.rate);
+  const rated = comments.value
+    .map((c) => Number(c.rate))
+    .filter((r) => !isNaN(r) && r > 0);
+
   if (!rated.length) return null;
-  const sum = rated.reduce((acc, c) => acc + (c.rate || 0), 0);
-  return (sum / rated.length).toFixed(1);
+
+  const sum = rated.reduce((acc, r) => acc + r, 0);
+  const avg = sum / rated.length;
+
+  // اگه عدد رند بود، بدون اعشار نمایش بده (مثلاً 5 به‌جای 5.0)
+  // در غیر این صورت با یک رقم اعشار (مثلاً 4.5)
+  return avg % 1 === 0 ? String(avg) : avg.toFixed(1);
 });
 
 // ─── محصولات مشابه (از API) ────────────────────────────────────

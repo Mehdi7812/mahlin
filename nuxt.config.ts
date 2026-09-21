@@ -3,6 +3,8 @@ import pkg from "./package.json";
 export default defineNuxtConfig({
   compatibilityDate: "2024-08-01",
 
+  ssr: false,
+
   devtools: { enabled: true },
 
   modules: ["@nuxtjs/tailwindcss", "@pinia/nuxt", "@nuxtjs/i18n", "@nuxt/icon"],

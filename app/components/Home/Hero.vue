@@ -92,9 +92,8 @@
 
         <div class="aspect-square overflow-hidden rounded-[24px] shadow-[0_20px_60px_rgba(197,160,89,0.18)] relative">
           <video
+            ref="heroVideo"
             src="/video/brand.webm"
-            autoplay
-            loop
             muted
             playsinline
             class="w-full h-full object-cover"
@@ -125,6 +124,43 @@
     </div>
   </section>
 </template>
+
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+
+const heroVideo = ref(null)
+let observer = null
+
+onMounted(() => {
+  if (!heroVideo.value) return
+
+  observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        const video = heroVideo.value
+        if (!video) return
+
+        if (entry.isIntersecting) {
+          // هر بار که وارد ویوپورت میشه از اول پخش بشه
+          video.currentTime = 0
+          video.play().catch(() => {})
+        } else {
+          video.pause()
+        }
+      })
+    },
+    { threshold: 0.4 } // وقتی حداقل ۴۰٪ ویدیو دیده بشه
+  )
+
+  observer.observe(heroVideo.value)
+})
+
+onBeforeUnmount(() => {
+  if (observer && heroVideo.value) {
+    observer.unobserve(heroVideo.value)
+  }
+})
+</script>
 
 <style scoped>
 @keyframes fadeInUp {

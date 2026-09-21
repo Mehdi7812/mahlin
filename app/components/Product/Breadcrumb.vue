@@ -6,7 +6,7 @@
     <template v-if="categoryTree[0].text">
       <template v-for="cat in categoryTree" :key="cat.id">
         <span>/</span>
-        <NuxtLink :to="{ path: '/shop', query: { cat: cat.id } }" class="hover:text-gold transition-colors">
+        <NuxtLink :to="{ path: '/shop', query: { cat_id: cat.id } }" class="hover:text-gold transition-colors">
           {{ cat.text }}
         </NuxtLink>
       </template>

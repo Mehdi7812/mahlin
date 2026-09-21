@@ -66,8 +66,9 @@
         :src="displayImage"
         :alt="productName"
         loading="lazy"
-        class="w-[90%] h-[90%] object-contain transition-transform duration-700 ease-out group-hover:scale-105 transform-gpu relative z-[1] rounded-tr-[50px] sm:rounded-tr-[60px] rounded-[14px]"
+        class="w-[90%] h-[90%] object-contain transition-transform duration-700 ease-out group-hover:scale-105 transform-gpu relative z-[1] rounded-tr-[50px] sm:rounded-tr-[60px] rounded-[14px] cursor-zoom-in"
         @error="onImageError"
+        @click="openLightbox"
       />
     </div>
 
@@ -89,11 +90,68 @@
         <img :src="img" class="w-full h-full object-cover" @error="onThumbError" />
       </button>
     </div>
+
+    <!-- لایت‌باکس تمام صفحه -->
+    <Teleport to="body">
+      <Transition name="lightbox-fade">
+        <div
+          v-if="lightboxOpen"
+          class="fixed inset-0 z-[1000] bg-black/90 backdrop-blur-sm flex items-center justify-center"
+          @click.self="closeLightbox"
+        >
+          <!-- دکمه بستن -->
+          <button
+            type="button"
+            aria-label="بستن"
+            class="absolute top-5 end-5 z-10 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white grid place-items-center transition-colors backdrop-blur-md"
+            @click="closeLightbox"
+          >
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <!-- دکمه قبلی -->
+          <button
+            v-if="images && images.length > 1"
+            type="button"
+            aria-label="تصویر قبلی"
+            class="absolute start-4 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white grid place-items-center transition-colors backdrop-blur-md"
+            @click.stop="showPrev"
+          >
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <!-- دکمه بعدی -->
+          <button
+            v-if="images && images.length > 1"
+            type="button"
+            aria-label="تصویر بعدی"
+            class="absolute end-4 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white grid place-items-center transition-colors backdrop-blur-md"
+            @click.stop="showNext"
+          >
+            <svg class="w-5 h-5 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <!-- تصویر بزرگ -->
+          <img
+            :src="displayImage"
+            :alt="productName"
+            class="max-w-[92vw] max-h-[88vh] object-contain rounded-lg select-none"
+            @click.stop
+          />
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onBeforeUnmount } from 'vue';
 import { fa } from '~/utils/format';
 import { toast } from 'vue-sonner';
 
@@ -132,6 +190,46 @@ function onImageError() {
 function onThumbError(e) {
   e.target.src = DEFAULT_IMG;
 }
+
+// ─── لایت‌باکس تمام صفحه ─────────────────────────────────
+const lightboxOpen = ref(false);
+
+function openLightbox() {
+  lightboxOpen.value = true;
+  document.addEventListener('keydown', onKeydown);
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  lightboxOpen.value = false;
+  document.removeEventListener('keydown', onKeydown);
+  document.body.style.overflow = '';
+}
+
+function onKeydown(e) {
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') showNext();  // در RTL جهت‌ها برعکس می‌شن
+  if (e.key === 'ArrowRight') showPrev();
+}
+
+function showNext() {
+  if (!props.images || props.images.length < 2) return;
+  const idx = props.images.indexOf(activeImageModel.value);
+  const nextIdx = idx === -1 ? 0 : (idx + 1) % props.images.length;
+  activeImageModel.value = props.images[nextIdx];
+}
+
+function showPrev() {
+  if (!props.images || props.images.length < 2) return;
+  const idx = props.images.indexOf(activeImageModel.value);
+  const prevIdx = idx === -1 ? 0 : (idx - 1 + props.images.length) % props.images.length;
+  activeImageModel.value = props.images[prevIdx];
+}
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', onKeydown);
+  document.body.style.overflow = '';
+});
 
 // ─── علاقه‌مندی ──────────────────────────────────────────
 const wishlistLoading = ref(false);
@@ -172,3 +270,14 @@ async function handleToggleWishlist() {
   }
 }
 </script>
+
+<style scoped>
+.lightbox-fade-enter-active,
+.lightbox-fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+.lightbox-fade-enter-from,
+.lightbox-fade-leave-to {
+  opacity: 0;
+}
+</style>
