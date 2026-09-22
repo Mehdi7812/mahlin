@@ -26,11 +26,15 @@
         <!-- ── درباره برند ── -->
         <div class="sm:col-span-2 lg:col-span-4 footer-col">
           <!-- لوگو -->
-          <NuxtLink to="/" class="inline-flex items-center gap-3 group mb-5">
-            <div class="w-11 h-11 rounded-xl overflow-hidden border border-cream/10 group-hover:border-gold/40 transition-colors duration-300">
-              <img class="w-full h-full object-cover" src="/logo/logo.png" alt="ماهلین" />
-            </div>
-            <span class="font-display text-xl sm:text-2xl text-cream group-hover:text-gold transition-colors duration-300">
+          <NuxtLink to="/" class="footer-logo inline-flex items-center gap-3.5 mb-5">
+            <span class="footer-logo-mark">
+              <span class="footer-logo-glow" aria-hidden="true"></span>
+              <span class="footer-logo-ring" aria-hidden="true"><span></span></span>
+              <span class="footer-logo-tile">
+                <img class="w-full h-full object-cover" src="/logo/logo.png" alt="" />
+              </span>
+            </span>
+            <span class="footer-logo-text font-display text-xl sm:text-2xl">
               ماهلین اسکین‌کر
             </span>
           </NuxtLink>
@@ -90,7 +94,7 @@
             <li v-for="c in categories" :key="c.id">
               <NuxtLink
                 :to="{ path: '/shop', query: { cat_id: c.id } }"
-                class="footer-link group"
+                class="footer-link group whitespace-nowrap"
               >
                 <span class="footer-link-bar bg-gold"></span>
                 {{ c.title_fa }}
@@ -634,5 +638,113 @@ onUnmounted(() => {
 .scroll-top-leave-to {
   opacity: 0;
   transform: translateY(16px) scale(0.8);
+}
+
+/* ── لوگوی فوتر ─────────────────────────────────────── */
+.footer-logo-mark {
+  position: relative;
+  width: 2.875rem;
+  height: 2.875rem;
+  flex-shrink: 0;
+  isolation: isolate;
+}
+
+/* درخشش طلایی پشت قاب */
+.footer-logo-glow {
+  position: absolute;
+  inset: -45%;
+  z-index: -1;
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, rgba(162, 132, 102, 0.55), rgba(242, 168, 104, 0.15) 60%, transparent);
+  filter: blur(10px);
+  animation: logoGlow 4.5s ease-in-out infinite;
+}
+@keyframes logoGlow {
+  0%, 100% { opacity: 0.5; transform: scale(0.85); }
+  50%      { opacity: 1;   transform: scale(1.1); }
+}
+
+/* حلقه‌ی نور چرخان دور قاب */
+.footer-logo-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 0.8rem;
+  overflow: hidden;
+}
+.footer-logo-ring > span {
+  position: absolute;
+  inset: -50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0 55%,
+    rgba(162, 132, 102, 0.9),   /* gold */
+    rgba(251, 228, 205, 1),     /* peachLight */
+    rgba(242, 168, 104, 0.8),   /* peach */
+    transparent 92%
+  );
+  animation: logoRing 5s linear infinite;
+}
+@keyframes logoRing {
+  to { transform: rotate(360deg); }
+}
+
+/* خود قاب لوگو — روی حلقه می‌نشیند و فقط لبه‌ی ۱٫۵ پیکسلی نور دیده می‌شود */
+.footer-logo-tile {
+  position: absolute;
+  inset: 1.5px;
+  border-radius: calc(0.8rem - 1.5px);
+  overflow: hidden;
+  background: #3F3A35;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* نوشته با برق نور عبوری */
+/* نوشته با برق نور عبوری */
+.footer-logo-text {
+  background: linear-gradient(
+    100deg,
+    #F2EBE3 0%,
+    #F2EBE3 35%,
+    #A28466 42%,   /* gold */
+    #F2A868 46%,   /* peach */
+    #FFF8F0 50%,   /* نقطه‌ی اوج نور */
+    #FBE4CD 54%,   /* peachLight */
+    #A28466 58%,   /* gold */
+    #F2EBE3 65%,
+    #F2EBE3 100%
+  );
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 0 rgba(242, 168, 104, 0));
+  animation: logoShimmer 4.5s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+  transition: filter 0.5s ease;
+}
+@keyframes logoShimmer {
+  0%, 45%   { background-position: 100% 0; }
+  80%, 100% { background-position: 0% 0; }
+}
+
+/* هاور */
+/* هاور */
+.footer-logo:hover .footer-logo-tile { transform: scale(0.94); }
+.footer-logo:hover .footer-logo-text {
+  animation-duration: 2.2s;
+  filter: drop-shadow(0 0 10px rgba(242, 168, 104, 0.45));
+}
+
+.footer-logo:focus-visible {
+  outline: 2px solid rgba(162, 132, 102, 0.6);
+  outline-offset: 6px;
+  border-radius: 0.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-logo-glow,
+  .footer-logo-ring > span,
+  .footer-logo-text { animation: none; }
+  .footer-logo-glow { opacity: 0.7; }
 }
 </style>

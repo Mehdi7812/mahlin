@@ -45,7 +45,7 @@
     >
       <!-- قاب تصویر -->
       <div
-        class="h-[260px] relative bg-white border-b overflow-hidden rounded-tr-[48px] transition-colors duration-500 ease-out"
+        class="h-[220px] md:h-[260px] relative bg-white border-b overflow-hidden rounded-tr-[48px] transition-colors duration-500 ease-out"
         :style="{ borderColor: catInfo.borderColor }"
       >
         <img

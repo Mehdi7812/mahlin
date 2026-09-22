@@ -112,11 +112,14 @@
 
     <ProductMobileBar
       :qty="qty"
+      :min-qty="item.minQty || 1"
       :at-max-stock="atMaxStock"
       :in-stock="item.inStock"
       :just-added="justAdded"
       :cat-info="catInfo"
       :price="item.price"
+      :old-price="item.oldPrice"
+      :stop-at="reviewsSectionRef"
       @increment="increment"
       @decrement="decrement"
       @add="handleAdd"

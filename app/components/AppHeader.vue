@@ -3,18 +3,32 @@
   <header class="sticky top-0 z-50 bg-cream/95 backdrop-blur border-b border-ink/10">
     <div class="max-w-[1280px] mx-auto px-4 md:px-6 h-[72px] md:h-[82px] grid grid-cols-[auto_1fr_auto] items-center gap-3 sm:gap-6 relative">
       
-      <!-- لوگو (سمت چپ - در موبایل هنگام سرچ کاملاً محو می‌شود تا تداخل بصری ایجاد نشود) -->
-      <NuxtLink 
-        to="/" 
-        class="flex items-center gap-3 text-ink justify-self-start shrink-0 transition-opacity duration-300 transform-gpu"
+      <!-- لوگو -->
+      <NuxtLink
+        to="/"
+        class="logo-link relative isolate flex items-center gap-3 text-ink justify-self-start shrink-0 transition-opacity duration-300 transform-gpu"
         :class="searchOpen ? 'opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto' : 'opacity-100 pointer-events-auto'"
       >
-        <img
-          src="/logo/mahlin-lockup.png"
-          srcset="/logo/mahlin-lockup.png 1x, /logo/mahlin-lockup@2x.png 2x"
-          alt="ماهلین اسکین‌کر"
-          class="h-7 sm:h-8 md:h-11 w-auto"
-        />
+        <!-- درخشش نرم پشت لوگو -->
+        <span class="logo-glow" aria-hidden="true"></span>
+
+        <!-- ستاره‌های چشمک‌زن -->
+        <span class="logo-sparkles" aria-hidden="true">
+          <svg v-for="n in 4" :key="n" class="sparkle" :class="`sparkle-${n}`" viewBox="0 0 24 24">
+            <path d="M12 0C12.6 6.6 17.4 11.4 24 12 17.4 12.6 12.6 17.4 12 24 11.4 17.4 6.6 12.6 0 12 6.6 11.4 11.4 6.6 12 0Z" />
+          </svg>
+        </span>
+
+        <!-- لوگو + برق نور روی آن -->
+        <span class="logo-img relative inline-block">
+          <img
+            src="/logo/mahlin-lockup.png"
+            srcset="/logo/mahlin-lockup.png 1x, /logo/mahlin-lockup@2x.png 2x"
+            alt="ماهلین اسکین‌کر"
+            class="block h-9 md:h-11 w-auto"
+          />
+          <span class="logo-shine" aria-hidden="true"></span>
+        </span>
       </NuxtLink>
 
       <!-- ستون وسط: فقط منوی اصلی دسکتاپ را نگه می‌دارد -->
@@ -568,3 +582,91 @@ function submitFullSearch() {
 }
 
 </script>
+
+<style scoped>
+/* ════════ درخشش نرم پشت لوگو ════════ */
+.logo-glow {
+  position: absolute;
+  inset: -35% -12%;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 9999px;
+  background: radial-gradient(
+    closest-side,
+    rgba(251, 228, 205, 0.95),   /* peachLight */
+    rgba(162, 132, 102, 0.16) 65%, /* gold */
+    transparent
+  );
+  filter: blur(14px);
+  opacity: 0.6;
+  animation: glowSoft 6s ease-in-out infinite;
+  transition: opacity 0.5s ease;
+}
+@keyframes glowSoft {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 0.85; }
+}
+
+/* ════════ برق نور روی حروف لوگو ════════ */
+.logo-shine {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    110deg,
+    transparent 38%,
+    rgba(255, 248, 240, 0.85) 48%,
+    rgba(251, 228, 205, 0.6) 52%,
+    transparent 62%
+  );
+  background-size: 250% 100%;
+  background-position: 130% 0;
+  /* نور فقط روی شکل خود لوگو دیده می‌شود */
+  -webkit-mask: url('/logo/mahlin-lockup.png') center / contain no-repeat;
+          mask: url('/logo/mahlin-lockup.png') center / contain no-repeat;
+  animation: logoShine 7s ease-in-out infinite;
+}
+@keyframes logoShine {
+  0%, 70%   { background-position: 130% 0; }
+  90%, 100% { background-position: -30% 0; }
+}
+
+/* ════════ ستاره‌ها ════════ */
+.logo-sparkles {
+  position: absolute;
+  inset: -20% -10%;
+  pointer-events: none;
+}
+.sparkle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  fill: #A28466; /* gold */
+  filter: drop-shadow(0 0 3px rgba(162, 132, 102, 0.7));
+  opacity: 0;
+  animation: twinkle 3.2s ease-in-out infinite;
+}
+.sparkle-1 { top: 4%;     inset-inline-start: 2%;  animation-delay: 0s; }
+.sparkle-2 { top: 10%;    inset-inline-end: 6%;    width: 7px; height: 7px; fill: #F2A868; animation-delay: 0.8s; } /* peach */
+.sparkle-3 { bottom: 2%;  inset-inline-end: 22%;   width: 8px; height: 8px; fill: #6E523A; animation-delay: 1.6s; } /* accent */
+.sparkle-4 { bottom: 12%; inset-inline-start: 28%; width: 6px; height: 6px; fill: #FBE4CD; animation-delay: 2.4s; } /* peachLight */
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0;   transform: scale(0) rotate(0deg); }
+  15%      { opacity: 1;   transform: scale(1.15) rotate(45deg); }
+  30%      { opacity: 0.9; transform: scale(0.85) rotate(90deg); }
+  45%      { opacity: 0;   transform: scale(0) rotate(135deg); }
+}
+
+/* ════════ هاور ════════ */
+.logo-img { transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.logo-link:hover .logo-img  { transform: scale(1.03); }
+.logo-link:hover .logo-glow { opacity: 1; animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-glow,
+  .logo-shine { animation: none; }
+  .sparkle { animation: none; opacity: 0.8; transform: scale(1); }
+  .logo-link:hover .logo-img { transform: none; }
+}
+</style>
