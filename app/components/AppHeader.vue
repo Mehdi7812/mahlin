@@ -52,7 +52,9 @@
       >
         <!-- pe-14 در موبایل فضای دکمه ضربدر را به صورت مطلق رزرو می‌کند -->
         <form
+          role="search"
           class="flex items-center gap-2.5 w-full max-w-[720px] transform-gpu pe-14 md:pe-0"
+          @submit.prevent="submitFullSearch"
           style="backface-visibility: hidden;"
         >
           <div class="relative flex-1 min-w-0">
@@ -187,19 +189,7 @@
               <path d="M20 20 L16 16" stroke-linecap="round" />
             </svg>
           </button>
-
-          <!-- حساب کاربری -->
-          <NuxtLink
-            :to="accountLink"
-            aria-label="حساب کاربری"
-            class="hidden sm:grid w-9 h-9 sm:w-10 sm:h-10 place-items-center rounded-full text-ink hover:bg-ink/5 transition-colors"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
-              <circle cx="12" cy="8" r="3.2" />
-              <path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke-linecap="round" />
-            </svg>
-          </NuxtLink>
-
+          
           <!-- سبد خرید -->
           <NuxtLink
             to="/cart"
@@ -216,6 +206,45 @@
             >
               {{ fa(customizer.cartCount) }}
             </span>
+          </NuxtLink>
+
+          <!-- حساب کاربری -->
+          <span
+            v-if="authLoading"
+            class="hidden sm:block w-[88px] h-9 rounded-full bg-ink/[0.06] animate-pulse me-1"
+            aria-hidden="true"
+          ></span>
+
+          <NuxtLink
+            v-else-if="isLoggedIn"
+            to="/account"
+            :aria-label="`حساب کاربری ${displayName}`"
+            class="hidden sm:flex items-center gap-2 h-10 ps-1 pe-3.5 me-1 rounded-full border border-ink/10 text-ink hover:bg-ink/5 hover:border-ink/15 transition-colors"
+          >
+            <img
+              v-if="userPhoto"
+              :src="userPhoto"
+              alt=""
+              class="w-7 h-7 rounded-full object-cover bg-ink/5"
+            />
+            <span
+              v-else
+              class="w-7 h-7 rounded-full grid place-items-center bg-gold/15 text-gold text-xs font-bold"
+              aria-hidden="true"
+            ><svg v-if="!userInitial" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.2" /><path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke-linecap="round" /></svg><template v-else>{{ userInitial }}</template></span>
+            <span class="text-xs font-semibold max-w-[110px] truncate">{{ displayName }}</span>
+          </NuxtLink>
+
+          <NuxtLink
+            v-else
+            to="/login"
+            class="hidden sm:flex items-center gap-1.5 h-10 px-4 me-1 rounded-full border border-ink/15 text-xs font-semibold text-ink hover:bg-ink hover:text-cream hover:border-ink transition-colors"
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+              <circle cx="12" cy="8" r="3.2" />
+              <path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke-linecap="round" />
+            </svg>
+            ورود
           </NuxtLink>
 
           <!-- منوی موبایل -->
@@ -292,14 +321,34 @@
           </button>
         </div>
 
+        <!-- کاربر -->
+        <NuxtLink
+          v-if="isLoggedIn"
+          to="/account"
+          class="flex items-center gap-3 mx-5 mt-4 p-3 rounded-2xl bg-ink/[0.04]"
+          @click="open = false"
+        >
+          <img v-if="userPhoto" :src="userPhoto" alt="" class="w-11 h-11 rounded-full object-cover" />
+          <span v-else class="w-11 h-11 rounded-full grid place-items-center bg-gold/15 text-gold font-bold" aria-hidden="true"><svg v-if="!userInitial" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.2" /><path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke-linecap="round" /></svg><template v-else>{{ userInitial }}</template></span>
+          <span class="min-w-0">
+            <span class="block text-sm font-bold text-ink truncate">{{ displayName }}</span>
+            <span class="block text-xs text-ink/50 mt-0.5">مشاهده‌ی حساب کاربری</span>
+          </span>
+        </NuxtLink>
+        <NuxtLink
+          v-else-if="!authLoading"
+          to="/login"
+          class="flex items-center justify-center gap-2 mx-5 mt-4 h-12 rounded-2xl border border-ink/15 text-sm font-bold text-ink"
+          @click="open = false"
+        >
+          ورود / ثبت‌نام
+        </NuxtLink>
+
         <div class="flex flex-col px-5 py-2">
           <NuxtLink to="/shop" class="text-base font-semibold py-4 border-b border-ink/10 text-ink" active-class="text-gold" @click="open = false">فروشگاه</NuxtLink>
           <NuxtLink to="/journal" class="text-base font-semibold py-4 border-b border-ink/10 text-ink" active-class="text-gold" @click="open = false">وبلاگ</NuxtLink>
           <NuxtLink to="/about" class="text-base font-semibold py-4 border-b border-ink/10 text-ink" active-class="text-gold" @click="open = false">درباره ما</NuxtLink>
           <NuxtLink to="/contact" class="text-base font-semibold py-4 border-b border-ink/10 text-ink" active-class="text-gold" @click="open = false">ارتباط با ما</NuxtLink>
-          <NuxtLink :to="accountLink" class="text-base font-semibold py-4 border-b border-ink/10 text-ink" active-class="text-gold" @click="open = false">
-            {{ isLoggedIn ? 'حساب کاربری' : 'ورود / ثبت‌نام' }}
-          </NuxtLink>
         </div>
 
         <div class="mt-auto px-5 py-5 border-t border-ink/10">
@@ -331,7 +380,6 @@ import { fa, money } from '~/utils/format.ts';
 
 const customizer = useCustomizerStore()
 
-const { count } = useCart();
 const open = ref(false);
 const searchOpen = ref(false);
 const searchQuery = ref('');
@@ -346,49 +394,29 @@ const route = useRoute();
 const router = useRouter();
 let searchTimer = null;
 
-/* ===================================================================
-   🔐 وضعیت لاگین کاربر (از localStorage با کلید "g-auth-token")
-   -------------------------------------------------------------
-   چون localStorage فقط در کلاینت در دسترسه، مقدار اولیه‌ی isLoggedIn
-   را false می‌گذاریم (برای جلوگیری از Hydration Mismatch در SSR)
-   و بعد از mount شدن کامپوننت، مقدار واقعی را از localStorage می‌خوانیم.
-=================================================================== */
-const TOKEN_KEY = 'g-auth-token';
-const isLoggedIn = ref(false);
+// ─── کاربر ─────────────────────────────────────────────────
+// منبع واحد: store که app.vue بعد از mount با users/userInfo پرش می‌کند
+// (توکن هم در localStorage و هم در sessionStorage پشتیبانی می‌شود).
+const isLoggedIn = computed(() => customizer.auth);
+const authLoading = computed(() => customizer.userInfoLoading && !customizer.auth);
 
-function checkAuth() {
-  if (import.meta.client) {
-    const token = localStorage.getItem(TOKEN_KEY);
-    isLoggedIn.value = !!token;
-  }
-}
+const user = computed(() =>
+  customizer.userInfo && !Array.isArray(customizer.userInfo) ? customizer.userInfo : {},
+);
 
-// همگام‌سازی بین تب‌ها (اگر در یک تب لاگین/لاگ‌اوت شد)
-function handleStorageChange(e) {
-  if (e.key === TOKEN_KEY) {
-    checkAuth();
-  }
-}
-
-onMounted(() => {
-  checkAuth();
-  if (import.meta.client) {
-    window.addEventListener('storage', handleStorageChange);
-    // در صورتی که لاگین/لاگ‌اوت در همان تب رخ بده و بخوای فوراً آپدیت بشه،
-    // می‌تونی در جای دیگه‌ی پروژه یک CustomEvent با نام 'auth-changed' دیسپچ کنی
-    // و اینجا هم گوش بدی:
-    window.addEventListener('auth-changed', checkAuth);
-  }
+const displayName = computed(() => {
+  const u = user.value;
+  const name = (u.full_name || '').trim() || `${u.first_name || ''} ${u.last_name || ''}`.trim();
+  return name || 'حساب من';
 });
 
-onUnmounted(() => {
-  if (import.meta.client) {
-    window.removeEventListener('storage', handleStorageChange);
-    window.removeEventListener('auth-changed', checkAuth);
-  }
+const userInitial = computed(() => {
+  const n = displayName.value === 'حساب من' ? '' : displayName.value;
+  return n ? n.charAt(0) : '';
 });
 
-// مسیر داینامیک: اگر لاگین بود -> /account، در غیر این صورت -> /login
+const userPhoto = computed(() => user.value.photo || null);
+
 const accountLink = computed(() => (isLoggedIn.value ? '/account' : '/login'));
 
 function openSearch() {
@@ -503,13 +531,11 @@ watch(open, (val) => {
     document.body.style.overflow = val ? 'hidden' : '';
   }
   if (val) closeSearch();
-  if (val) checkAuth(); // آپدیت وضعیت لاگین هر بار که منوی موبایل باز میشه
 });
 
 watch(() => route.fullPath, () => {
   open.value = false;
   closeSearch();
-  checkAuth(); // آپدیت وضعیت لاگین بعد از هر تغییر مسیر (مثلاً بعد از صفحه لاگین)
 });
 
 function handleEscape(e) {

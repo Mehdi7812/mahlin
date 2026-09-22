@@ -19,7 +19,7 @@
       <!-- دکمه مشاهده همه + کنترل‌های ناوبری (دسکتاپ) -->
       <div class="hidden md:flex items-center gap-5">
         <NuxtLink
-          to="/shop"
+          to="/shop?order=visits"
           class="flex items-center gap-2 text-xs font-bold text-gold hover:text-ink transition-colors duration-300 group"
         >
           <span>مشاهده همه محصولات</span>

@@ -27,9 +27,11 @@
               <span class="text-ink/40 font-latin">{{ formatDate(c.created_at) }}</span>
             </div>
 
-            <div v-if="ratingOf(c) > 0" class="flex gap-0.5 text-gold text-sm mb-3">
+            <!-- <div v-if="ratingOf(c) > 0" class="flex gap-0.5 text-gold text-sm mb-3">
               <span v-for="star in ratingOf(c)" :key="star">★</span>
-            </div>
+            </div> -->
+            <ProductStarRating :value="ratingOf(c)" :size="17" />
+
 
             <p class="text-xs sm:text-sm text-ink/70 leading-relaxed">{{ c.comment }}</p>
 

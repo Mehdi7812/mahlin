@@ -32,7 +32,17 @@
           @scroll-to-reviews="scrollToReviews"
         />
 
-        <ProductPriceBox :item="item" :cat-info="catInfo" />
+        <ProductPriceBox
+          :item="item"
+          :cat-info="catInfo"
+          :qty="qty"
+          :min-qty="item.minQty || 1"
+          :at-max-stock="atMaxStock"
+          :just-added="justAdded"
+          @increment="increment"
+          @decrement="decrement"
+          @add="handleAdd"
+        />
 
         <ProductStockStatus
           :item="item"
@@ -40,9 +50,10 @@
           :low-stock="lowStock"
           :access-deadline="accessDeadline"
           :delivery-estimate="deliveryEstimate"
+          :cat-info="catInfo"
         />
 
-        <ProductQuantityCart
+        <!-- <ProductQuantityCart
           :qty="qty"
           :at-max-stock="atMaxStock"
           :in-stock="item.inStock"
@@ -52,7 +63,7 @@
           @increment="increment"
           @decrement="decrement"
           @add="handleAdd"
-        />
+        /> -->
 
         <ProductAccordion v-model="activeTab" :item="item" :cat-info="catInfo" />
       </div>
@@ -68,9 +79,8 @@
         <div v-if="avgRating" class="flex items-center gap-3 bg-card px-4 py-2.5 rounded-full w-fit">
           <span class="text-xl font-bold text-ink font-latin">{{ avgRating }}</span>
           
-          <div class="flex gap-0.5 text-gold text-sm">
-            <span v-for="s in 5" :key="s">★</span>
-          </div>
+          <ProductStarRating :value="avgRating" :size="17" />
+
           <span class="text-xs text-ink/40">از {{ fa(commentsCount) }} نظر</span>
         </div>
       </div>
@@ -127,7 +137,19 @@ const router = useRouter();
 const customizer  = useCustomizerStore();
 const isUserLogin = computed(() => !!customizer.auth);
 
-const { add } = useCart();
+const { addToCart } = useAddToCart();
+
+async function handleAdd() {
+  if (!item.value || item.value.inStock === false) return;
+  const ok = await addToCart({
+    productId: item.value.id,
+    qty: qty.value,
+    currencyId: +Product.value.currency_id || 1,
+  });
+  if (!ok) return;
+  justAdded.value = true;
+  setTimeout(() => { justAdded.value = false; }, 1800);
+}
 
 const COMMENT_KIND = 1;
 
@@ -166,7 +188,23 @@ const submitLoading   = ref(false);
 // ─── کمک‌کننده‌ها ─────────────────────────────────────────────
 function stripHtml(html) {
   if (!html) return '';
-  return html.replace(/<[^>]*>/g, '').trim();
+  return html
+    // پایان تگ‌های بلاکی → دو خط جدید (فاصله‌ی پاراگراف)
+    .replace(/<\/(p|div|h[1-6]|li|blockquote)>/gi, '\n\n')
+    // تگ br → یک خط جدید
+    .replace(/<br\s*\/?>/gi, '\n')
+    // حذف بقیه‌ی تگ‌ها
+    .replace(/<[^>]*>/g, '')
+    // دیکد کردن entity های رایج HTML
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    // فشرده‌سازی خط‌های خالی متوالی (حداکثر یک خط خالی بینشون)
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 function scrollToReviews() {
@@ -286,12 +324,12 @@ function decrement() {
   qty.value = Math.max(min, qty.value - 1);
 }
 
-function handleAdd() {
-  if (!item.value || item.value.inStock === false) return;
-  add(item.value.id, qty.value);
-  justAdded.value = true;
-  setTimeout(() => { justAdded.value = false; }, 1800);
-}
+// function handleAdd() {
+//   if (!item.value || item.value.inStock === false) return;
+//   add(item.value.id, qty.value);
+//   justAdded.value = true;
+//   setTimeout(() => { justAdded.value = false; }, 1800);
+// }
 
 function toggleWishlist() {
   isWishlisted.value = !isWishlisted.value;
@@ -366,7 +404,7 @@ async function submitCommentForm() {
   try {
     const response = await useGarnetApiFetch(sendUrl, sendData);
     if (response?.code === 2000) {
-      toast.success('نظر ارسال شد');
+      toast.success('ممنون از نظرتان! پس از بررسی و تأیید، نمایش داده خواهد شد');
       resetCommentForm();
       comments.value = [];
       commentsPage.value = 1;

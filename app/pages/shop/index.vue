@@ -362,19 +362,38 @@ const sortOptions = [
   { label: 'پربازدید',   value: 'visits',  direction: 'desc' },
 ];
 
-const sortBy        = ref('order');
-const sortDirection = ref('desc');
+const DEFAULT_SORT = sortOptions[0];
+
+// ?order=visits  |  ?order=price&direction=asc
+// direction اختیاری است؛ اگر نبود، اولین گزینه با همان order انتخاب می‌شود
+function sortFromQuery(query) {
+  const order = String(query.order || '');
+  const dir   = query.direction === 'asc' || query.direction === 'desc' ? query.direction : null;
+  return sortOptions.find(o => o.value === order && (!dir || o.direction === dir)) || DEFAULT_SORT;
+}
+
+const initialSort   = sortFromQuery(route.query);
+const sortBy        = ref(initialSort.value);
+const sortDirection = ref(initialSort.direction);
 
 const currentSortLabel = computed(() =>
   sortOptions.find(o => o.value === sortBy.value && o.direction === sortDirection.value)?.label ?? 'پیش‌فرض'
 );
 
+// مرتب‌سازی در URL نوشته می‌شود؛ fetch را watcher پایین انجام می‌دهد
 function selectSort(opt) {
-  sortBy.value        = opt.value;
-  sortDirection.value = opt.direction;
-  isSortOpen.value    = false;
-  currentPage.value   = 1;
-  fetchProducts();
+  isSortOpen.value = false;
+  const { order, direction, ...rest } = route.query;
+  const query = { ...rest };
+
+  if (opt !== DEFAULT_SORT) {
+    query.order = opt.value;
+    // direction فقط وقتی لازم است که چند گزینه order یکسان دارند (قیمت)
+    if (sortOptions.filter(o => o.value === opt.value).length > 1) {
+      query.direction = opt.direction;
+    }
+  }
+  router.push({ path: '/shop', query });
 }
 
 function handleClickOutside(e) {
@@ -559,11 +578,17 @@ async function fetchCategories() {
 await fetchCategories();
 await fetchProducts();
 
-// ─── Watch: تغییر کتگوری از URL ──────────────────────────
-watch(activeCatId, () => {
-  currentPage.value = 1;
-  fetchProducts();
-});
+// ─── Watch: تغییر کتگوری یا مرتب‌سازی از URL ─────────────
+watch(
+  () => [route.query.cat_id, route.query.order, route.query.direction],
+  () => {
+    const s = sortFromQuery(route.query);
+    sortBy.value        = s.value;
+    sortDirection.value = s.direction;
+    currentPage.value   = 1;
+    fetchProducts();
+  },
+);
 
 // ─── Watch: جستجو (debounce برای گرید اصلی + دراپ‌داون سریع) ─
 let searchTimer = null;
@@ -612,9 +637,11 @@ const visiblePages = computed(() => {
 
 // ─── Helpers ──────────────────────────────────────────────
 function toggleCat(catId) {
+  // مرتب‌سازی فعلی حفظ شود
+  const { cat_id, ...rest } = route.query;
   router.push({
     path: '/shop',
-    query: activeCatId.value === catId ? {} : { cat_id: catId },
+    query: activeCatId.value === catId ? rest : { ...rest, cat_id: catId },
   });
 }
 
@@ -626,14 +653,18 @@ function updatePriceRange(range) {
 }
 
 function resetAll() {
-  router.push({ path: '/shop' });
+  const hadQuery = Object.keys(route.query).length > 0;
+
   priceRange.value    = [0, maxPrice.value];
   searchQuery.value   = '';
-  sortBy.value        = 'order';
-  sortDirection.value = 'desc';
+  sortBy.value        = DEFAULT_SORT.value;
+  sortDirection.value = DEFAULT_SORT.direction;
   currentPage.value   = 1;
   showSearchDropdown.value = false;
   searchResults.value = [];
-  fetchProducts();
+
+  // اگر URL کوئری داشت، watcher بعد از تغییر مسیر fetch می‌کند (جلوگیری از درخواست دوباره)
+  if (hadQuery) router.push({ path: '/shop' });
+  else fetchProducts();
 }
 </script>

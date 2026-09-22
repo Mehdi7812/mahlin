@@ -1435,8 +1435,8 @@ const primaryDisabled = computed(() => {
                         :disabled="day.isClosed"
                         @click="selectedDay = day"
                       >
-                        <span class="block whitespace-nowrap text-meta font-bold">{{ day.dateFaName || day.title || (day.date ? faDate(day.date) : '') }}</span>
-                        <span class="mt-0.5 block whitespace-nowrap text-micro">{{ day.isToday ? 'امروز' : (day.date ? faDate(day.date) : '') }}</span>
+                        <span class="block whitespace-nowrap text-xs font-bold">{{ day.dateFaName || day.title || (day.date ? faDate(day.date) : '') }}</span>
+                        <span class="mt-0.5 block whitespace-nowrap text-sm">{{ day.isToday ? 'امروز' : (day.date ? faDate(day.date) : '') }}</span>
                         <span v-if="day.isClosed" class="mt-1 block whitespace-nowrap text-micro font-bold text-danger">تعطیل</span>
                       </button>
                     </div>
@@ -1457,8 +1457,8 @@ const primaryDisabled = computed(() => {
                         <span class="flex min-w-0 items-center gap-2">
                           <Icon name="tabler:clock" class="shrink-0 text-[14px] text-ink-faint" />
                           <span class="min-w-0">
-                            <span class="block truncate text-meta font-bold text-gold">{{ slot.title }}</span>
-                            <span class="mt-0.5 block truncate text-micro text-ink-muted tabular-fa">ساعت {{ slot.from_time }} تا {{ slot.to_time }}</span>
+                            <span class="block truncate text-xs font-bold text-gold">{{ slot.title }}</span>
+                            <span class="mt-0.5 block truncate text-sm text-ink-muted tabular-fa">ساعت {{ slot.from_time }} تا {{ slot.to_time }}</span>
                           </span>
                         </span>
                         <span

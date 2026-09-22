@@ -1,4 +1,3 @@
-<!-- components/HomeBanners.vue -->
 <template>
   <section class="max-w-[1280px] mx-auto px-4 md:px-6 py-8 md:py-12">
     <!-- اسکلتون لودینگ -->
@@ -40,7 +39,6 @@
 
         <!-- محتوا -->
         <div class="absolute inset-0 p-6 sm:p-8 flex flex-col justify-between z-10">
-
           <!-- بج -->
           <div class="flex justify-start">
             <span
