@@ -1,70 +1,47 @@
 <script setup>
 import { ref, reactive, computed, onMounted, nextTick, watch } from "vue";
+import { toast } from "vue-sonner";
 
 const props = defineProps({
   additional: { type: String, default: "" },
 });
 
 const { t } = useI18n();
-import { toast } from 'vue-sonner'
 const route = useRoute();
 const router = useRouter();
 const customizer = useCustomizerStore();
 
+/* =========================================================
+ * قوانین اعتبارسنجی — برای تغییر سیاست‌ها فقط همین‌جا را عوض کنید
+ * ========================================================= */
+const RULES = {
+  PASSWORD_MIN: 8,
+  PASSWORD_MAX: 64,
+  NAME_MIN: 2,
+  NAME_MAX: 40,
+  MIN_AGE: 18,
+  MAX_AGE: 100,
+};
+
+/* =========================================================
+ * State
+ * ========================================================= */
 const mobile = ref("");
 const presenter = ref("");
 const password = ref("");
 const password_confirm = ref("");
 const changePass = ref(false);
 
-// بارگذاری داینامیک پکیج تقویم (فقط سمت کلاینت)
-const DatePicker = ref(null);
-if (import.meta.client) {
-  const pickerModule = await import('vue3-persian-datetime-picker');
-  DatePicker.value = pickerModule.default;
-}
-
-// محدوده‌ی مجاز تاریخ تولد
-function toGregorianStr(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-const maxBirthDate = computed(() => toGregorianStr(new Date()));
-const minBirthDate = computed(() => {
-  const d = new Date();
-  d.setFullYear(d.getFullYear() - 100);
-  return toGregorianStr(d);
-});
-
-// نمایش جلالیِ تاریخ ذخیره‌شده (میلادی) داخل اینپوت
-function toJalaliDisplay(gregorianStr) {
-  if (!gregorianStr) return '';
-  const [y, m, d] = gregorianStr.split('-').map(Number);
-  if (!y || !m || !d) return '';
-
-  const utcDate = new Date(Date.UTC(y, m - 1, d));
-  const parts = new Intl.DateTimeFormat('fa-IR-u-ca-persian-nu-latn', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    timeZone: 'UTC',
-  }).formatToParts(utcDate);
-
-  const get = (type) => parts.find((p) => p.type === type)?.value ?? '';
-  return `${get('year')}/${get('month')}/${get('day')}`;
-}
-const birthDateDisplay = computed(() => toJalaliDisplay(profileForm.birth_date));
-
 const errors = reactive({
   mobile: "",
   password: "",
+  password_confirm: "",
   presenter: "",
   first_name: "",
   last_name: "",
   national_code: "",
   birth_date: "",
+  terms: "",
 });
 
 // فرم مشخصات کاربر جدید
@@ -99,16 +76,333 @@ const profileFirstNameInput = ref(null);
 const passwordInput = ref(null);
 const newPasswordInput = ref(null);
 
-/* --- UI helper state (فقط برای ظاهر، منطق اصلی رو تغییر نمی‌ده) --- */
 const showPassword = ref(false);
 const showPasswordConfirm = ref(false);
 
+// ماسک درخشش دقیقاً به شکل لوگو (فقط روی قسمت‌های غیرشفاف PNG می‌تابد)
+const logoMaskStyle = computed(() => ({
+  "--logo-url": `url("${logoSrc.value}")`,
+}));
+
+/* ---------- افکت دکمه‌ها: نورِ دنبال‌کننده‌ی ماوس + موج کلیک ---------- */
+const vBtnFx = {
+  mounted(el) {
+    const setPos = (e) => {
+      const r = el.getBoundingClientRect();
+      el.style.setProperty("--mx", `${e.clientX - r.left}px`);
+      el.style.setProperty("--my", `${e.clientY - r.top}px`);
+    };
+
+    const ripple = (e) => {
+      if (el.disabled) return;
+      const r = el.getBoundingClientRect();
+      const size = Math.max(r.width, r.height) * 2;
+      const wave = document.createElement("span");
+      wave.className = "mh-btn-ripple";
+      wave.style.width = wave.style.height = `${size}px`;
+      wave.style.left = `${e.clientX - r.left - size / 2}px`;
+      wave.style.top = `${e.clientY - r.top - size / 2}px`;
+      wave.addEventListener("animationend", () => wave.remove(), { once: true });
+      el.appendChild(wave);
+    };
+
+    el.addEventListener("pointermove", setPos);
+    el.addEventListener("pointerenter", setPos);
+    el.addEventListener("pointerdown", ripple);
+    el._mhBtnFx = { setPos, ripple };
+  },
+  unmounted(el) {
+    const h = el._mhBtnFx;
+    if (!h) return;
+    el.removeEventListener("pointermove", h.setPos);
+    el.removeEventListener("pointerenter", h.setPos);
+    el.removeEventListener("pointerdown", h.ripple);
+    delete el._mhBtnFx;
+  },
+};
+
+// بارگذاری داینامیک پکیج تقویم (فقط سمت کلاینت)
+const DatePicker = ref(null);
+if (import.meta.client) {
+  const pickerModule = await import("vue3-persian-datetime-picker");
+  DatePicker.value = pickerModule.default;
+}
+
+/* =========================================================
+ * Helpers: ارقام و نرمال‌سازی
+ * ========================================================= */
+const FA_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
+const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩";
+
+const toEnDigits = (str) =>
+  String(str ?? "")
+    .replace(/[۰-۹]/g, (d) => String(FA_DIGITS.indexOf(d)))
+    .replace(/[٠-٩]/g, (d) => String(AR_DIGITS.indexOf(d)));
+
+const toFaDigits = (n) => String(n).replace(/\d/g, (d) => FA_DIGITS[d]);
+const onlyDigits = (str) => toEnDigits(str).replace(/\D/g, "");
+
+/* ---------- موبایل ---------- */
+const MOBILE_REGEX = /^09\d{9}$/;
+
+// پشتیبانی از +98 / 0098 / 98 / 9xxxxxxxxx
+const normalizeMobile = (str) => {
+  let d = onlyDigits(str);
+  if (d.startsWith("0098")) d = "0" + d.slice(4);
+  else if (d.startsWith("98") && d.length === 12) d = "0" + d.slice(2);
+  else if (d.startsWith("9") && d.length === 10) d = "0" + d;
+  return d;
+};
+
+const validateMobile = (value, label = "شماره موبایل") => {
+  if (!value) return `${label} را وارد کنید`;
+  if (!MOBILE_REGEX.test(value)) return `${label} باید ۱۱ رقم و با ۰۹ شروع شود`;
+  return "";
+};
+
+/* ---------- نام و نام خانوادگی ---------- */
+// فقط حروف فارسی، فاصله و نیم‌فاصله
+const PERSIAN_NAME_REGEX =
+  /^[\u0621-\u063A\u0641-\u064A\u067E\u0686\u0698\u06A9\u06AF\u06CC\u06C0\u200C ]+$/;
+
+const normalizeName = (str) =>
+  String(str ?? "")
+    .replace(/[\u064A\u0649]/g, "\u06CC") // ي ى → ی
+    .replace(/\u0643/g, "\u06A9") // ك → ک
+    .replace(/\u0640/g, "") // کشیده (ـ)
+    .replace(/[\u064B-\u0652]/g, "") // اعراب
+    .replace(/\s+/g, " ")
+    .replace(/\u200C{2,}/g, "\u200C")
+    .replace(/ ?\u200C ?/g, "\u200C")
+    .replace(/^[\s\u200C]+|[\s\u200C]+$/g, "");
+
+const validateName = (value, label) => {
+  if (!value) return `${label} را وارد کنید`;
+  if (!PERSIAN_NAME_REGEX.test(value)) return `${label} فقط باید با حروف فارسی نوشته شود`;
+  const letters = value.replace(/[\s\u200C]/g, "");
+  if (letters.length < RULES.NAME_MIN) {
+    return `${label} باید حداقل ${toFaDigits(RULES.NAME_MIN)} حرف باشد`;
+  }
+  if (value.length > RULES.NAME_MAX) {
+    return `${label} نباید بیشتر از ${toFaDigits(RULES.NAME_MAX)} کاراکتر باشد`;
+  }
+  return "";
+};
+
+/* ---------- کد ملی ---------- */
+const validateNationalCode = (code) => {
+  if (!code) return "کد ملی را وارد کنید";
+  if (!/^\d{10}$/.test(code)) return "کد ملی باید ۱۰ رقم باشد";
+  if (/^(\d)\1{9}$/.test(code)) return "کد ملی نامعتبر است"; // مثل 0000000000 که چک‌دیجیت را پاس می‌کند
+
+  const check = +code[9];
+  const sum = Array.from({ length: 9 }).reduce((acc, _, i) => acc + +code[i] * (10 - i), 0);
+  const remainder = sum % 11;
+  const isValid = remainder < 2 ? check === remainder : check === 11 - remainder;
+
+  return isValid ? "" : "کد ملی نامعتبر است";
+};
+
+/* ---------- تاریخ تولد ---------- */
+function toGregorianStr(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+const yearsAgo = (years) => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - years);
+  return d;
+};
+
+const maxBirthDate = computed(() => toGregorianStr(yearsAgo(RULES.MIN_AGE)));
+const minBirthDate = computed(() => toGregorianStr(yearsAgo(RULES.MAX_AGE)));
+
+const parseGregorian = (str) => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(toEnDigits(str));
+  if (!m) return null;
+  const [y, mo, d] = [+m[1], +m[2], +m[3]];
+  const date = new Date(y, mo - 1, d);
+  if (date.getFullYear() !== y || date.getMonth() !== mo - 1 || date.getDate() !== d) return null;
+  return date;
+};
+
+const calcAge = (birth, today = new Date()) => {
+  const age = today.getFullYear() - birth.getFullYear();
+  const beforeBirthday =
+    today.getMonth() < birth.getMonth() ||
+    (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate());
+  return beforeBirthday ? age - 1 : age;
+};
+
+const validateBirthDate = (value) => {
+  if (!value) return "تاریخ تولد را وارد کنید";
+  const date = parseGregorian(value);
+  if (!date) return "تاریخ تولد نامعتبر است";
+  if (date > new Date()) return "تاریخ تولد نمی‌تواند در آینده باشد";
+  const age = calcAge(date);
+  if (age < RULES.MIN_AGE) return `حداقل سن برای ثبت‌نام ${toFaDigits(RULES.MIN_AGE)} سال است`;
+  if (age > RULES.MAX_AGE) return "تاریخ تولد نامعتبر است";
+  return "";
+};
+
+// نمایش جلالیِ تاریخ ذخیره‌شده (میلادی) داخل اینپوت
+function toJalaliDisplay(gregorianStr) {
+  if (!gregorianStr) return "";
+  const [y, m, d] = gregorianStr.split("-").map(Number);
+  if (!y || !m || !d) return "";
+
+  const utcDate = new Date(Date.UTC(y, m - 1, d));
+  const parts = new Intl.DateTimeFormat("fa-IR-u-ca-persian-nu-latn", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "UTC",
+  }).formatToParts(utcDate);
+
+  const get = (type) => parts.find((p) => p.type === type)?.value ?? "";
+  return `${get("year")}/${get("month")}/${get("day")}`;
+}
+const birthDateDisplay = computed(() => toJalaliDisplay(profileForm.birth_date));
+
+/* ---------- رمز عبور ---------- */
+const PERSIAN_CHAR_REGEX = /[\u0600-\u06FF\u200C]/;
+const PRINTABLE_ASCII_REGEX = /^[\x21-\x7E]+$/;
+
+const passwordChecks = computed(() => {
+  const pw = password.value || "";
+  return [
+    { key: "len", label: `حداقل ${toFaDigits(RULES.PASSWORD_MIN)} کاراکتر`, ok: pw.length >= RULES.PASSWORD_MIN },
+    { key: "letter", label: "حداقل یک حرف انگلیسی", ok: /[A-Za-z]/.test(pw) },
+    { key: "digit", label: "حداقل یک عدد انگلیسی", ok: /\d/.test(pw) },
+  ];
+});
+
+// فقط هشدار (غیرمسدودکننده) برای ورود؛ ممکن است رمزهای قدیمی حروف فارسی داشته باشند
+const loginPasswordLooksPersian = computed(() => PERSIAN_CHAR_REGEX.test(password.value || ""));
+
+const validateNewPassword = (pw) => {
+  if (!pw) return "رمز عبور را وارد کنید";
+  if (PERSIAN_CHAR_REGEX.test(pw)) {
+    return "رمز عبور نباید حروف یا اعداد فارسی داشته باشد؛ زبان صفحه‌کلید را انگلیسی کنید";
+  }
+  if (/\s/.test(pw)) return "رمز عبور نباید فاصله داشته باشد";
+  if (!PRINTABLE_ASCII_REGEX.test(pw)) return "رمز عبور فقط می‌تواند شامل حروف انگلیسی، عدد و علائم باشد";
+  if (pw.length < RULES.PASSWORD_MIN) return `رمز عبور باید حداقل ${toFaDigits(RULES.PASSWORD_MIN)} کاراکتر باشد`;
+  if (pw.length > RULES.PASSWORD_MAX) return `رمز عبور نباید بیشتر از ${toFaDigits(RULES.PASSWORD_MAX)} کاراکتر باشد`;
+  if (!/[A-Za-z]/.test(pw) || !/\d/.test(pw)) return "رمز عبور باید حداقل یک حرف انگلیسی و یک عدد داشته باشد";
+
+  const mobileTail = (mobile.value || "").slice(1); // 9xxxxxxxxx
+  if (mobileTail && pw.includes(mobileTail)) return "رمز عبور نباید شامل شماره موبایل شما باشد";
+  if (profileForm.national_code && pw.includes(profileForm.national_code)) {
+    return "رمز عبور نباید شامل کد ملی شما باشد";
+  }
+  return "";
+};
+
+const validatePasswordConfirm = (pw, confirm) => {
+  if (!confirm) return "تکرار رمز عبور را وارد کنید";
+  if (pw !== confirm) return "تکرار رمز عبور با رمز عبور یکسان نیست";
+  return "";
+};
+
+/* ---------- معرف ---------- */
+const validatePresenter = (value) => {
+  const err = validateMobile(value, "شماره موبایل معرف");
+  if (err) return err;
+  if (value === mobile.value) return "نمی‌توانید شماره خودتان را به‌عنوان معرف وارد کنید";
+  return "";
+};
+
+/* ---------- اعتبارسنجی کامل مرحله‌ی مشخصات ---------- */
+const validateProfile = () => {
+  profileForm.first_name = normalizeName(profileForm.first_name);
+  profileForm.last_name = normalizeName(profileForm.last_name);
+  profileForm.national_code = onlyDigits(profileForm.national_code);
+
+  errors.first_name = validateName(profileForm.first_name, "نام");
+  errors.last_name = validateName(profileForm.last_name, "نام خانوادگی");
+  errors.national_code = validateNationalCode(profileForm.national_code);
+  errors.birth_date = validateBirthDate(profileForm.birth_date);
+  errors.terms = acceptedTerms.value ? "" : "برای ادامه باید قوانین و شرایط را بپذیرید";
+
+  return !errors.first_name && !errors.last_name && !errors.national_code && !errors.birth_date && !errors.terms;
+};
+
+/* ---------- blur handlers ---------- */
+const onNameBlur = (field, label) => {
+  profileForm[field] = normalizeName(profileForm[field]);
+  if (profileForm[field]) errors[field] = validateName(profileForm[field], label);
+};
+
+const onNationalCodeBlur = () => {
+  if (profileForm.national_code) errors.national_code = validateNationalCode(profileForm.national_code);
+};
+
+const onPasswordConfirmBlur = () => {
+  if (password_confirm.value) {
+    errors.password_confirm = validatePasswordConfirm(password.value, password_confirm.value);
+  }
+};
+
+/* ---------- پاک‌سازی ورودی‌ها هنگام تایپ ---------- */
+watch(mobile, (v) => {
+  const s = onlyDigits(v).slice(0, 14);
+  if (s !== v) mobile.value = s;
+});
+
+watch(presenter, (v) => {
+  const s = onlyDigits(v).slice(0, 14);
+  if (s !== v) presenter.value = s;
+});
+
+watch(
+  () => profileForm.national_code,
+  (v) => {
+    const s = onlyDigits(v).slice(0, 10);
+    if (s !== v) profileForm.national_code = s;
+  }
+);
+
+watch(
+  () => profileForm.birth_date,
+  (v) => {
+    if (v) errors.birth_date = validateBirthDate(v);
+  }
+);
+
+watch(acceptedTerms, (v) => {
+  if (v) errors.terms = "";
+});
+
+/* =========================================================
+ * UI helpers
+ * ========================================================= */
 const stepOrder = ["getMobile", "otp", "profile", "password", "changePassword", "presenter"];
 const stepIndex = computed(() => {
   const idx = stepOrder.indexOf(formStep.value);
   return idx === -1 ? 0 : idx;
 });
 const progressPercent = computed(() => (stepIndex.value / (stepOrder.length - 1)) * 100);
+
+const stepIcon = computed(() => {
+  switch (formStep.value) {
+    case "getMobile":
+      return "tabler:device-mobile-message";
+    case "otp":
+      return "tabler:shield-check";
+    case "password":
+      return "tabler:lock-password";
+    case "changePassword":
+      return "tabler:key";
+    case "profile":
+      return "tabler:id";
+    default:
+      return "tabler:users-plus";
+  }
+});
 
 const stepMeta = computed(() => {
   switch (formStep.value) {
@@ -117,7 +411,9 @@ const stepMeta = computed(() => {
     case "password":
       return { title: "رمز عبور خود را وارد کنید", subtitle: "برای ورود امن، رمز عبورتان را وارد کنید" };
     case "changePassword":
-      return { title: "تغییر رمز عبور", subtitle: "یک رمز عبور قوی و امن انتخاب کنید" };
+      return mobileExist.value
+        ? { title: "تغییر رمز عبور", subtitle: "یک رمز عبور قوی و امن انتخاب کنید" }
+        : { title: "انتخاب رمز عبور", subtitle: "یک رمز عبور قوی و امن انتخاب کنید" };
     case "presenter":
       return { title: "ثبت معرف", subtitle: "در صورت داشتن معرف، شماره را وارد کنید" };
     case "profile":
@@ -171,6 +467,9 @@ onMounted(() => {
   getUserInfo();
 });
 
+/* =========================================================
+ * OTP
+ * ========================================================= */
 const startOtpTimer = () => {
   if (otpInterval.value) clearInterval(otpInterval.value);
   otpTimer.value = 200;
@@ -194,37 +493,34 @@ const resetOtpForNewMobile = () => {
   otpTimer.value = 200;
 };
 
-const convertPersianToEnglish = (str) =>
-  str.replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d).toString());
-
 const goToForgetPassword = () => {
   changePass.value = true;
   skipOtpSend.value = false;
   otpKey.value++;
+  password.value = "";
+  password_confirm.value = "";
+  errors.password = "";
+  errors.password_confirm = "";
   formStep.value = "otp";
 };
 
+/* =========================================================
+ * Actions
+ * ========================================================= */
 const checkUser = async () => {
-  errors.mobile = !mobile.value ? t("required") : "";
+  if (loading.value) return;
+
+  mobile.value = normalizeMobile(mobile.value);
+  errors.mobile = validateMobile(mobile.value);
   if (errors.mobile) return;
 
-  loading.value = true;
-  const phoneRegex = /^09\d{9}$/;
-  mobile.value = convertPersianToEnglish(mobile.value || "");
-
-  if (!phoneRegex.test(mobile.value)) {
-    loading.value = false;
-    errors.mobile = "فرمت شماره موبایل نادرست است";
-    return;
-  }
-
   if (lastCheckedMobile.value === mobile.value) {
-    loading.value = false;
     skipOtpSend.value = true;
     formStep.value = mobileExist.value ? "password" : "otp";
     return;
   }
 
+  loading.value = true;
   resetOtpForNewMobile();
   useGarnetApiFetch("users/isUserByMobile", { mobile: mobile.value })
     .then((response) => {
@@ -262,12 +558,26 @@ const checkUser = async () => {
 };
 
 function submitLogin() {
-  errors.password = !password.value ? t("required") : "";
-  errors.mobile = !mobile.value ? t("required") : "";
-  if (errors.mobile || errors.password) return;
+  if (loading.value) return;
+
+  mobile.value = normalizeMobile(mobile.value);
+  const mobileError = validateMobile(mobile.value);
+  if (mobileError) {
+    errors.mobile = mobileError;
+    formStep.value = "getMobile";
+    return;
+  }
+
+  errors.password = password.value ? "" : "رمز عبور را وارد کنید";
+  if (errors.password) return;
 
   loading.value = true;
-  useGarnetApiFetch("auth/loginMobile", { mobile: mobile.value, password: password.value, callBackInfo: true, callBackToken: true })
+  useGarnetApiFetch("auth/loginMobile", {
+    mobile: mobile.value,
+    password: password.value,
+    callBackInfo: true,
+    callBackToken: true,
+  })
     .then(async (response) => {
       if (response.code === 2000) {
         customizer.token = response.token;
@@ -304,27 +614,29 @@ function submitLogin() {
     });
 }
 
-// جایگزین تابع changePassword قبلی
 const changePassword = () => {
-  errors.password = !password.value ? t("required") : "";
+  if (loading.value) return;
 
-  if (!errors.password && password.value.length < 6) {
-    errors.password = "رمز عبور باید حداقل 6 کاراکتر باشد";
-  }
-  if (errors.password) return;
+  errors.password = validateNewPassword(password.value);
+  errors.password_confirm = validatePasswordConfirm(password.value, password_confirm.value);
+  if (errors.password || errors.password_confirm) return;
 
-  if (password.value !== password_confirm.value) {
-    toast.error("تکرار کلمه عبور مشابه نیست");
+  if (!verificationCode.value) {
+    toast.error("کد تایید معتبر نیست. لطفاً دوباره کد تایید دریافت کنید.");
     return;
   }
 
   // کاربر جدید: مشخصات + رمز با هم به createUnAuth ارسال می‌شود
   if (!mobileExist.value) {
+    if (!validateProfile()) {
+      formStep.value = "profile";
+      return;
+    }
     submitRegister();
     return;
   }
 
-  // مسیر قبلی: فراموشی رمز عبور برای کاربر موجود (بدون تغییر)
+  // فراموشی رمز عبور برای کاربر موجود
   loading.value = true;
   useGarnetApiFetch("users/forgetPasswordByVerificationCode", {
     mobile: mobile.value,
@@ -335,11 +647,11 @@ const changePassword = () => {
       loading.value = false;
       switch (response.code) {
         case 2000:
-          toast.success("رمز عبور با موفقیت ثبت شد");
+          toast.success("رمز عبور با موفقیت ثبت شد. لطفا دوباره وارد شوید.");
           if (getPresenter.value) {
             formStep.value = "presenter";
           } else {
-            router.push(backTo.value);
+            router.push("/login");
           }
           break;
         case 2001:
@@ -361,14 +673,14 @@ const changePassword = () => {
     });
 };
 
-// ثبت‌نام کامل کاربر جدید (مشخصات + رمز عبور)، معادل register() ولی هماهنگ با این فایل
+// ثبت‌نام کامل کاربر جدید (مشخصات + رمز عبور)
 const submitRegister = () => {
   loading.value = true;
 
   useGarnetApiFetch("users/createUnAuth", {
     mobile: mobile.value,
-    first_name: profileForm.first_name.trim(),
-    last_name: profileForm.last_name.trim(),
+    first_name: profileForm.first_name,
+    last_name: profileForm.last_name,
     birth_date: profileForm.birth_date,
     national_code: profileForm.national_code,
     verificationCode: verificationCode.value,
@@ -400,10 +712,14 @@ const submitRegister = () => {
           break;
         }
         case 2009:
-          toast.error("شماره موبایل و کد ملی متعلق به یک نفر نیست");
+          errors.national_code = "شماره موبایل و کد ملی متعلق به یک نفر نیست";
+          toast.error(errors.national_code);
+          formStep.value = "profile";
           break;
         case 2001:
-          toast.error("این کد ملی از قبل ثبت شده است");
+          errors.national_code = "این کد ملی از قبل ثبت شده است";
+          toast.error(errors.national_code);
+          formStep.value = "profile";
           break;
         default:
           toast.error(response.message || response.msg || t(response.error));
@@ -420,7 +736,7 @@ const submitRegister = () => {
 const verificationCodePassed = (e) => {
   if (!mobileExist.value) {
     verificationCode.value = e;
-    formStep.value = "profile"; // قبلاً: changePassword
+    formStep.value = "profile";
   } else if (getPresenter.value) {
     formStep.value = "presenter";
   } else {
@@ -464,16 +780,13 @@ const getUserInfo = () => {
 };
 
 const setPresenter = async () => {
-  errors.presenter = "";
-  loading.value = true;
-  const phoneRegex = /^09\d{9}$/;
-  presenter.value = convertPersianToEnglish(presenter.value || "");
-  if (!phoneRegex.test(presenter.value)) {
-    loading.value = false;
-    errors.presenter = "فرمت شماره موبایل معرف نادرست است";
-    return;
-  }
+  if (loading.value) return;
 
+  presenter.value = normalizeMobile(presenter.value);
+  errors.presenter = validatePresenter(presenter.value);
+  if (errors.presenter) return;
+
+  loading.value = true;
   useGarnetApiFetch("users/setPresenterByMobile", { mobile: presenter.value })
     .then((response) => {
       loading.value = false;
@@ -483,7 +796,7 @@ const setPresenter = async () => {
           router.push(backTo.value);
           break;
         case 2002:
-          toast.error("شماره موبایل معرف وجود ندارد");
+          errors.presenter = "شماره موبایل معرف در سیستم وجود ندارد";
           break;
         case 2001:
           toast.error(t(response.msg));
@@ -496,44 +809,9 @@ const setPresenter = async () => {
     });
 };
 
-// اعتبارسنجی کد ملی (الگوریتم استاندارد چک‌دیجیت)
-const validateNationalCode = () => {
-  const code = convertPersianToEnglish(profileForm.national_code || "").trim();
-  errors.national_code = "";
-
-  if (!/^\d{10}$/.test(code)) {
-    errors.national_code = "کد ملی باید ۱۰ رقم باشد";
-    return false;
-  }
-
-  const check = +code[9];
-  const sum = Array.from({ length: 9 }).reduce((acc, _, i) => acc + +code[i] * (10 - i), 0);
-  const remainder = sum % 11;
-  const isValid = remainder < 2 ? check === remainder : check === 11 - remainder;
-
-  if (!isValid) {
-    errors.national_code = "کد ملی نامعتبر است";
-    return false;
-  }
-
-  profileForm.national_code = code;
-  return true;
-};
-
-// اعتبارسنجی و عبور از مرحله‌ی مشخصات به مرحله‌ی رمز عبور
+// عبور از مرحله‌ی مشخصات به مرحله‌ی رمز عبور
 const submitProfile = () => {
-  errors.first_name = !profileForm.first_name.trim() ? "نام را وارد کنید" : "";
-  errors.last_name = !profileForm.last_name.trim() ? "نام خانوادگی را وارد کنید" : "";
-  errors.birth_date = !profileForm.birth_date ? "تاریخ تولد را وارد کنید" : "";
-
-  if (errors.first_name || errors.last_name || errors.birth_date) return;
-  if (!validateNationalCode()) return;
-
-  if (!acceptedTerms.value) {
-    toast.warning("لطفاً قوانین و شرایط را مطالعه و تایید کنید.");
-    return;
-  }
-
+  if (!validateProfile()) return;
   formStep.value = "changePassword";
 };
 </script>
@@ -564,33 +842,25 @@ const submitProfile = () => {
 
         <!-- هدر مشترک -->
         <div class="flex flex-col items-center px-7 pt-8">
-          <div class="relative mb-4">
-            <span class="absolute inset-0 -z-10 animate-ping-slow rounded-full bg-accent/10"></span>
-            <img :src="logoSrc" alt="ماهلین" class="h-12 w-auto drop-shadow-sm" />
+          <!-- لوگوی انیمیشنی -->
+          <div class="logo-stage relative mb-5">
+            <span class="logo-halo" aria-hidden="true"></span>
+            <div class="logo-float relative">
+              <img :src="logoSrc" alt="ماهلین" class="logo-img relative h-12 w-auto" />
+              <span class="logo-shine" :style="logoMaskStyle" aria-hidden="true"></span>
+            </div>
           </div>
 
           <div class="flex items-center gap-3">
-            <!-- آیکون هر مرحله -->
             <Transition name="pop" mode="out-in">
               <div
                 :key="formStep"
                 class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-accent/15 to-accent/5 text-accent"
               >
-                <Icon
-                  :name="formStep === 'getMobile'
-                    ? 'tabler:device-mobile-message'
-                    : formStep === 'otp'
-                      ? 'tabler:shield-check'
-                      : formStep === 'password'
-                        ? 'tabler:lock-password'
-                        : formStep === 'changePassword'
-                          ? 'tabler:key'
-                          : 'tabler:users-plus'"
-                  class="text-[27px]"
-                />
+                <Icon :name="stepIcon" class="text-[27px]" />
               </div>
             </Transition>
-  
+
             <Transition name="fade-slide" mode="out-in">
               <div :key="formStep + '-title'" class="text-center">
                 <h2 class="text-lg font-bold text-ink">{{ stepMeta.title }}</h2>
@@ -606,21 +876,21 @@ const submitProfile = () => {
             <div class="mb-2">
               <div class="relative">
                 <span class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-inkSoft/60">
-                  <Icon name="tabler:device-mobile" class="text-[18px]" />
+                  <Icon name="tabler:phone-call" class="text-[18px]" />
                 </span>
-                
+
                 <input
                   ref="getMobileInput"
                   v-model="mobile"
-                  type="text"
+                  type="tel"
                   inputmode="numeric"
-                  pattern="[0-9۰-۹]*"
+                  autocomplete="tel"
                   dir="ltr"
-                  maxlength="11"
-                  placeholder="09xxxxxxxx"
+                  placeholder="09xxxxxxxxx"
                   class="w-full rounded-2xl border bg-white/70 py-3.5 pl-4 pr-11 text-sm text-ink outline-none transition-all duration-200 placeholder:text-inkSoft/50"
                   :class="errors.mobile ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-ink/10 focus:border-accent focus:ring-4 focus:ring-accent/10'"
-                  @keyup="errors.mobile = ''"
+                  :aria-invalid="!!errors.mobile"
+                  @input="errors.mobile = ''"
                   @keyup.enter="checkUser()"
                 />
               </div>
@@ -636,12 +906,12 @@ const submitProfile = () => {
 
             <button
               type="button"
+              v-btn-fx
               :disabled="loading"
-              class="group relative mt-5 flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-l from-accent to-accentHover py-3.5 text-sm font-medium text-white shadow-lg shadow-accent/25 transition-all duration-200 hover:shadow-xl hover:shadow-accent/30 active:scale-[0.98] disabled:opacity-60"
+              class="group relative mt-5 flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-l from-accent to-accentHover py-3.5 text-sm font-medium text-white shadow-lg shadow-accent/25 mh-btn disabled:cursor-not-allowed disabled:opacity-60"
               @click="checkUser()"
             >
-              <span class="absolute inset-0 -translate-x-full bg-white/20 transition-transform duration-500 group-hover:translate-x-full"></span>
-              <svg v-if="loading" class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <svg v-if="loading" class="relative z-10 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
               </svg>
@@ -661,17 +931,6 @@ const submitProfile = () => {
 
           <!-- 2) کد تایید -->
           <div v-else-if="formStep === 'otp'" key="otp" class="px-7 pb-8 pt-2">
-            <button
-              type="button"
-              class="mb-4 flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm text-inkSoft transition hover:bg-ink/5 hover:text-ink mr-auto"
-              @click="formStep = 'getMobile'"
-            >
-              بازگشت
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path d="M14 6l-6 6 6 6" />
-              </svg>
-            </button>
-
             <p v-if="mobileExist" class="mb-5 text-center text-sm leading-6 text-inkSoft">
               کد تایید برای شماره
               <span class="font-medium text-ink" dir="ltr">{{ mobile }}</span>
@@ -722,6 +981,17 @@ const submitProfile = () => {
               </svg>
               ورود با رمز عبور
             </button>
+
+            <button
+              type="button"
+              class="mt-4 -mb-4 flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm text-inkSoft transition hover:bg-ink/5 hover:text-ink mr-auto"
+              @click="formStep = 'getMobile'"
+            >
+              بازگشت
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M14 6l-6 6 6 6" />
+              </svg>
+            </button>
           </div>
 
           <!-- 3) رمز عبور -->
@@ -741,11 +1011,13 @@ const submitProfile = () => {
                   ref="passwordInput"
                   v-model="password"
                   :type="showPassword ? 'text' : 'password'"
+                  autocomplete="current-password"
                   placeholder="رمز عبور"
                   dir="ltr"
                   class="w-full rounded-2xl border bg-white/70 py-3.5 pl-11 pr-11 text-sm text-ink outline-none transition-all duration-200 placeholder:text-inkSoft/50"
                   :class="errors.password ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-ink/10 focus:border-accent focus:ring-4 focus:ring-accent/10'"
-                  @keyup="errors.password = ''"
+                  :aria-invalid="!!errors.password"
+                  @input="errors.password = ''"
                   @keyup.enter="submitLogin()"
                 />
                 <button
@@ -759,6 +1031,9 @@ const submitProfile = () => {
               <Transition name="fade-slide">
                 <p v-if="errors.password" class="mt-1.5 text-xs text-red-500">{{ errors.password }}</p>
               </Transition>
+              <p v-if="!errors.password && loginPasswordLooksPersian" class="mt-1.5 text-xs text-amber-600">
+                زبان صفحه‌کلید فارسی است؛ مطمئن شوید رمز را درست وارد می‌کنید.
+              </p>
             </div>
 
             <button
@@ -771,12 +1046,12 @@ const submitProfile = () => {
 
             <button
               type="button"
+              v-btn-fx
               :disabled="loading"
-              class="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-l from-accent to-accentHover py-3.5 text-sm font-medium text-white shadow-lg shadow-accent/25 transition-all duration-200 hover:shadow-xl hover:shadow-accent/30 active:scale-[0.98] disabled:opacity-60"
+              class="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-l from-accent to-accentHover py-3.5 text-sm font-medium text-white shadow-lg shadow-accent/25 mh-btn disabled:cursor-not-allowed disabled:opacity-60"
               @click="submitLogin()"
             >
-              <span class="absolute inset-0 -translate-x-full bg-white/20 transition-transform duration-500 group-hover:translate-x-full"></span>
-              <svg v-if="loading" class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <svg v-if="loading" class="relative z-10 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
               </svg>
@@ -799,10 +1074,13 @@ const submitProfile = () => {
                   ref="profileFirstNameInput"
                   v-model="profileForm.first_name"
                   type="text"
+                  autocomplete="given-name"
                   placeholder="نام"
                   class="w-full rounded-2xl border bg-white/70 py-3.5 px-4 text-sm text-ink outline-none transition-all duration-200 placeholder:text-inkSoft/50"
                   :class="errors.first_name ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-ink/10 focus:border-accent focus:ring-4 focus:ring-accent/10'"
-                  @keyup="errors.first_name = ''"
+                  :aria-invalid="!!errors.first_name"
+                  @input="errors.first_name = ''"
+                  @blur="onNameBlur('first_name', 'نام')"
                 />
                 <p v-if="errors.first_name" class="mt-1.5 text-xs text-red-500">{{ errors.first_name }}</p>
               </div>
@@ -810,10 +1088,13 @@ const submitProfile = () => {
                 <input
                   v-model="profileForm.last_name"
                   type="text"
+                  autocomplete="family-name"
                   placeholder="نام خانوادگی"
                   class="w-full rounded-2xl border bg-white/70 py-3.5 px-4 text-sm text-ink outline-none transition-all duration-200 placeholder:text-inkSoft/50"
                   :class="errors.last_name ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-ink/10 focus:border-accent focus:ring-4 focus:ring-accent/10'"
-                  @keyup="errors.last_name = ''"
+                  :aria-invalid="!!errors.last_name"
+                  @input="errors.last_name = ''"
+                  @blur="onNameBlur('last_name', 'نام خانوادگی')"
                 />
                 <p v-if="errors.last_name" class="mt-1.5 text-xs text-red-500">{{ errors.last_name }}</p>
               </div>
@@ -824,12 +1105,14 @@ const submitProfile = () => {
                 v-model="profileForm.national_code"
                 type="text"
                 inputmode="numeric"
-                maxlength="10"
+                autocomplete="off"
                 dir="ltr"
                 placeholder="کد ملی"
                 class="w-full rounded-2xl border bg-white/70 py-3.5 px-4 text-sm text-ink outline-none transition-all duration-200 placeholder:text-inkSoft/50"
                 :class="errors.national_code ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-ink/10 focus:border-accent focus:ring-4 focus:ring-accent/10'"
-                @keyup="errors.national_code = ''"
+                :aria-invalid="!!errors.national_code"
+                @input="errors.national_code = ''"
+                @blur="onNationalCodeBlur"
               />
               <p v-if="errors.national_code" class="mt-1.5 text-xs text-red-500">{{ errors.national_code }}</p>
             </div>
@@ -845,6 +1128,7 @@ const submitProfile = () => {
                     placeholder="تاریخ تولد (۱۳۷۰/۰۱/۰۱)"
                     class="w-full rounded-2xl border bg-white/70 py-3.5 px-4 pl-10 text-sm text-ink outline-none transition-all duration-200 placeholder:text-inkSoft/50 cursor-pointer"
                     :class="errors.birth_date ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-ink/10 focus:border-accent focus:ring-4 focus:ring-accent/10'"
+                    :aria-invalid="!!errors.birth_date"
                   />
                   <Icon name="tabler:calendar-event" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-inkSoft/60" />
                   <DatePicker
@@ -859,7 +1143,6 @@ const submitProfile = () => {
                     display-format="jYYYY/jMM/jDD"
                     custom-input="#birth-date-input"
                     append-to="body"
-                    @change="errors.birth_date = ''"
                   />
                 </div>
                 <template #fallback>
@@ -879,26 +1162,21 @@ const submitProfile = () => {
               <input v-model="acceptedTerms" type="checkbox" class="mt-0.5 accent-accent" />
               <span>قوانین و شرایط استفاده از خدمات ماهلین را مطالعه کرده و می‌پذیرم</span>
             </label>
+            <p v-if="errors.terms" class="mt-1.5 text-xs text-red-500">{{ errors.terms }}</p>
 
             <button
               type="button"
+              v-btn-fx
               :disabled="loading"
-              class="group relative mt-5 flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-l from-accent to-accentHover py-3.5 text-sm font-medium text-white shadow-lg shadow-accent/25 transition-all duration-200 hover:shadow-xl hover:shadow-accent/30 active:scale-[0.98] disabled:opacity-60"
+              class="group relative mt-5 flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-l from-accent to-accentHover py-3.5 text-sm font-medium text-white shadow-lg shadow-accent/25 mh-btn disabled:cursor-not-allowed disabled:opacity-60"
               @click="submitProfile()"
             >
               <span class="relative z-10">ادامه</span>
             </button>
           </div>
 
-          <!-- 4) تغییر رمز عبور -->
-          <div v-else-if="formStep === 'changePassword'" key="changePassword" class="px-7 pb-8 pt-2">
-            <p class="my-5 flex items-center justify-center gap-1.5 text-center text-xs text-inkSoft">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" />
-              </svg>
-              رمز عبور باید حداقل 6 حرفی باشد
-            </p>
-
+          <!-- 4) تعیین / تغییر رمز عبور -->
+          <div v-else-if="formStep === 'changePassword'" key="changePassword" class="px-7 pb-8 pt-5">
             <div class="mb-3">
               <div class="relative">
                 <span class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-inkSoft/60">
@@ -908,11 +1186,13 @@ const submitProfile = () => {
                   ref="newPasswordInput"
                   v-model="password"
                   :type="showPassword ? 'text' : 'password'"
+                  autocomplete="new-password"
                   placeholder="رمز عبور جدید"
                   dir="ltr"
                   class="w-full rounded-2xl border bg-white/70 py-3.5 pl-11 pr-11 text-sm text-ink outline-none transition-all duration-200 placeholder:text-inkSoft/50"
                   :class="errors.password ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-ink/10 focus:border-accent focus:ring-4 focus:ring-accent/10'"
-                  @keyup="errors.password = ''"
+                  :aria-invalid="!!errors.password"
+                  @input="errors.password = ''"
                 />
                 <button
                   type="button"
@@ -925,6 +1205,18 @@ const submitProfile = () => {
               <Transition name="fade-slide">
                 <p v-if="errors.password" class="mt-1.5 text-xs text-red-500">{{ errors.password }}</p>
               </Transition>
+
+              <ul class="mt-3 space-y-1.5 text-xs">
+                <li
+                  v-for="rule in passwordChecks"
+                  :key="rule.key"
+                  class="flex items-center gap-1.5 transition-colors"
+                  :class="rule.ok ? 'text-green-600' : 'text-inkSoft'"
+                >
+                  <Icon :name="rule.ok ? 'tabler:circle-check' : 'tabler:circle'" class="text-[15px]" />
+                  {{ rule.label }}
+                </li>
+              </ul>
             </div>
 
             <div class="mb-2">
@@ -935,9 +1227,15 @@ const submitProfile = () => {
                 <input
                   v-model="password_confirm"
                   :type="showPasswordConfirm ? 'text' : 'password'"
+                  autocomplete="new-password"
                   placeholder="تکرار رمز عبور جدید"
                   dir="ltr"
-                  class="w-full rounded-2xl border border-ink/10 bg-white/70 py-3.5 pl-11 pr-11 text-sm text-ink outline-none transition-all duration-200 placeholder:text-inkSoft/50 focus:border-accent focus:ring-4 focus:ring-accent/10"
+                  class="w-full rounded-2xl border bg-white/70 py-3.5 pl-11 pr-11 text-sm text-ink outline-none transition-all duration-200 placeholder:text-inkSoft/50"
+                  :class="errors.password_confirm ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-ink/10 focus:border-accent focus:ring-4 focus:ring-accent/10'"
+                  :aria-invalid="!!errors.password_confirm"
+                  @input="errors.password_confirm = ''"
+                  @blur="onPasswordConfirmBlur"
+                  @keyup.enter="changePassword()"
                 />
                 <button
                   type="button"
@@ -947,20 +1245,23 @@ const submitProfile = () => {
                   <Icon :name="showPasswordConfirm ? 'tabler:eye-off' : 'tabler:eye'" class="text-[18px]" />
                 </button>
               </div>
+              <Transition name="fade-slide">
+                <p v-if="errors.password_confirm" class="mt-1.5 text-xs text-red-500">{{ errors.password_confirm }}</p>
+              </Transition>
             </div>
 
             <button
               type="button"
+              v-btn-fx
               :disabled="loading"
-              class="group relative mt-4 flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-l from-accent to-accentHover py-3.5 text-sm font-medium text-white shadow-lg shadow-accent/25 transition-all duration-200 hover:shadow-xl hover:shadow-accent/30 active:scale-[0.98] disabled:opacity-60"
+              class="group relative mt-4 flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-l from-accent to-accentHover py-3.5 text-sm font-medium text-white shadow-lg shadow-accent/25 mh-btn disabled:cursor-not-allowed disabled:opacity-60"
               @click="changePassword()"
             >
-              <span class="absolute inset-0 -translate-x-full bg-white/20 transition-transform duration-500 group-hover:translate-x-full"></span>
-              <svg v-if="loading" class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <svg v-if="loading" class="relative z-10 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
               </svg>
-              <span v-else class="relative z-10">تغییر رمز</span>
+              <span v-else class="relative z-10">{{ mobileExist ? "تغییر رمز" : "ثبت‌نام" }}</span>
             </button>
           </div>
 
@@ -974,13 +1275,16 @@ const submitProfile = () => {
                 <input
                   ref="getPresenterInput"
                   v-model="presenter"
-                  type="text"
+                  type="tel"
                   inputmode="numeric"
+                  autocomplete="off"
                   dir="ltr"
                   placeholder="شماره موبایل معرف"
                   class="w-full rounded-2xl border bg-white/70 py-3.5 pl-4 pr-11 text-sm text-ink outline-none transition-all duration-200 placeholder:text-inkSoft/50"
                   :class="errors.presenter ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-ink/10 focus:border-accent focus:ring-4 focus:ring-accent/10'"
-                  @keyup="errors.presenter = ''"
+                  :aria-invalid="!!errors.presenter"
+                  @input="errors.presenter = ''"
+                  @keyup.enter="setPresenter()"
                 />
               </div>
               <Transition name="fade-slide">
@@ -990,12 +1294,12 @@ const submitProfile = () => {
 
             <button
               type="button"
+              v-btn-fx
               :disabled="loading"
-              class="group relative mt-4 flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-l from-accent to-accentHover py-3.5 text-sm font-medium text-white shadow-lg shadow-accent/25 transition-all duration-200 hover:shadow-xl hover:shadow-accent/30 active:scale-[0.98] disabled:opacity-60"
+              class="group relative mt-4 flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-l from-accent to-accentHover py-3.5 text-sm font-medium text-white shadow-lg shadow-accent/25 mh-btn disabled:cursor-not-allowed disabled:opacity-60"
               @click="setPresenter()"
             >
-              <span class="absolute inset-0 -translate-x-full bg-white/20 transition-transform duration-500 group-hover:translate-x-full"></span>
-              <svg v-if="loading" class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <svg v-if="loading" class="relative z-10 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
               </svg>
@@ -1005,7 +1309,7 @@ const submitProfile = () => {
             <button
               type="button"
               class="mt-5 block w-full text-center text-sm text-inkSoft transition hover:text-accent"
-              @click="router.push(backTo.value)"
+              @click="router.push(backTo)"
             >
               معرف ندارم
             </button>
@@ -1080,19 +1384,121 @@ const submitProfile = () => {
   animation-delay: 4s;
 }
 
-@keyframes pingSlow {
-  0% {
-    transform: scale(0.9);
-    opacity: 0.8;
-  }
+/* ================= Logo animation ================= */
 
-  75%, 100% {
-    transform: scale(1.8);
+/* ۱) ورود: از حالت محو و بلور، با کمی فنریت */
+.logo-stage {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: logoIn 1s cubic-bezier(0.22, 1.2, 0.36, 1) 0.25s both;
+}
+@keyframes logoIn {
+  0% {
     opacity: 0;
+    filter: blur(10px);
+    transform: translateY(12px) scale(0.82);
+  }
+  60% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
   }
 }
-.animate-ping-slow {
-  animation: pingSlow 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+
+/* ۲) هاله‌ی نرمِ نفس‌کشنده پشت لوگو */
+.logo-halo {
+  position: absolute;
+  inset: -40% -25%;
+  z-index: 0;
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, theme('colors.accent / 22%'), transparent 70%);
+  filter: blur(6px);
+  animation: haloBreath 4.5s ease-in-out 1.2s infinite;
+  pointer-events: none;
+}
+@keyframes haloBreath {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+/* ۳) شناوری خیلی ملایم */
+.logo-float {
+  z-index: 1;
+  animation: logoFloat 6s ease-in-out 1.3s infinite;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.logo-stage:hover .logo-float {
+  transform: scale(1.06);
+}
+@keyframes logoFloat {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -4px;
+  }
+}
+.logo-img {
+  filter: drop-shadow(0 6px 14px theme('colors.accent / 18%'));
+}
+
+/* ۴) نوار درخشش که فقط روی شکل لوگو رد می‌شود */
+.logo-shine {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.85) 50%,
+    transparent 65%
+  );
+  background-size: 250% 100%;
+  background-repeat: no-repeat;
+  -webkit-mask-image: var(--logo-url);
+  mask-image: var(--logo-url);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  animation: logoShine 5.5s ease-in-out 1.4s infinite;
+}
+@keyframes logoShine {
+  0% {
+    background-position: 150% 0;
+  }
+  35%,
+  100% {
+    background-position: -50% 0;
+  }
+}
+
+/* احترام به تنظیمات «کاهش حرکت» سیستم‌عامل */
+@media (prefers-reduced-motion: reduce) {
+  .logo-stage,
+  .logo-halo,
+  .logo-float,
+  .logo-shine {
+    animation: none !important;
+  }
+  .logo-shine {
+    display: none;
+  }
 }
 </style>
 
@@ -1129,5 +1535,104 @@ const submitProfile = () => {
 }
 .vpd-actions button {
   color: theme('colors.accent') !important;
+}
+
+/* ================= Primary button FX ================= */
+.mh-btn {
+  isolation: isolate;
+  background-size: 200% 100%;
+  background-position: 0% 0;
+  transition:
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.35s ease,
+    background-position 0.6s ease;
+}
+
+/* نورِ نرمی که دنبال ماوس حرکت می‌کند */
+.mh-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    140px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 255, 255, 0.38),
+    transparent 65%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+/* حلقه‌ی درخشان دور دکمه */
+.mh-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .mh-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    background-position: 100% 0;
+    box-shadow:
+      0 16px 32px -12px theme('colors.accent / 60%'),
+      0 4px 10px -4px theme('colors.accent / 35%');
+  }
+  .mh-btn:not(:disabled):hover::before,
+  .mh-btn:not(:disabled):hover::after {
+    opacity: 1;
+  }
+}
+
+.mh-btn:not(:disabled):active {
+  transform: translateY(0) scale(0.97);
+  transition-duration: 0.12s;
+}
+
+.mh-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px theme('colors.accent / 28%');
+}
+
+/* موج کلیک */
+.mh-btn-ripple {
+  position: absolute;
+  z-index: 0;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 70%);
+  transform: scale(0);
+  pointer-events: none;
+  animation: mhRipple 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes mhRipple {
+  to {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* فلش دکمه‌ی «ادامه» با حرکت فنری */
+.mh-btn svg:last-child {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mh-btn,
+  .mh-btn:not(:disabled):hover,
+  .mh-btn:not(:disabled):active {
+    transform: none !important;
+    transition: box-shadow 0.2s ease, opacity 0.2s ease !important;
+  }
+  .mh-btn-ripple {
+    display: none;
+  }
 }
 </style>

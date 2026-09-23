@@ -60,12 +60,51 @@
       </div>
     </div>
 
-    <!-- ────── لودینگ: اسکلتون ────── -->
-    <div v-if="pending" class="flex gap-4 overflow-hidden">
-      <div
-        v-for="n in 4" :key="n"
-        class="min-w-[220px] flex-shrink-0 rounded-2xl border border-ink/[0.06] bg-ink/[0.03] h-72 animate-pulse"
-      />
+    <!-- ────── لودینگ: اسکلتون دقیق ProductCard ────── -->
+    <div v-if="pending" class="relative overflow-hidden -mx-1 px-1 pt-2 pb-4">
+      <div class="flex gap-3 sm:gap-3.5 md:gap-6 lg:gap-8">
+        <div
+          v-for="n in 8" :key="n"
+          class="skeleton-item flex-shrink-0 w-[62%] sm:w-[48%] md:w-[31.5%] lg:w-[23%]"
+        >
+          <div class="relative flex flex-col h-full rounded-md rounded-tr-[48px] bg-ink/[0.04] overflow-hidden animate-pulse">
+
+            <!-- نوار رنگی بالای کارت -->
+            <div class="absolute top-0 left-0 w-[85%] h-[3px] rounded-t-md bg-ink/10"></div>
+
+            <!-- بج تخفیف (شبیه‌ساز) -->
+            <span class="absolute top-3.5 start-3.5 z-10 w-14 h-5 rounded-full bg-ink/10"></span>
+
+            <!-- قاب تصویر -->
+            <div class="h-[220px] md:h-[260px] relative bg-ink/[0.06] border-b border-ink/5 rounded-tr-[48px]">
+              <div class="absolute inset-6 rounded-tr-[24px] bg-ink/10"></div>
+            </div>
+
+            <!-- اطلاعات محصول -->
+            <div class="py-4 px-4 flex flex-col flex-1 gap-2.5">
+
+              <!-- بج دسته‌بندی -->
+              <span class="w-16 h-4 rounded-full bg-ink/10"></span>
+
+              <!-- عنوان دو خطی -->
+              <div class="flex flex-col gap-1.5 mt-0.5">
+                <span class="h-3.5 w-full rounded bg-ink/10"></span>
+                <span class="h-3.5 w-3/4 rounded bg-ink/10"></span>
+              </div>
+
+              <!-- ساب‌تایتل لاتین -->
+              <span class="h-3 w-1/2 rounded bg-ink/[0.08]"></span>
+
+              <!-- ردیف قیمت -->
+              <div class="mt-auto pt-3 flex items-center justify-between border-t border-ink/[0.04]">
+                <span class="h-3 w-8 rounded bg-ink/10"></span>
+                <span class="h-4 w-20 rounded bg-ink/10"></span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ────── خطا ────── -->
@@ -102,17 +141,6 @@
           class="!h-auto"
         >
           <div class="relative h-full">
-            <!-- بج فقط برای ۳ کارت اول -->
-            <!-- <span
-              v-if="badges[i]"
-              :class="[
-                'absolute top-3 start-3 z-10 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-md',
-                badges[i].color
-              ]"
-            >
-              {{ badges[i].label }}
-            </span> -->
-
             <ProductCard
               :product="p"
               class="h-full hover:shadow-[0_1px_5px_rgba(0,0,0,0.08)] transition-all duration-300 transform-gpu"
@@ -201,4 +229,14 @@ function slideNext() { swiperInstance.value?.slideNext(); }
 :deep(.swiper-slide) {
   height: auto;
 }
+
+/* اسکلتون‌ها با تاخیر جزئی از هم پالس بزنند تا حس زنده‌تری داشته باشند */
+.skeleton-item:nth-child(1) .animate-pulse { animation-delay: 0ms; }
+.skeleton-item:nth-child(2) .animate-pulse { animation-delay: 80ms; }
+.skeleton-item:nth-child(3) .animate-pulse { animation-delay: 160ms; }
+.skeleton-item:nth-child(4) .animate-pulse { animation-delay: 240ms; }
+.skeleton-item:nth-child(5) .animate-pulse { animation-delay: 320ms; }
+.skeleton-item:nth-child(6) .animate-pulse { animation-delay: 400ms; }
+.skeleton-item:nth-child(7) .animate-pulse { animation-delay: 480ms; }
+.skeleton-item:nth-child(8) .animate-pulse { animation-delay: 560ms; }
 </style>

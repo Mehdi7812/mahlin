@@ -1,3 +1,94 @@
+/* ═══════════════════════════════════════════════════════════
+   فونت Vazirmatn (فونت متغیر - Variable Font)
+   یک فایل واحد که تمام وزن‌ها (100 تا 900) رو پوشش می‌ده
+   ═══════════════════════════════════════════════════════════ */
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../fonts/vazir/Vazirmatn[wght].woff2') format('woff2-variations'),
+       url('../fonts/vazir/Vazirmatn[wght].woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ─── فایل‌های استاتیک Vazirmatn (fallback برای مرورگرهای قدیمی‌تر) ─── */
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../fonts/vazir/Vazirmatn-Thin.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../fonts/vazir/Vazirmatn-ExtraLight.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../fonts/vazir/Vazirmatn-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../fonts/vazir/Vazirmatn-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../fonts/vazir/Vazirmatn-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../fonts/vazir/Vazirmatn-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../fonts/vazir/Vazirmatn-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../fonts/vazir/Vazirmatn-ExtraBold.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../fonts/vazir/Vazirmatn-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   فونت Lalezar (برای تیترها و فونت Display)
+   ═══════════════════════════════════════════════════════════ */
+@font-face {
+  font-family: 'Lalezar';
+  src: url('../fonts/Lalezar-Font/TTF/Lalezar-Regular.ttf') format('truetype'),
+       url('../fonts/Lalezar-Font/OTF/Lalezar-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+
 html { direction: rtl; }
 html, body {
   margin: 0; padding: 0;

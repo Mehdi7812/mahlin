@@ -221,9 +221,29 @@
 
         <!-- کپی‌رایت -->
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span class="text-xs text-cream/35 text-center sm:text-start">
-            © ۱۴۰۵ ماهلین اسکین‌کر — همه حقوق محفوظ است.
-          </span>
+          <div class="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 text-center sm:text-start">
+            <span class="text-xs text-cream/35">
+              © ۱۴۰۵ ماهلین اسکین‌کر — همه حقوق محفوظ است.
+            </span>
+            <span class="hidden sm:block w-px h-3 bg-cream/15"></span>
+            <a
+              href="https://sinatech-dm.ir"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="dev-credit"
+            >
+              <span class="dev-credit-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M8 9l-4 3 4 3M16 9l4 3-4 3M13 5l-2 14" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+              <span class="dev-credit-text">
+                قدرت گرفته از
+                <span class="dev-credit-brand">sinatech-dm.ir</span>
+              </span>
+            </a>
+          </div>
+
           <div class="flex items-center gap-4 text-xs">
             <NuxtLink to="/privacy" class="text-cream/40 hover:text-cream/80 transition-colors duration-200">
               حریم خصوصی
@@ -746,5 +766,102 @@ onUnmounted(() => {
   .footer-logo-ring > span,
   .footer-logo-text { animation: none; }
   .footer-logo-glow { opacity: 0.7; }
+}
+
+/* ── اعتبار توسعه‌دهنده ──────────────────────────────── */
+.dev-credit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  position: relative;
+  padding: 0.2rem 0.15rem;
+}
+
+.dev-credit-icon {
+  display: grid;
+  place-items: center;
+  width: 1.05rem;
+  height: 1.05rem;
+  color: rgba(162, 132, 102, 0.55);
+  transition: color 0.35s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.dev-credit-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.dev-credit-text {
+  font-size: 0.6875rem;
+  color: rgba(242, 235, 227, 0.35);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: color 0.3s ease;
+}
+
+.dev-credit-brand {
+  position: relative;
+  font-weight: 700;
+  background: linear-gradient(
+    100deg,
+    rgba(242, 235, 227, 0.55) 0%,
+    rgba(242, 235, 227, 0.55) 38%,
+    #A28466 46%,
+    #F2A868 50%,
+    #FFF8F0 53%,
+    #F2A868 56%,
+    #A28466 60%,
+    rgba(242, 235, 227, 0.55) 68%,
+    rgba(242, 235, 227, 0.55) 100%
+  );
+  background-size: 260% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: devShimmer 5s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+
+.dev-credit-brand::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  right: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to left, rgba(162, 132, 102, 0.7), transparent);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes devShimmer {
+  0%, 40%  { background-position: 100% 0; }
+  75%, 100% { background-position: 0% 0; }
+}
+
+/* هاور */
+.dev-credit:hover .dev-credit-icon {
+  color: #F2A868;
+  transform: rotate(-8deg) scale(1.12);
+}
+.dev-credit:hover .dev-credit-text {
+  color: rgba(242, 235, 227, 0.55);
+}
+.dev-credit:hover .dev-credit-brand {
+  animation-duration: 1.8s;
+}
+.dev-credit:hover .dev-credit-brand::after {
+  transform: scaleX(1);
+}
+
+.dev-credit:focus-visible {
+  outline: 2px solid rgba(162, 132, 102, 0.6);
+  outline-offset: 4px;
+  border-radius: 0.35rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dev-credit-brand { animation: none; }
 }
 </style>

@@ -12,23 +12,6 @@
       :style="{ background: `linear-gradient(to left, ${catInfo.stripeEnd}, ${catInfo.stripeStart})` }"
     />
 
-    <!-- دکمه علاقه‌مندی -->
-    <!-- <button
-      type="button"
-      :aria-label="isWishlisted ? 'حذف از علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها'"
-      class="absolute top-3.5 end-3.5 z-20 w-8 h-8 rounded-full bg-white/95 backdrop-blur-sm shadow-sm grid place-items-center transition-all duration-300 hover:scale-110 active:scale-95"
-      @click.prevent="isWishlisted = !isWishlisted"
-    >
-      <svg
-        class="w-4 h-4 transition-colors duration-300"
-        :class="isWishlisted ? 'text-blush' : 'text-ink/35'"
-        :fill="isWishlisted ? 'currentColor' : 'none'"
-        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
-      >
-        <path d="M12 21s-6.7-4.35-9.3-8.2C1 10 1.5 6.5 4.6 5.1 7 4 9.6 4.9 12 7.5c2.4-2.6 5-3.5 7.4-2.4 3.1 1.4 3.6 4.9 1.9 7.7C18.7 16.65 12 21 12 21z" stroke-linejoin="round"/>
-      </svg>
-    </button> -->
-
     <!-- بج تخفیف -->
     <span
       v-if="discountPercent > 0"
@@ -100,35 +83,86 @@
           {{ product.title_fa }}
         </h3>
 
-        <!-- اسلاگ به‌عنوان زیرعنوان لاتین -->
-        <span class="text-[12px] text-ink/40 font-latin uppercase tracking-normal line-clamp-1">
-          {{ product.slug_fa }}
-        </span>
+        <!-- زیرعنوان: خلاصه محصول یا برند -->
+        <div class="flex items-center gap-1.5 text-[12px] text-ink/40 line-clamp-1">
+          <svg
+            v-if="hasSummary"
+            class="w-3 h-3 flex-shrink-0 opacity-60"
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          >
+            <path d="M4 6h16M4 12h16M4 18h10" stroke-linecap="round"/>
+          </svg>
+          <svg
+            v-else-if="product.brand_text"
+            class="w-3 h-3 flex-shrink-0 opacity-60"
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          >
+            <path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.1L12 16.3 5.7 20.7 8 13.6 2 9.2h7.6z" stroke-linejoin="round"/>
+          </svg>
+          <span class="line-clamp-1">{{ productSubtitle }}</span>
+        </div>
 
-        <!-- قیمت -->
-        <div class="mt-auto pt-3 flex items-baseline justify-between border-t border-ink/[0.04]">
-          <span class="text-xs text-ink/40">قیمت</span>
-          <div class="flex flex-col items-end gap-0.5">
-            <!-- قیمت اصلی خط‌خورده -->
+        <!-- ═══════════ قیمت ═══════════ -->
+        <div class="price-block relative mt-auto pt-3 flex items-end justify-between gap-2 border-t border-ink/[0.04]">
+
+          <div class="flex flex-col gap-0.5 min-w-0">
+            <!-- قیمت اصلی خط‌خورده (فقط وقتی تخفیف داره) -->
             <span
               v-if="hasDiscount"
-              class="text-[11px] text-ink/35 line-through font-latin"
+              class="text-[12px] text-ink/40 line-through font-latin leading-none"
             >
               {{ money(product.price) }}
             </span>
+
             <!-- قیمت نهایی -->
-            <span
-              class="text-[15px] font-bold font-latin"
-              :style="{ color: catInfo.accent }"
-            >
-              {{ money(product.final_price) }}
-              <span class="text-[11px] text-ink/50 font-normal font-sans mr-0.5">
+            <div class="flex items-baseline gap-1">
+              <span
+                class="price-final font-black font-latin tracking-tight leading-none whitespace-nowrap"
+                :style="priceStyle"
+              >
+                {{ money(product.final_price) }}
+              </span>
+              <span class="text-[10px] text-ink/45 font-medium leading-none whitespace-nowrap">
                 {{ product.currency_name || 'تومان' }}
               </span>
-            </span>
+            </div>
           </div>
-        </div>
 
+          <!-- آیکون کوچک وضعیت قیمت: تخفیف یا قیمت عادی -->
+          <span
+            class="flex-shrink-0 w-7 h-7 rounded-full grid place-items-center transition-transform duration-300 group-hover:scale-110"
+            :style="{ backgroundColor: catInfo.iconBg }"
+          >
+            <!-- حالت تخفیف: آیکون درصد -->
+            <svg
+              v-if="hasDiscount"
+              class="w-3.5 h-3.5"
+              :style="{ color: catInfo.accent }"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+            >
+              <circle cx="7" cy="7" r="2.5"/>
+              <circle cx="17" cy="17" r="2.5"/>
+              <path d="M18 6L6 18" stroke-linecap="round"/>
+            </svg>
+
+            <!-- حالت عادی: آیکون دلار در دایره (Circle Dollar Sign) -->
+            <svg
+              v-else
+              class="w-5.5 h-5.5"
+              :style="{ color: catInfo.accent }"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            >
+              <path d="M12 6.5v11" stroke-linecap="round"/>
+              <path d="M15 9.2c0-1.16-1.34-2.1-3-2.1s-3 .94-3 2.1c0 1.16 1.34 1.75 3 2.1 1.66.35 3 .94 3 2.1 0 1.16-1.34 2.1-3 2.1s-3-.94-3-2.1" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+
+          <!-- خط درخشان زیر قیمت روی هاور -->
+          <span
+            class="price-glow absolute -bottom-1 right-0 h-[2px] rounded-full"
+            :style="{ background: `linear-gradient(to left, transparent, ${catInfo.accent}, transparent)` }"
+          ></span>
+        </div>
       </div>
     </NuxtLink>
   </div>
@@ -175,6 +209,43 @@ const discountPercent = computed(() => {
   return Math.round(((price - final_price) / price) * 100);
 });
 
+// ─── استایل قیمت نهایی: گرادینت هنگام تخفیف، رنگ ساده در غیر این‌صورت ───
+const priceStyle = computed(() => {
+  if (!hasDiscount.value) {
+    return { fontSize: '17px', color: catInfo.value.accent };
+  }
+  return {
+    fontSize: '18px',
+    backgroundImage: `linear-gradient(90deg, ${catInfo.value.stripeStart}, ${catInfo.value.accent})`,
+    WebkitBackgroundClip: 'text',
+    backgroundClip: 'text',
+    color: 'transparent',
+  };
+});
+
+// ─── زیرعنوان کارت: خلاصه محصول (پاک‌سازی‌شده از HTML) یا نام برند ───
+function stripHtml(html) {
+  if (!html) return '';
+  return html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+const cleanSummary = computed(() => stripHtml(props.product.summary_fa));
+
+const hasSummary = computed(() => cleanSummary.value.length > 0);
+
+const productSubtitle = computed(() => {
+  if (hasSummary.value) {
+    return cleanSummary.value.length > 80
+      ? cleanSummary.value.slice(0, 80) + '…'
+      : cleanSummary.value;
+  }
+  return props.product.brand_text || props.product.category_title_fa || '';
+});
+
 const TYPE_LABELS = {
   course:   'دوره آموزشی',
   book:     'کتاب',
@@ -189,5 +260,33 @@ const typeLabel = computed(() =>
 <style scoped>
 h3:hover {
   color: var(--hover-color, #A28466);
+}
+
+/* ── بزرگ‌نمایی نرم قیمت روی هاور ─────────────────────── */
+.price-final {
+  display: inline-block;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.group:hover .price-final {
+  transform: scale(1.04);
+}
+
+/* ── خط درخشان زیر بلوک قیمت که روی هاور ظاهر می‌شود ──── */
+.price-glow {
+  width: 0;
+  opacity: 0;
+  transition: width 0.5s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.4s ease;
+}
+.group:hover .price-glow {
+  width: 100%;
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .price-final,
+  .price-glow {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 </style>

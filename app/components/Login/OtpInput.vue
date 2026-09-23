@@ -281,7 +281,7 @@ const isTimerLow = computed(() => props.timerValue > 0 && props.timerValue <= 30
       </div>
 
       <!-- خط زیر فیلد فعال (نشانگر متحرک) -->
-      <div class="relative mt-1.5 h-0.5 w-full overflow-hidden rounded-full bg-transparent">
+      <!-- <div class="relative mt-1.5 h-0.5 w-full overflow-hidden rounded-full bg-transparent">
         <div
           v-if="focusedIndex !== null && !loading && !successState"
           class="absolute h-0.5 rounded-full bg-accent transition-all duration-300 ease-out"
@@ -290,7 +290,7 @@ const isTimerLow = computed(() => props.timerValue > 0 && props.timerValue <= 30
             transform: `translateX(${focusedIndex * (48 + 8)}px)`,
           }"
         ></div>
-      </div>
+      </div> -->
 
       <!-- اورلی لودینگ -->
       <Transition name="fade">

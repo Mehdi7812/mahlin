@@ -33,19 +33,21 @@
           <!-- Primary CTA -->
           <NuxtLink
             to="/shop"
-            class="group relative inline-flex items-center gap-3 overflow-hidden rounded-sm
+            class="cta-btn group relative inline-flex items-center gap-3 overflow-hidden rounded-sm
                   px-8 py-4 border border-gold/50 bg-gold/[0.03]
                   transition-all duration-300 ease-out
-                  hover:-translate-y-0.5 hover:border-gold
-                  hover:shadow-[0_12px_32px_rgba(197,160,89,0.18)]
-                  active:translate-y-0
+                  hover:-translate-y-1 hover:border-gold
+                  active:translate-y-0 active:duration-150
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2"
           >
-            <!-- Gold fill -->
-            <span
-              class="absolute inset-0 translate-y-full bg-gold transition-transform duration-300 ease-out group-hover:translate-y-0"
-              aria-hidden="true"
-            ></span>
+            <!-- حلقه‌ی درخشش نبض‌دار (idle) -->
+            <span class="cta-pulse" aria-hidden="true"></span>
+
+            <!-- پرشدگی طلایی با زاویه -->
+            <span class="cta-fill" aria-hidden="true"></span>
+
+            <!-- درخشش عبوری (shine) -->
+            <span class="cta-shine" aria-hidden="true"></span>
 
             <span
               class="relative z-10 text-sm font-semibold text-accent transition-colors duration-300 group-hover:text-white"
@@ -53,23 +55,37 @@
               مشاهده محصولات
             </span>
 
-            <svg
-              class="relative z-10 w-4 h-4 text-accent transition-all duration-300
-                    group-hover:text-white group-hover:-translate-x-1 rotate-180"
-              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-              aria-hidden="true"
-            >
-              <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
+            <span class="relative z-10 grid place-items-center w-4 h-4 overflow-hidden">
+              <svg
+                class="cta-arrow cta-arrow-main w-4 h-4 text-accent !rotate-180"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                aria-hidden="true"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              <svg
+                class="cta-arrow cta-arrow-ghost w-4 h-4 text-white !rotate-180"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                aria-hidden="true"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
           </NuxtLink>
 
           <!-- Secondary link -->
           <NuxtLink
             to="/about"
-            class="group relative inline-flex items-center py-2 text-sm text-ink/50
+            class="about-btn group relative inline-flex items-center gap-2.5 py-2 text-sm text-ink/50
                   transition-colors duration-300 hover:text-gold
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/30 rounded-sm"
           >
+            <!-- دات نبض‌دار -->
+            <span class="about-dot-wrap relative grid place-items-center w-2.5 h-2.5 flex-shrink-0">
+              <span class="about-dot-ping" aria-hidden="true"></span>
+              <span class="about-dot" aria-hidden="true"></span>
+            </span>
+
             <span class="relative">
               بیشتر درباره ماهلین
 
@@ -78,9 +94,19 @@
 
               <!-- Animated underline (grows from right in RTL) -->
               <span
-                class="absolute -bottom-1 right-0 h-px bg-gold w-0 transition-all duration-300 ease-out group-hover:w-full"
+                class="about-underline absolute -bottom-1 right-0 h-px bg-gradient-to-l from-gold via-peach to-gold w-0"
                 aria-hidden="true"
               ></span>
+            </span>
+
+            <span class="relative grid place-items-center w-4 h-4 overflow-hidden flex-shrink-0">
+              <svg
+                class="about-arrow w-3.5 h-3.5 rotate-180"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                aria-hidden="true"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
             </span>
           </NuxtLink>
         </div>
@@ -177,5 +203,166 @@ onBeforeUnmount(() => {
 }
 .animate-float {
   animation: float 3.5s ease-in-out infinite;
+}
+
+/* ── حلقه‌ی نبض‌دار دور دکمه در حالت idle ─────────────────── */
+.cta-pulse {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid rgba(162, 132, 102, 0.5);
+  opacity: 0;
+  animation: ctaPulse 2.8s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes ctaPulse {
+  0%   { transform: scale(1);    opacity: 0.5; }
+  70%  { transform: scale(1.08); opacity: 0; }
+  100% { transform: scale(1.08); opacity: 0; }
+}
+.cta-btn:hover .cta-pulse { animation-play-state: paused; opacity: 0; }
+
+/* ── پرشدگی طلایی با زاویه‌ی مورب ───────────────────────── */
+.cta-fill {
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(120deg, #C5A059 0%, #A28466 55%, #8B6F4E 100%);
+  clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0% 100%);
+  transition: clip-path 0.5s cubic-bezier(0.65, 0, 0.35, 1);
+  pointer-events: none;
+}
+.cta-btn:hover .cta-fill {
+  clip-path: polygon(0 100%, 100% 100%, 100% 0%, 0% 0%);
+}
+
+/* ── درخشش عبوری (shine sweep) ──────────────────────────── */
+.cta-shine {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.cta-shine::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 45%;
+  background: linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.35) 50%, transparent 100%);
+  transform: translateX(-220%) skewX(-20deg);
+  transition: transform 0.05s;
+}
+.cta-btn:hover .cta-shine::before {
+  transform: translateX(320%) skewX(-20deg);
+  transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.15s;
+}
+
+/* ── شادو دینامیک (بزرگ‌تر و نرم‌تر از قبل) ─────────────── */
+.cta-btn {
+  box-shadow: 0 4px 14px -6px rgba(197, 160, 89, 0.15);
+  transition: box-shadow 0.4s ease, transform 0.3s ease, border-color 0.3s ease;
+}
+.cta-btn:hover {
+  box-shadow: 0 16px 40px -10px rgba(197, 160, 89, 0.4), 0 4px 12px -4px rgba(197, 160, 89, 0.25);
+}
+.cta-btn:active {
+  box-shadow: 0 6px 16px -8px rgba(197, 160, 89, 0.3);
+}
+
+/* ── انیمیشن دوگانه‌ی فلش (اصلی خارج می‌شه، شبح وارد می‌شه) ── */
+.cta-arrow {
+  position: absolute;
+  inset: 0;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease;
+}
+.cta-arrow-main {
+  opacity: 1;
+  transform: translateX(0);
+}
+.cta-arrow-ghost {
+  opacity: 0;
+  transform: translateX(120%);
+}
+.cta-btn:hover .cta-arrow-main {
+  opacity: 0;
+  transform: translateX(-120%);
+}
+.cta-btn:hover .cta-arrow-ghost {
+  opacity: 1;
+  transform: translateX(0);
+  transition-delay: 0.08s;
+}
+
+/* ══════════════════════════════════════════════════════════
+   انیمیشن دکمه‌ی «بیشتر درباره ماهلین»
+   ══════════════════════════════════════════════════════════ */
+
+/* دات ثابت */
+.about-dot {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.35;
+  transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.about-btn:hover .about-dot {
+  opacity: 1;
+  background: #C5A059;
+  transform: scale(1.5);
+  box-shadow: 0 0 10px rgba(197, 160, 89, 0.55);
+}
+
+/* حلقه‌ی پینگ دور دات (idle) */
+.about-dot-ping {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(197, 160, 89, 0.5);
+  opacity: 0;
+  animation: aboutPing 2.6s ease-out infinite;
+}
+@keyframes aboutPing {
+  0%   { transform: scale(1);   opacity: 0.6; }
+  75%  { transform: scale(3.2); opacity: 0; }
+  100% { transform: scale(3.2); opacity: 0; }
+}
+.about-btn:hover .about-dot-ping { animation-play-state: paused; opacity: 0; }
+
+/* آندرلاین متحرک */
+.about-underline {
+  transition: width 0.45s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.about-btn:hover .about-underline {
+  width: 100%;
+}
+
+/* فلش لغزنده به سمت جهت متن (RTL) */
+.about-arrow {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+  opacity: 0.6;
+}
+.about-btn:hover .about-arrow {
+  transform: translateX(-5px);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-pulse,
+  .cta-shine::before,
+  .cta-arrow,
+  .about-dot-ping,
+  .about-dot,
+  .about-underline,
+  .about-arrow {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 </style>
