@@ -1,4 +1,4 @@
-import {ref} from 'vue'
+import { ref } from 'vue'
 
 export const useGarnetApiFetchReactive = <T = any>(
     url: string,
@@ -7,44 +7,53 @@ export const useGarnetApiFetchReactive = <T = any>(
 ) => {
     const config = useRuntimeConfig()
     const baseUrl = config.public.apiBase
+    const nuxtApp = tryUseNuxtApp()
     const data = ref<T | null>(null)
     const error = ref<any>(null)
     const pending = ref<boolean>(false)
-    const token =
-        typeof localStorage !== 'undefined'
-            ? localStorage.getItem('g-auth-token')
-            : typeof sessionStorage !== 'undefined'
-                ? sessionStorage.getItem('g-auth-token')
-                : null
 
-    const headers = Object.fromEntries(
-        Object.entries({
+    const buildHeaders = () => {
+        // توکن هنگام هر درخواست خوانده می‌شود، نه یک بار هنگام ساخت
+        const token = getAuthToken()
+        const headers: Record<string, string> = {
             'g-platform': 'Garnet-Build-v4',
             'g-api-key': 'AEbk35zB9YfSqw8u9mjH7ykNK4xq2Yq5',
-            "Authorization": "Bearer " + token,
-            ...(isForm ? {} : { 'Content-Type': 'application/json' })
-        }).filter(([_, value]) => value !== null)
-    ) as HeadersInit
+        }
+        if (token) headers.Authorization = `Bearer ${token}`
+        if (!isForm) headers['Content-Type'] = 'application/json'
+        return headers
+    }
+
+    const onUnauthorized = () => {
+        if (nuxtApp) nuxtApp.runWithContext(() => handleUnauthorized())
+        else handleUnauthorized()
+    }
 
     const fetchData = async () => {
         pending.value = true
         error.value = null
         try {
-            data.value = await $fetch<T>(url, {
+            const response = await $fetch<T>(url, {
                 method: 'POST',
                 baseURL: baseUrl,
                 body,
-                headers
+                headers: buildHeaders(),
             })
+            if (isUnauthorizedResponse(response)) {
+                onUnauthorized()
+                error.value = { message: 'نشست شما منقضی شده است', details: response }
+            }
+            data.value = response
         } catch (err: any) {
             if (err?.status === 500) {
                 error.value = {
                     message: 'خطای داخلی سرور (500)، لطفا بعدا تلاش کنید.',
                     details: err.data || null
                 }
-            } else if (err?.status === 401) {
+            } else if (err?.status === 401 || isUnauthorizedResponse(err?.data)) {
+                onUnauthorized()
                 error.value = {
-                    message: 'توکن اکسپایر',
+                    message: 'نشست شما منقضی شده است',
                     details: err.data || null
                 }
             } else if (err?.status) {

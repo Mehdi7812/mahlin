@@ -15,7 +15,7 @@ const customizer = useCustomizerStore();
  * قوانین اعتبارسنجی — برای تغییر سیاست‌ها فقط همین‌جا را عوض کنید
  * ========================================================= */
 const RULES = {
-  PASSWORD_MIN: 8,
+  PASSWORD_MIN: 6,
   PASSWORD_MAX: 64,
   NAME_MIN: 2,
   NAME_MAX: 40,
@@ -275,8 +275,6 @@ const passwordChecks = computed(() => {
   const pw = password.value || "";
   return [
     { key: "len", label: `حداقل ${toFaDigits(RULES.PASSWORD_MIN)} کاراکتر`, ok: pw.length >= RULES.PASSWORD_MIN },
-    { key: "letter", label: "حداقل یک حرف انگلیسی", ok: /[A-Za-z]/.test(pw) },
-    { key: "digit", label: "حداقل یک عدد انگلیسی", ok: /\d/.test(pw) },
   ];
 });
 
@@ -292,7 +290,7 @@ const validateNewPassword = (pw) => {
   if (!PRINTABLE_ASCII_REGEX.test(pw)) return "رمز عبور فقط می‌تواند شامل حروف انگلیسی، عدد و علائم باشد";
   if (pw.length < RULES.PASSWORD_MIN) return `رمز عبور باید حداقل ${toFaDigits(RULES.PASSWORD_MIN)} کاراکتر باشد`;
   if (pw.length > RULES.PASSWORD_MAX) return `رمز عبور نباید بیشتر از ${toFaDigits(RULES.PASSWORD_MAX)} کاراکتر باشد`;
-  if (!/[A-Za-z]/.test(pw) || !/\d/.test(pw)) return "رمز عبور باید حداقل یک حرف انگلیسی و یک عدد داشته باشد";
+  if (!/\d/.test(pw)) return "رمز عبور باید حداقل یک عدد داشته باشد";
 
   const mobileTail = (mobile.value || "").slice(1); // 9xxxxxxxxx
   if (mobileTail && pw.includes(mobileTail)) return "رمز عبور نباید شامل شماره موبایل شما باشد";
@@ -504,6 +502,19 @@ const goToForgetPassword = () => {
   formStep.value = "otp";
 };
 
+const editMobileNumber = () => {
+  formStep.value = "getMobile";
+  errors.mobile = "";
+  lastCheckedMobile.value = null; // با تغییر شماره دوباره از سرور بررسی می‌شود
+  verificationCode.value = false;
+  skipOtpSend.value = false;
+  otpAlreadySent.value = false;
+  if (otpInterval.value) {
+    clearInterval(otpInterval.value);
+    otpInterval.value = null;
+  }
+};
+
 /* =========================================================
  * Actions
  * ========================================================= */
@@ -580,14 +591,12 @@ function submitLogin() {
   })
     .then(async (response) => {
       if (response.code === 2000) {
-        customizer.token = response.token;
+        if (!setAuthToken(response.token)) {
+          toast.error("ورود انجام نشد: توکن معتبر از سرور دریافت نشد");
+          return;
+        }
         customizer.Set_Token(response.token);
         customizer.Set_Auth(true);
-        if (typeof localStorage !== "undefined") {
-          localStorage.setItem("g-auth-token", response.token);
-        } else if (typeof sessionStorage !== "undefined") {
-          sessionStorage.setItem("g-auth-token", response.token);
-        }
 
         const user = response?.userInfo ?? response?.User;
         if (user) {
@@ -686,21 +695,25 @@ const submitRegister = () => {
     verificationCode: verificationCode.value,
     password: password.value,
     callBackInfo: true,
+    callBackToken: true,
   })
     .then((response) => {
       switch (response.code) {
         case 2000: {
-          customizer.token = response.token;
-          customizer.Set_Token(response.token);
-          customizer.Set_Auth(true);
-          if (typeof localStorage !== "undefined") {
-            localStorage.setItem("g-auth-token", response.token);
-          } else if (typeof sessionStorage !== "undefined") {
-            sessionStorage.setItem("g-auth-token", response.token);
+          // اگر سرور توکن معتبر برنگرداند، کاربر را لاگین‌شده فرض نمی‌کنیم
+          if (!setAuthToken(response.token)) {
+            toast.success("ثبت‌نام انجام شد. لطفاً با رمز عبور خود وارد شوید.");
+            mobileExist.value = true;
+            lastCheckedMobile.value = mobile.value;
+            password.value = "";
+            password_confirm.value = "";
+            formStep.value = "password";
+            break;
           }
 
-          customizer.userInfo = response?.userInfo ?? response?.User ?? {};
-          customizer.auth = true;
+          customizer.Set_Token(response.token);
+          customizer.Set_Auth(true);
+          customizer.userInfo = response?.userInfo ?? response?.User ?? [];
 
           toast.success("ثبت‌نام با موفقیت انجام شد");
 
@@ -751,23 +764,18 @@ const verificationCodePassedForget = (e) => {
 };
 
 const getUserInfo = () => {
-  let token = "";
-  if (typeof localStorage !== "undefined") token = localStorage.getItem("g-auth-token");
-  else if (typeof sessionStorage !== "undefined") token = sessionStorage.getItem("g-auth-token");
-  if (!token) return;
+  if (!getAuthToken()) return;
 
   useGarnetApiFetch("users/userInfo")
     .then((response) => {
+      // 401 به‌صورت سراسری در useGarnetApiFetch هندل می‌شود (خروج + پاک کردن توکن)
+      if (isUnauthorizedResponse(response)) return;
+
       const user = response?.User ?? response?.userInfo;
-      if (!user) {
-        throw new Error(response?.error?.message || "اطلاعات کاربر دریافت نشد");
-      }
+      if (!user) return;
 
       if (user.status === 0) {
-        customizer.userInfo = [];
-        customizer.auth = false;
-        localStorage.removeItem("g-auth-token");
-        sessionStorage.removeItem("g-auth-token");
+        authLogout();
       } else {
         customizer.userInfo = user;
         customizer.auth = true;
@@ -948,7 +956,7 @@ const submitProfile = () => {
                 :key="`otp-forget-${otpKey}`"
                 :fields="5"
                 :target="mobile"
-                :call-back-token="!changePass"
+                :call-back-token="false"
                 send-type="ByMobile"
                 :skip-initial-send="skipOtpSend"
                 :timer-value="otpTimer"
@@ -960,7 +968,7 @@ const submitProfile = () => {
                 :key="`otp-login-${otpKey}`"
                 :fields="5"
                 :target="mobile"
-                :call-back-token="!changePass"
+                :call-back-token="mobileExist"
                 send-type="ByMobile"
                 :with-cart="false"
                 :skip-initial-send="skipOtpSend"
@@ -1068,6 +1076,21 @@ const submitProfile = () => {
 
           <!-- تکمیل مشخصات (فقط کاربر جدید) -->
           <div v-else-if="formStep === 'profile'" key="profile" class="px-7 pb-8 pt-2">
+            <button
+              type="button"
+              class="mb-5 flex w-full items-center justify-between rounded-2xl border border-ink/10 bg-ink/[0.03] px-4 py-3 text-right transition-colors hover:border-accent/30 hover:bg-accent/5"
+              @click="editMobileNumber"
+            >
+              <span class="flex items-center gap-2 text-xs text-inkSoft">
+                <Icon name="tabler:device-mobile" class="text-[16px]" />
+                <span dir="ltr" class="font-medium text-ink">{{ mobile }}</span>
+              </span>
+              <span class="flex items-center gap-1 text-xs font-medium text-accent">
+                <Icon name="tabler:edit" class="text-[14px]" />
+                ویرایش شماره
+              </span>
+            </button>
+
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <input
@@ -1177,6 +1200,21 @@ const submitProfile = () => {
 
           <!-- 4) تعیین / تغییر رمز عبور -->
           <div v-else-if="formStep === 'changePassword'" key="changePassword" class="px-7 pb-8 pt-5">
+            <button
+              v-if="!mobileExist"
+              type="button"
+              class="mb-5 flex w-full items-center justify-between rounded-2xl border border-ink/10 bg-ink/[0.03] px-4 py-3 text-right transition-colors hover:border-accent/30 hover:bg-accent/5"
+              @click="editMobileNumber"
+            >
+              <span class="flex items-center gap-2 text-xs text-inkSoft">
+                <Icon name="tabler:device-mobile" class="text-[16px]" />
+                <span dir="ltr" class="font-medium text-ink">{{ mobile }}</span>
+              </span>
+              <span class="flex items-center gap-1 text-xs font-medium text-accent">
+                <Icon name="tabler:edit" class="text-[14px]" />
+                ویرایش شماره
+              </span>
+            </button>
             <div class="mb-3">
               <div class="relative">
                 <span class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-inkSoft/60">

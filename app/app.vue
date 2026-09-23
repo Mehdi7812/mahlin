@@ -15,29 +15,14 @@ import 'vue-sonner/style.css';
 
 const customizer = useCustomizerStore();
 
-// ─── logout ──────────────────────────────────────────────
-function logout() {
-  if (import.meta.client) {
-    localStorage.removeItem('g-auth-token');
-    sessionStorage.removeItem('g-auth-token');
-  }
-  customizer.auth     = false;
-  customizer.userInfo = null;
-}
-
 // ─── دریافت اطلاعات کاربر ────────────────────────────────
 async function getUserInfo() {
   if (!import.meta.client) return;
 
   customizer.userInfoLoading = true;
 
-  const token =
-    localStorage.getItem('g-auth-token') ||
-    sessionStorage.getItem('g-auth-token') ||
-    null;
-
-  // توکن نداره — مطمئناً لاگین نیست
-  if (!token) {
+  // توکن نداره (یا خرابه) — مطمئناً لاگین نیست
+  if (!getAuthToken()) {
     customizer.auth = false;
     customizer.userInfoLoading = false;
     return;
@@ -45,20 +30,22 @@ async function getUserInfo() {
 
   try {
     const response = await useGarnetApiFetch('users/userInfo');
+
+    // 401 (توکن نامعتبر) داخل useGarnetApiFetch هندل شده: توکن پاک و در صورت نیاز ریدایرکت
+    if (isUnauthorizedResponse(response)) return;
+
     const user = response?.User ?? response?.userInfo;
 
     if (user?.status === 0) {
       // حساب غیرفعاله
-      logout();
+      authLogout();
     } else if (user) {
       customizer.userInfo  = user;
       customizer.auth      = true;
-      // customizer.cartCount = response.User.invoice_count;
-    } else {
-      logout();
     }
-  } catch {
-    logout();
+    // خطای شبکه/سرور: توکن را نگه می‌داریم؛ قطعی موقت اینترنت نباید کاربر را خارج کند
+  } catch (error) {
+    console.error('[app] getUserInfo failed', error);
   } finally {
     customizer.userInfoLoading = false;
   }
@@ -68,4 +55,4 @@ async function getUserInfo() {
 onMounted(() => {
   getUserInfo();
 });
-</script>
+</script>

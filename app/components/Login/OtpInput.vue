@@ -118,22 +118,21 @@ function CheckVerificationCode(inputCode) {
     prefixMobile: props.prefixMobile,
     withUsername: props.withUsername,
     withEmail: props.sendType === "ByEmail",
-    callBackInfo: false,
-    callBackToken: false,
+    // فقط وقتی والد واقعاً لاگین با OTP می‌خواهد، توکن درخواست می‌شود
+    callBackInfo: props.callBackToken || props.callBackInfo,
+    callBackToken: props.callBackToken,
     verifyAccount: true,
   })
     .then((response) => {
       if (response.code === 2000) {
-        if (props.callBackToken) {
-          customizer.userInfo = response.userInfo;
+        // قبلاً این‌جا حتی بدون توکن، مقدار "undefined" در localStorage ذخیره
+        // و auth = true می‌شد؛ یعنی کاربرِ در حال ثبت‌نام «لاگین» حساب می‌شد.
+        if (props.callBackToken && setAuthToken(response.token)) {
+          customizer.Set_Token(response.token);
           customizer.auth = true;
-          if (typeof localStorage !== "undefined") {
-            localStorage.setItem("g-auth-token", response.token);
-          } else if (typeof sessionStorage !== "undefined") {
-            sessionStorage.setItem("g-auth-token", response.token);
-          }
+          if (response.userInfo) customizer.userInfo = response.userInfo;
         }
-        if (props.callBackInfo) customizer.userInfo = response.userInfo;
+        if (props.callBackInfo && response.userInfo) customizer.userInfo = response.userInfo;
         if (props.withCart) getCartCount();
 
         /* --- نمایش انیمیشن موفقیت قبل از emit --- */
@@ -495,4 +494,4 @@ const isTimerLow = computed(() => props.timerValue > 0 && props.timerValue <= 30
   opacity: 0;
   transform: scale(0.9);
 }
-</style>
+</style>

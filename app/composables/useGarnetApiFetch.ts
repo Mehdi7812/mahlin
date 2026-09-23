@@ -5,31 +5,40 @@ export const useGarnetApiFetch = async <T = any>(
 ): Promise<any> => {
     const config = useRuntimeConfig()
     const baseUrl = config.public.apiBase
-    const token =
-        typeof localStorage !== 'undefined'
-            ? localStorage.getItem('g-auth-token')
-            : typeof sessionStorage !== 'undefined'
-                ? sessionStorage.getItem('g-auth-token')
-                : null
+    // کانتکست Nuxt را قبل از await نگه می‌داریم تا بعداً navigateTo و استور کار کنند
+    const nuxtApp = tryUseNuxtApp()
+    const token = getAuthToken()
 
-    const headers = Object.fromEntries(
-        Object.entries({
-            'g-platform': 'Garnet-Build-v4',
-            'g-api-key': 'AEbk35zB9YfSqw8u9mjH7ykNK4xq2Yq5',
-            "Authorization": "Bearer " + token,
-            ...(isForm ? {} : { 'Content-Type': 'application/json' })
-        }).filter(([_, value]) => value !== null)
-    ) as HeadersInit
+    const headers: Record<string, string> = {
+        'g-platform': 'Garnet-Build-v4',
+        'g-api-key': 'AEbk35zB9YfSqw8u9mjH7ykNK4xq2Yq5',
+    }
+    // قبلاً بدون توکن هم "Bearer null" ارسال می‌شد
+    if (token) headers.Authorization = `Bearer ${token}`
+    if (!isForm) headers['Content-Type'] = 'application/json'
+
+    const onUnauthorized = () => {
+        if (nuxtApp) nuxtApp.runWithContext(() => handleUnauthorized())
+        else handleUnauthorized()
+    }
 
     try {
-        return await $fetch<T>(url, {
+        const response = await $fetch<T>(url, {
             method: 'POST',
             baseURL: baseUrl,
             body,
             headers,
         })
-    } catch (error) {
+        // سرور ممکن است 401 را با HTTP 200 داخل body برگرداند
+        if (isUnauthorizedResponse(response)) onUnauthorized()
+        return response
+    } catch (error: any) {
         console.error('Garnet API Error:', error)
+        // یا با HTTP 401 که $fetch آن را throw می‌کند
+        if (error?.status === 401 || error?.statusCode === 401 || isUnauthorizedResponse(error?.data)) {
+            onUnauthorized()
+            return { data: null, error, ...(error?.data ?? {}), code: 401 }
+        }
         return { data: null, error }
     }
 }

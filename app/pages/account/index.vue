@@ -347,10 +347,8 @@ async function loadCurrentUser() {
   try {
     const response = await useGarnetApiFetch('users/userInfo');
 
-    if (response?.code === 401) {
-      logoutAndRedirect();
-      return;
-    }
+    // 401 به‌صورت سراسری هندل می‌شود (خروج + انتقال به لاگین)
+    if (isUnauthorizedResponse(response)) return;
 
     const user = response?.User ?? response?.userInfo;
 
@@ -361,14 +359,6 @@ async function loadCurrentUser() {
   } catch (error) {
     console.error('[Account Dashboard] Could not load user info', error);
   }
-}
-
-function logoutAndRedirect() {
-  customizer.userInfo = [];
-  customizer.auth = false;
-  if (typeof localStorage !== 'undefined') localStorage.removeItem('g-auth-token');
-  if (typeof sessionStorage !== 'undefined') sessionStorage.removeItem('g-auth-token');
-  router.push('/login');
 }
 
 const userInitial = computed(() => (currentUser.value.full_name || 'م').trim().charAt(0));
@@ -524,4 +514,4 @@ const quickLinks = [
   { to: '/account/addresses', title: 'آدرس‌های من', desc: 'مدیریت آدرس‌های تحویل', icon: 'tabler:map-pin', bg: 'rgba(143,193,217,0.16)', color: '#6BA5C4' },
   { to: '/account/profile', title: 'اطلاعات حساب', desc: 'ویرایش مشخصات فردی', icon: 'tabler:user', bg: 'rgba(162,132,102,0.14)', color: '#A28466' },
 ];
-</script>
+</script>

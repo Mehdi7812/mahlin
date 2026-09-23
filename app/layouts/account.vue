@@ -61,15 +61,8 @@ const logoutDialog = ref(false);
 const router = useRouter();
 
 function logout() {
-  if (import.meta.client) {
-    localStorage.removeItem('g-auth-token');
-    sessionStorage.removeItem('g-auth-token');
-  }
-  customizer.auth = false;
-  customizer.userInfo = null;
-  customizer.cartCount = 0;
   logoutDialog.value = false;
-  router.push('/');
+  authLogout({ redirectTo: '/' });
 }
 </script>
 
