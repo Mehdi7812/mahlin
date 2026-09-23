@@ -63,14 +63,6 @@
     <!-- هدر -->
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div>
-        <span
-          class="flex items-center gap-1.5 text-[12px] font-bold px-3 py-1.5 rounded-full w-fit"
-          :class="[meta.bg, meta.text]"
-        >
-          <span class="w-1.5 h-1.5 rounded-full" :class="meta.dot" />
-          {{ meta.label }}
-        </span>
-        
         <h2 class="font-display text-xl md:text-2xl text-ink flex items-center gap-2 flex-wrap">
           سفارش
           <span class="font-latin text-accent" dir="ltr">{{ order.code }}</span>
@@ -92,12 +84,24 @@
     >
       <div class="mb-5 flex items-center justify-between gap-4">
         <div>
-          <h3 class="flex items-center gap-2 text-[14px] font-bold text-ink">
-            <Icon name="tabler:route" class="text-accent" />
-            مراحل سفارش
-          </h3>
+          <div class="flex gap-3">
+            <h3 class="flex items-center gap-2 text-[14px] font-bold text-ink">
+              <Icon name="tabler:route" class="text-accent" />
+              مراحل سفارش
+            </h3>
+
+            <span
+              class="flex items-center gap-1.5 text-[12px] font-bold px-3 py-1.5 rounded-full w-fit"
+              :class="[meta.bg, meta.text]"
+            >
+              <span class="w-1.5 h-1.5 rounded-full" :class="meta.dot" />
+              {{ meta.label }}
+            </span>
+          </div>
+
           <p class="mt-1 text-[11.5px] text-inkSoft">{{ currentStepLabel }}</p>
         </div>
+
         <span class="shrink-0 rounded-full bg-accent/10 px-3 py-1 text-[11px] font-bold text-accent">
           مرحله {{ faNumber(progressIndex + 1) }} از {{ faNumber(trackingSteps.length) }}
         </span>
@@ -156,7 +160,7 @@
         </div>
         <div class="divide-y divide-ink/[0.05]">
           <div v-for="(item, idx) in order.items" :key="idx" class="flex items-center gap-4 px-5 py-4">
-            <div class="w-16 h-16 shrink-0 rounded-xl bg-cream overflow-hidden">
+            <div class="w-16 h-16 shrink-0 rounded-xl bg-white border border-cream overflow-hidden">
               <img
                 :src="item.cover_image || '/assets/founder-portrait.png'"
                 class="w-full h-full object-contain p-2"
@@ -228,6 +232,20 @@
         >
           درخواست لغو سفارش
         </button> -->
+        <button
+          v-if="order.status === 'pending'"
+          type="button"
+          :disabled="payingNow"
+          @click="payNow"
+          class="w-full rounded-full bg-accent py-3 text-center text-[13px] font-bold text-cream transition-colors hover:bg-accentHover disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <span class="flex items-center justify-center gap-2">
+            <Icon v-if="payingNow" name="tabler:loader-2" class="animate-spin text-[15px]" />
+            <Icon v-else name="tabler:credit-card" class="text-[15px]" />
+            {{ payingNow ? 'در حال انتقال...' : 'تکمیل پرداخت' }}
+          </span>
+        </button>
+
         <button
           v-if="order.status === 'delivered'"
           type="button"
@@ -406,6 +424,14 @@ async function reorderItems() {
   } finally {
     reordering.value = false;
   }
+}
+
+const payingNow = ref(false);
+
+function payNow() {
+  if (!order.value || payingNow.value) return;
+  payingNow.value = true;
+  navigateTo({ path: '/cart', query: { invoice_id: order.value.id } });
 }
 
 // شماره موبایل را با اعداد فارسی نمایش می‌دهد

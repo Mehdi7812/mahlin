@@ -130,7 +130,7 @@ function onKeydown(e: KeyboardEvent) {
             ? 'border-red-300 bg-red-50/50 ring-4 ring-red-100'
             : isOpen
               ? 'border-gold bg-white ring-4 ring-gold/10 shadow-sm'
-              : 'border-ink/10 bg-card hover:border-gold/40 hover:bg-cardLight',
+              : 'border-ink/10 bg-white hover:border-gold/40 hover:bg-card',
           disabled
             ? 'cursor-not-allowed opacity-50'
             : 'cursor-pointer',

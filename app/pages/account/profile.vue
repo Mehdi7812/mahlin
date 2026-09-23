@@ -61,11 +61,11 @@
           <form class="grid sm:grid-cols-2 gap-4" @submit.prevent="saveProfile">
             <div class="flex flex-col gap-1.5">
               <label class="text-[12px] font-bold text-inkSoft">نام</label>
-              <input v-model="form.first_name" type="text" class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors" />
+              <input v-model="form.first_name" type="text" class="p-3.5 rounded-xl border border-ink/15 bg-white text-[13px] outline-none focus:border-accent transition-colors" />
             </div>
             <div class="flex flex-col gap-1.5">
               <label class="text-[12px] font-bold text-inkSoft">نام خانوادگی</label>
-              <input v-model="form.last_name" type="text" class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors" />
+              <input v-model="form.last_name" type="text" class="p-3.5 rounded-xl border border-ink/15 bg-white text-[13px] outline-none focus:border-accent transition-colors" />
             </div>
             <div class="flex flex-col gap-1.5">
               <label class="text-[12px] font-bold text-inkSoft">شماره موبایل</label>
@@ -87,7 +87,7 @@
                     readonly
                     :value="birthDateDisplay"
                     placeholder="۱۳۷۰/۰۱/۰۱"
-                    class="w-full p-3.5 pl-10 rounded-xl border border-ink/15 bg-cream text-[13px] text-ink outline-none focus:border-accent transition-colors cursor-pointer"
+                    class="w-full p-3.5 pl-10 rounded-xl border border-ink/15 bg-white text-[13px] text-ink outline-none focus:border-accent transition-colors cursor-pointer"
                   />
                   <Icon
                     name="tabler:calendar-event"
@@ -112,7 +112,7 @@
                     :value="form.birth_date"
                     placeholder="۱۳۷۰/۰۱/۰۱"
                     disabled
-                    class="w-full p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none opacity-70"
+                    class="w-full p-3.5 rounded-xl border border-ink/15 bg-white text-[13px] outline-none opacity-70"
                   />
                 </template>
               </ClientOnly>
@@ -120,7 +120,7 @@
   
             <div class="flex flex-col gap-1.5">
               <label class="text-[12px] font-bold text-inkSoft">کد ملی</label>
-              <input v-model="form.national_code" type="text" inputmode="numeric" maxlength="10" dir="ltr" class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors" />
+              <input v-model="form.national_code" type="text" inputmode="numeric" maxlength="10" dir="ltr" class="p-3.5 rounded-xl border border-ink/15 bg-white text-[13px] outline-none focus:border-accent transition-colors" />
             </div>
   
             <div class="flex flex-col gap-1.5">
@@ -128,7 +128,7 @@
               <div class="relative">
                 <button
                   type="button"
-                  class="flex w-full items-center justify-between gap-3 rounded-xl border border-ink/15 bg-cream px-3.5 py-3 text-[13px] text-ink outline-none transition-colors hover:border-accent"
+                  class="flex w-full items-center justify-between gap-3 rounded-xl border border-ink/15 bg-white px-3.5 py-3 text-[13px] text-ink outline-none transition-colors hover:border-accent"
                   @click="genderMenuOpen = !genderMenuOpen"
                 >
                   <span>{{ selectedGenderLabel }}</span>
@@ -164,7 +164,7 @@
             </div>
             <!-- <div class="flex flex-col gap-1.5 sm:col-span-2">
               <label class="text-[12px] font-bold text-inkSoft">نوع پوست</label>
-              <select v-model="form.skin_type" class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors">
+              <select v-model="form.skin_type" class="p-3.5 rounded-xl border border-ink/15 bg-white text-[13px] outline-none focus:border-accent transition-colors">
                 <option value="normal">نرمال</option>
                 <option value="dry">خشک</option>
                 <option value="oily">چرب</option>
@@ -215,7 +215,7 @@
                   inputmode="numeric"
                   dir="ltr"
                   placeholder="IRXXXXXXXXXXXXXX"
-                  class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
+                  class="p-3.5 rounded-xl border border-ink/15 bg-white text-[13px] outline-none focus:border-accent transition-colors"
                 />
               </div>
             </div>
@@ -260,7 +260,7 @@
                     v-model="passwordForm.oldPassword"
                     type="password"
                     placeholder="رمز عبور فعلی"
-                    class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
+                    class="p-3.5 rounded-xl border border-ink/15 bg-white text-[13px] outline-none focus:border-accent transition-colors"
                   />
                 </div>
                 <div class="flex flex-col gap-1.5">
@@ -269,7 +269,7 @@
                     v-model="passwordForm.password"
                     type="password"
                     placeholder="حداقل ۶ کاراکتر"
-                    class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
+                    class="p-3.5 rounded-xl border border-ink/15 bg-white text-[13px] outline-none focus:border-accent transition-colors"
                   />
                 </div>
                 <div class="flex flex-col gap-1.5">
@@ -278,7 +278,7 @@
                     v-model="passwordForm.confirmPassword"
                     type="password"
                     placeholder="حداقل ۶ کاراکتر"
-                    class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
+                    class="p-3.5 rounded-xl border border-ink/15 bg-white text-[13px] outline-none focus:border-accent transition-colors"
                   />
                 </div>
               </div>
@@ -325,7 +325,7 @@
                     v-model="forgotPasswordForm.password"
                     type="password"
                     placeholder="حداقل ۶ کاراکتر"
-                    class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
+                    class="p-3.5 rounded-xl border border-ink/15 bg-white text-[13px] outline-none focus:border-accent transition-colors"
                   />
                 </div>
                 <div class="flex flex-col gap-1.5">
@@ -334,7 +334,7 @@
                     v-model="forgotPasswordForm.confirmPassword"
                     type="password"
                     placeholder="تکرار رمز عبور جدید"
-                    class="p-3.5 rounded-xl border border-ink/15 bg-cream text-[13px] outline-none focus:border-accent transition-colors"
+                    class="p-3.5 rounded-xl border border-ink/15 bg-white text-[13px] outline-none focus:border-accent transition-colors"
                   />
                 </div>
     

@@ -776,7 +776,7 @@ onUnmounted(() => clearInterval(pollInterval));
   width: 100%;
   border-radius: 0.85rem;
   border: 1px solid rgb(63 55 51 / 0.12);
-  background: var(--color-cream, #fbf8f3);
+  background: white;
   padding: 0.8rem 1rem;
   font-size: 13px;
   outline: none;

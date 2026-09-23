@@ -73,7 +73,7 @@ function getProducts() {
     filterFavorite: true,
   };
 
-  useGarnetApiFetch('Products/indexWithImagesAuth', sendData)
+  useGarnetApiFetch('products/indexWithImagesAuth', sendData)
     .then((response) => {
       if (!response?.Products && response?.error) throw response.error;
       favorites.value = response?.Products || [];

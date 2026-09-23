@@ -326,18 +326,21 @@ const infoError = ref<string | null>(null)
 function goToPayment() {
   infoError.value = null
   if (hasShippable.value && !selectedAddress.value) {
-    infoError.value = 'لطفا آدرس را انتخاب نمایید'
+    // infoError.value = 'لطفا آدرس را انتخاب نمایید'
+    toast.warning("لطفا آدرس را انتخاب نمایید")
     return
   }
   if (hasShippable.value && !selectedShippingMethod.value) {
-    infoError.value = 'لطفا نحوه ارسال را انتخاب نمایید'
+    // infoError.value = 'لطفا نحوه ارسال را انتخاب نمایید';
+    toast.warning("لطفا روش ارسال را انتخاب نمایید")
     return
   }
   const hasAvailableTimeSlot = deliveryDays.value.some((day: any) =>
-    day.times?.some((slot: any) => !slot.isDisabled),
-  )
-  if (hasShippable.value && hasAvailableTimeSlot && !selectedTimeSlot.value) {
-    infoError.value = 'لطفا زمان ارسال را انتخاب نمایید'
+  day.times?.some((slot: any) => !slot.isDisabled),
+)
+if (hasShippable.value && hasAvailableTimeSlot && !selectedTimeSlot.value) {
+  // infoError.value = 'لطفا زمان ارسال را انتخاب نمایید'
+  toast.warning("لطفا زمان ارسال را انتخاب نمایید")
     return
   }
   completed.info = true
@@ -408,8 +411,8 @@ function getUserAddress() {
     .then((response: any) => {
       addresses.value = response.UserAddress || []
       if (!addresses.value.length) {
-        openNewAddressForm()
-        openAddressModal(1)
+        // openNewAddressForm()
+        // openAddressModal(1)
       } else {
         const def = addresses.value.find((a: any) => a.is_default === 1)
         selectedAddressId.value = (def ?? addresses.value[0]).id
@@ -877,7 +880,8 @@ function submitOrder() {
           openUserInfoDialog()
           return
         }
-        paymentError.value = t(response.error || response.msg || 'ثبت سفارش با خطا مواجه شد')
+        paymentError.value = t(response.error || response.msg || 'ثبت سفارش با خطا مواجه شد');
+        toast.error(t(response.error || response.msg || 'ثبت سفارش با خطا مواجه شد'))
         return
       }
       const gatewayTitle = response.GatewayTitle
@@ -892,12 +896,14 @@ function submitOrder() {
       ) {
         window.location.replace(paymentUrl)
       } else {
-        submitting.value = false
-        paymentError.value = 'درگاه پرداخت پشتیبانی نمی‌شود'
+        submitting.value = false;
+        toast.error('درگاه پرداخت پشتیبانی نمی‌شود');
+        paymentError.value = 'درگاه پرداخت پشتیبانی نمی‌شود';
       }
     })
     .catch((error: any) => {
       submitting.value = false
+      toast.error(t(error) || 'ثبت سفارش با خطا مواجه شد');
       paymentError.value = t(error) || 'ثبت سفارش با خطا مواجه شد'
     })
 }
@@ -1330,12 +1336,12 @@ const primaryDisabled = computed(() => {
                   </p>
                 </div>
 
-                <div class="flex justify-end border-t border-line p-4 sm:p-5">
+                <!-- <div class="flex justify-end border-t border-line p-4 sm:p-5">
                   <UiBaseButton :disabled="emptyCart" class="group w-full sm:w-auto" @click="goToInfo">
                     تایید و تکمیل سفارش
                     <Icon name="tabler:arrow-left" class="mr-1.5 transition-transform group-hover:-translate-x-1" />
                   </UiBaseButton>
-                </div>
+                </div> -->
               </div>
 
               <!-- ============= STEP 2: INFO ============= -->
@@ -1373,9 +1379,18 @@ const primaryDisabled = computed(() => {
                       گیرنده: {{ selectedAddress.receiver_full_name }} - {{ selectedAddress.receiver_mobile }}
                     </p>
                   </div>
+
                   <div v-else class="rounded-2xl border border-dashed border-line p-6 text-center">
                     <Icon name="tabler:map-pin-off" class="mx-auto text-[28px] text-ink-faint" />
                     <p class="mt-2 text-[13px] text-ink-muted">هنوز آدرسی ثبت نکرده‌اید</p>
+                    <button
+                      type="button"
+                      class="mx-auto mt-4 flex items-center gap-1.5 rounded-full bg-gold px-4 py-2 text-[13px] font-bold text-white transition hover:bg-gold-deep"
+                      @click="startAddNewAddress"
+                    >
+                      <Icon name="tabler:plus" class="text-[14px]" />
+                      افزودن آدرس جدید
+                    </button>
                   </div>
                 </div>
 
@@ -1479,13 +1494,9 @@ const primaryDisabled = computed(() => {
                   </p>
                 </Transition>
 
-                <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+                <div class="flex">
                   <UiBaseButton variant="secondary" class="w-full sm:w-auto" @click="backToCart">
                     <Icon name="tabler:arrow-right" class="ml-1.5" /> بازگشت
-                  </UiBaseButton>
-                  <UiBaseButton class="group w-full sm:w-auto" @click="goToPayment">
-                    ذخیره و ادامه
-                    <Icon name="tabler:arrow-left" class="mr-1.5 transition-transform group-hover:-translate-x-1" />
                   </UiBaseButton>
                 </div>
               </div>
@@ -1587,18 +1598,9 @@ const primaryDisabled = computed(() => {
                   </p>
                 </Transition>
 
-                <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+                <div class="flex">
                   <UiBaseButton variant="secondary" class="w-full sm:w-auto" @click="backToInfo">
                     <Icon name="tabler:arrow-right" class="ml-1.5" /> بازگشت
-                  </UiBaseButton>
-                  <UiBaseButton
-                    :disabled="paymentMethod?.pp_d1 === 'walletPayment' && walletShortfall !== 0"
-                    :loading="submitting"
-                    class="w-full sm:w-auto"
-                    @click="submitOrder"
-                  >
-                    {{ paymentMethod?.pp_d1 === 'offlinePayment' ? 'ثبت سفارش' : 'پرداخت و ثبت سفارش' }}
-                    <Icon name="tabler:check" class="mr-1.5" />
                   </UiBaseButton>
                 </div>
               </div>
@@ -1699,13 +1701,17 @@ const primaryDisabled = computed(() => {
                 </div>
 
                 <UiBaseButton
-                  v-if="step === 'cart'"
-                  :disabled="emptyCart"
-                  class="mt-4 hidden w-full lg:flex"
-                  @click="goToInfo"
+                  class="group mt-4 hidden w-full lg:flex"
+                  :disabled="primaryDisabled"
+                  :loading="step === 'payment' && submitting"
+                  @click="primaryAction"
                 >
-                  تایید و تکمیل سفارش
-                  <Icon name="tabler:arrow-left" class="mr-1.5" />
+                  {{ primaryLabel }}
+                  <Icon
+                    :name="step === 'payment' ? 'tabler:check' : 'tabler:arrow-left'"
+                    class="mr-1.5 transition-transform"
+                    :class="step !== 'payment' && 'group-hover:-translate-x-1'"
+                  />
                 </UiBaseButton>
 
                 <div class="mt-4 flex items-center justify-center gap-4 border-t border-line pt-3">
@@ -1918,10 +1924,15 @@ const primaryDisabled = computed(() => {
                     </div>
                   </Transition>
 
-                  <p class="flex items-center justify-center gap-1.5 text-center text-micro text-ink-faint">
-                    <Icon name="tabler:truck" class="text-[13px]" />
-                    مرسوله‌های شما به این موقعیت ارسال خواهد شد.
-                  </p>
+                  <!-- <div class="group flex items-center justify-center gap-2 rounded-xl border border-gold/15 bg-gold/5 px-4 py-3 transition-all duration-300 hover:border-gold/30 hover:bg-gold/[0.08]">
+                    <Icon 
+                      name="tabler:truck-delivery" 
+                      class="text-[16px] text-gold transition-transform duration-300 group-hover:-translate-x-0.5" 
+                    />
+                    <p class="text-micro leading-relaxed text-ink-muted">
+                      محصولات شما با دقت و امنیت به این آدرس ارسال خواهد شد
+                    </p>
+                  </div> -->
 
                   <div class="flex justify-end gap-2 border-t border-line pt-4">
                     <UiBaseButton :loading="savingAddress" @click="saveAddress">ثبت آدرس</UiBaseButton>

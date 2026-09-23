@@ -161,7 +161,7 @@ onMounted(loadAddresses)
 </script>
 
 <style scoped>
-.address-field { width: 100%; border-radius: 0.75rem; border: 1px solid rgb(63 55 51 / 0.15); background: var(--color-cream, #fbf8f3); padding: 0.875rem; font-size: 13px; outline: none; }
+.address-field { width: 100%; border-radius: 0.75rem; border: 1px solid rgb(63 55 51 / 0.15); background: white; padding: 0.875rem; font-size: 13px; outline: none; }
 .address-field:focus { border-color: var(--color-accent, #a28466); }
 .address-field-error { border-color: #e11d48; }
 .address-error { margin-top: 0.35rem; font-size: 12px; color: #e11d48; }

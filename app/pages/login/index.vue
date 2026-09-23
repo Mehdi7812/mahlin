@@ -19,7 +19,7 @@ const RULES = {
   PASSWORD_MAX: 64,
   NAME_MIN: 2,
   NAME_MAX: 40,
-  MIN_AGE: 18,
+  MIN_AGE: 0,
   MAX_AGE: 100,
 };
 
@@ -324,7 +324,7 @@ const validateProfile = () => {
 
   errors.first_name = validateName(profileForm.first_name, "نام");
   errors.last_name = validateName(profileForm.last_name, "نام خانوادگی");
-  errors.national_code = validateNationalCode(profileForm.national_code);
+  errors.national_code = profileForm.national_code ? validateNationalCode(profileForm.national_code) : "";
   errors.birth_date = validateBirthDate(profileForm.birth_date);
   errors.terms = acceptedTerms.value ? "" : "برای ادامه باید قوانین و شرایط را بپذیرید";
 
@@ -1107,7 +1107,7 @@ const submitProfile = () => {
                 inputmode="numeric"
                 autocomplete="off"
                 dir="ltr"
-                placeholder="کد ملی"
+                placeholder="کد ملی (اختیاری)"
                 class="w-full rounded-2xl border bg-white/70 py-3.5 px-4 text-sm text-ink outline-none transition-all duration-200 placeholder:text-inkSoft/50"
                 :class="errors.national_code ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-ink/10 focus:border-accent focus:ring-4 focus:ring-accent/10'"
                 :aria-invalid="!!errors.national_code"

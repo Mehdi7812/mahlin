@@ -315,6 +315,7 @@ import { computed, onMounted, ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { USER, ORDERS, ORDER_STATUS_META, LOYALTY } from '~/data/account';
 import { money, faNumber, faDate, faDateShort } from '~/utils/format.ts';
+const router = useRouter();
 
 const { t } = useI18n();
 
@@ -345,6 +346,12 @@ async function loadCurrentUser() {
 
   try {
     const response = await useGarnetApiFetch('users/userInfo');
+
+    if (response?.code === 401) {
+      logoutAndRedirect();
+      return;
+    }
+
     const user = response?.User ?? response?.userInfo;
 
     if (user) {
@@ -354,6 +361,14 @@ async function loadCurrentUser() {
   } catch (error) {
     console.error('[Account Dashboard] Could not load user info', error);
   }
+}
+
+function logoutAndRedirect() {
+  customizer.userInfo = [];
+  customizer.auth = false;
+  if (typeof localStorage !== 'undefined') localStorage.removeItem('g-auth-token');
+  if (typeof sessionStorage !== 'undefined') sessionStorage.removeItem('g-auth-token');
+  router.push('/login');
 }
 
 const userInitial = computed(() => (currentUser.value.full_name || 'م').trim().charAt(0));

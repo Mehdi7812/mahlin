@@ -2,9 +2,6 @@
   <div class="flex flex-col gap-5">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <h2 class="font-display text-xl md:text-2xl text-ink">کیف پول</h2>
-      <div class="rounded-full bg-sageLight px-3 py-1.5 text-[11px] font-bold text-sage">
-        {{ wallets.length ? 'تومان' : 'بدون ارز' }}
-      </div>
     </div>
 
     <div v-if="loading" class="grid gap-4 md:grid-cols-2" aria-busy="true">
@@ -15,34 +12,40 @@
       </div>
     </div>
 
-    <div v-else-if="selectedWallet" class="rounded-[22px] border border-ink/[0.06] bg-cardLight p-5 sm:p-6">
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex items-center gap-3">
-          <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-sageLight text-sage">
-            <Icon name="tabler:wallet" class="text-[18px]" />
-          </span>
-          <p class="text-[11px] text-inkSoft">موجودی کنونی</p>
-          <p class="font-latin text-[28px] font-bold text-ink">{{ money(selectedWallet.balance) }}</p>
+    <div v-else-if="selectedWallet" class="relative overflow-hidden rounded-[22px] border border-ink/[0.06] bg-cardLight p-5 sm:p-6">
+      <!-- دکوراسیون پس‌زمینه -->
+      <div class="pointer-events-none absolute -left-10 -top-10 h-40 w-40 rounded-full bg-sage/10 blur-3xl"></div>
+
+      <div class="relative flex items-start gap-4">
+        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sageLight text-sage">
+          <Icon name="tabler:wallet" class="text-[20px]" />
+        </span>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2">
+            <p class="text-[12px] font-bold text-inkSoft">موجودی کیف پول</p>
+            <!-- <span v-if="selectedWallet.currency_name" class="rounded-full bg-ink/5 px-2 py-0.5 text-[10px] font-bold text-inkSoft">
+              {{ selectedWallet.currency_name }}
+            </span> -->
+          </div>
+          <p class="mt-1.5 flex items-baseline gap-1.5">
+            <span class="font-latin text-[30px] font-black leading-none text-ink sm:text-[34px]">
+              {{ money(selectedWallet.balance) }}
+            </span>
+            <span class="text-[12.5px] font-bold text-sage">تومان</span>
+          </p>
         </div>
       </div>
 
       <!-- دکمه‌های واریز / برداشت -->
-      <div class="mt-5 flex flex-wrap gap-3">
-        <!-- <button
-          type="button"
-          class="flex flex-1 min-w-[140px] items-center justify-center gap-2 rounded-2xl bg-green-600 px-4 py-3 text-[13px] font-bold text-cream transition-opacity hover:opacity-90"
-          @click="openDepositDialog"
-        >
-          <Icon name="tabler:arrow-down" class="text-[16px]" />
-          واریز
-        </button> -->
+      <div class="relative mt-6 flex justify-end flex-wrap gap-3">
+        <!-- <button ... واریز ... /> -->
         <button
           type="button"
-          class="flex min-w-[140px] items-center justify-center gap-2 rounded-2xl bg-red-500 px-4 py-3 text-[13px] font-bold text-cream transition-opacity hover:opacity-90"
+          class="flex min-w-[140px] flex-1 items-center justify-center gap-2 rounded-2xl bg-red-500 px-4 py-3 text-[13px] font-bold text-cream transition-opacity hover:opacity-90 sm:flex-none"
           @click="openWithdrawDialog"
         >
           <Icon name="tabler:arrow-up" class="text-[16px]" />
-          برداشت
+          برداشت از کیف پول
         </button>
       </div>
     </div>
@@ -89,9 +92,9 @@
         </div>
       </div>
 
-      <div v-else-if="transactions.length" class="divide-y divide-ink/[0.05]">
+      <div v-else-if="orderedTransactions.length" class="divide-y divide-ink/[0.05]">
         <div
-          v-for="transaction in transactions"
+          v-for="transaction in orderedTransactions"
           :key="transaction.wallet_transactions_id || transaction.id"
           class="flex items-center gap-4 px-5 py-4"
         >
@@ -155,7 +158,7 @@
                 inputmode="numeric"
                 dir="ltr"
                 placeholder="0"
-                class="w-full p-3.5 rounded-xl border border-ink/15 bg-cream text-[14px] font-latin text-ink outline-none focus:border-accent transition-colors"
+                class="w-full p-3.5 rounded-xl border border-ink/15 bg-white text-[14px] font-latin text-ink outline-none focus:border-accent transition-colors"
                 @input="onDepositAmountInput"
                 @keyup.enter="increaseBalance"
               />
@@ -188,67 +191,90 @@
           <div class="relative max-h-[90vh] w-full max-w-[460px] overflow-y-auto rounded-[22px] border border-ink/[0.06] bg-cardLight p-6 shadow-2xl">
             <div class="mb-5 flex items-center justify-between">
               <h3 class="flex items-center gap-2 font-bold text-ink text-[15px]">
-                <Icon name="tabler:arrow-up" class="text-blush" />
+                <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-red-50 text-red-500">
+                  <Icon name="tabler:arrow-up" class="text-[15px]" />
+                </span>
                 برداشت از کیف پول
               </h3>
-              <button type="button" class="text-inkSoft transition-colors hover:text-ink" @click="closeWithdrawDialog">
+              <button type="button" class="grid h-8 w-8 place-items-center rounded-full text-inkSoft transition-colors hover:bg-ink/5 hover:text-ink" @click="closeWithdrawDialog">
                 <Icon name="tabler:x" class="text-[18px]" />
               </button>
             </div>
 
-            <div class="mb-5 rounded-2xl bg-sageLight p-4 text-center">
+            <button
+              type="button"
+              class="group mb-5 w-full rounded-2xl bg-sageLight p-4 text-center transition-colors hover:bg-sage/15"
+              @click="useMaxWithdrawAmount"
+            >
               <p class="text-[11.5px] font-bold text-sage">موجودی قابل برداشت</p>
-              <p class="mt-1 cursor-pointer font-latin text-[22px] font-bold text-ink" @click="useMaxWithdrawAmount">
+              <p class="mt-1 font-latin text-[24px] font-black text-ink">
                 {{ money(selectedWallet?.balance || 0) }}
+                <span class="text-[12px] font-bold text-inkSoft">تومان</span>
               </p>
-            </div>
+              <p class="mt-1.5 flex items-center justify-center gap-1 text-[10.5px] font-bold text-sage opacity-80 transition-opacity group-hover:opacity-100">
+                <Icon name="tabler:click" class="text-[12px]" />
+                برای برداشت کل موجودی لمس کنید
+              </p>
+            </button>
 
             <div class="mb-3 flex flex-col gap-1.5">
               <label class="text-[12px] font-bold text-inkSoft">شماره شبا</label>
-              <input
-                :value="irbIbanNumber"
-                type="text"
-                dir="ltr"
-                readonly
-                class="w-full p-3.5 rounded-xl border border-ink/10 bg-ink/[0.03] text-[13px] font-latin text-inkSoft outline-none"
-              />
+              <div class="relative">
+                <Icon name="tabler:building-bank" class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[15px] text-inkSoft" />
+                <input
+                  :value="irbIbanNumber"
+                  type="text"
+                  dir="ltr"
+                  readonly
+                  class="w-full rounded-xl border border-ink/10 bg-ink/[0.03] p-3.5 pr-10 text-[13px] font-latin text-inkSoft outline-none"
+                />
+              </div>
             </div>
 
             <div class="mb-5 grid grid-cols-2 gap-3">
               <div class="rounded-2xl border border-ink/10 bg-cream p-3.5">
-                <p class="mb-1 text-[11px] text-inkSoft">نام بانک</p>
-                <p class="text-[13px] font-bold text-ink">{{ irbBankName || '—' }}</p>
+                <p class="mb-1 flex items-center gap-1 text-[11px] text-inkSoft">
+                  <Icon name="tabler:building" class="text-[12px]" />
+                  نام بانک
+                </p>
+                <p class="text-[13px] font-bold text-ink line-clamp-1">{{ irbBankName || '—' }}</p>
               </div>
               <div class="rounded-2xl border border-ink/10 bg-cream p-3.5">
-                <p class="mb-1 text-[11px] text-inkSoft">صاحب حساب</p>
-                <p class="text-[13px] font-bold text-ink">{{ irbAccountName || '—' }}</p>
+                <p class="mb-1 flex items-center gap-1 text-[11px] text-inkSoft">
+                  <Icon name="tabler:user" class="text-[12px]" />
+                  صاحب حساب
+                </p>
+                <p class="text-[13px] font-bold text-ink line-clamp-1">{{ irbAccountName || '—' }}</p>
               </div>
             </div>
 
             <div class="flex flex-col gap-1.5">
               <label class="text-[12px] font-bold text-inkSoft">مبلغ برداشت (تومان)</label>
-              <input
-                :value="withdrawAmount"
-                type="text"
-                inputmode="numeric"
-                dir="ltr"
-                placeholder="0"
-                class="w-full p-3.5 rounded-xl border border-ink/15 bg-cream text-[14px] font-latin text-ink outline-none focus:border-accent transition-colors"
-                @input="onWithdrawAmountInput"
-              />
+              <div class="relative">
+                <Icon name="tabler:coin" class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[15px] text-inkSoft" />
+                <input
+                  :value="withdrawAmount"
+                  type="text"
+                  inputmode="numeric"
+                  dir="ltr"
+                  placeholder="0"
+                  class="w-full rounded-xl border border-ink/15 bg-white p-3.5 pr-10 text-[14px] font-latin text-ink outline-none transition-colors focus:border-accent"
+                  @input="onWithdrawAmountInput"
+                />
+              </div>
             </div>
 
-            <div class="mt-6 flex justify-end gap-2">
-              <button type="button" class="px-5 py-2.5 rounded-full border border-ink/10 text-[13px] font-bold text-inkSoft hover:bg-ink/5 transition-colors" @click="closeWithdrawDialog">
+            <div class="mt-6 flex flex-col-reverse gap-2.5 sm:flex-row sm:justify-end">
+              <button type="button" class="w-full rounded-full border border-ink/10 px-5 py-2.5 text-[13px] font-bold text-inkSoft transition-colors hover:bg-ink/5 sm:w-auto" @click="closeWithdrawDialog">
                 انصراف
               </button>
               <button
                 type="button"
                 :disabled="withdrawLoading"
-                class="px-6 py-2.5 rounded-full bg-red-500 text-white text-[13px] font-bold transition-opacity hover:opacity-90 disabled:opacity-60"
+                class="flex w-full items-center justify-center gap-1.5 rounded-full bg-red-500 px-6 py-2.5 text-[13px] font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-60 sm:w-auto"
                 @click="submitWithdraw"
               >
-                <Icon v-if="withdrawLoading" name="tabler:loader-2" class="ml-1 inline-block animate-spin" />
+                <Icon v-if="withdrawLoading" name="tabler:loader-2" class="animate-spin text-[15px]" />
                 ثبت درخواست برداشت
               </button>
             </div>
@@ -388,6 +414,14 @@ watch(selectedWalletId, (walletId) => {
   if (walletId) {
     loadTransactions(walletId);
   }
+});
+
+const orderedTransactions = computed(() => {
+  return [...transactions.value].sort((a, b) => {
+    const dateA = new Date(a.document_date || a.created_at || 0).getTime();
+    const dateB = new Date(b.document_date || b.created_at || 0).getTime();
+    return dateB - dateA; // نزولی: جدیدترین اول
+  });
 });
 
 /* ---------------- واریز / برداشت ---------------- */

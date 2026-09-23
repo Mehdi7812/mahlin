@@ -44,7 +44,7 @@
       >
         <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 border-b border-ink/[0.06] bg-ink/[0.015]">
           <div class="flex items-center gap-4 text-[12px] text-inkSoft">
-            <span class="flex items-center gap-1.5 font-bold text-ink font-latin" dir="ltr">
+            <span class="flex items-center gap-1.5 font-bold text-ink font-latin">
               <Icon name="tabler:receipt" class="text-[14px] text-accent" />
               {{ order.code }}
             </span>
@@ -67,49 +67,82 @@
           </span>
         </div>
 
-        <div class="p-5 flex flex-col sm:flex-row sm:items-center gap-4">
-          <div class="flex -space-x-3 rtl:space-x-reverse">
-            <div
-              v-for="(item, idx) in order.items.slice(0, 4)"
-              :key="idx"
-              class="w-14 h-14 rounded-xl bg-cream border-2 border-cardLight overflow-hidden shrink-0"
-            >
-              <img
-                :src="item.cover_image || '/assets/founder-portrait.png'"
-                class="w-full h-full object-contain p-1.5"
-                alt=""
-                @error="(event) => { event.target.src = '/assets/founder-portrait.png'; event.target.onerror = null }"
-              />
+        <div class="p-5 flex flex-col gap-4">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+            <!-- تصاویر محصولات -->
+            <div class="flex items-center gap-3 sm:shrink-0">
+              <div class="flex -space-x-3 rtl:space-x-reverse">
+                <div
+                  v-for="(item, idx) in order.items.slice(0, 3)"
+                  :key="idx"
+                  class="w-12 h-12 rounded-xl bg-white border-2 border-cream overflow-hidden shrink-0"
+                >
+                  <img
+                    :src="item.cover_image || '/assets/founder-portrait.png'"
+                    class="w-full h-full object-contain p-1.5"
+                    alt=""
+                    @error="(event) => { event.target.src = '/assets/founder-portrait.png'; event.target.onerror = null }"
+                  />
+                </div>
+                <div
+                  v-if="order.items.length > 3"
+                  class="w-12 h-12 rounded-xl bg-ink/5 border-2 border-cardLight grid place-items-center text-[11px] font-bold text-inkSoft shrink-0"
+                >
+                  +{{ fa(order.items.length - 3) }}
+                </div>
+              </div>
+              <div class="min-w-0 sm:hidden">
+                <p class="text-[13px] font-bold text-ink line-clamp-1">{{ order.title }}</p>
+                <p class="text-[11px] text-inkSoft mt-0.5">{{ faNumber(order.totalQty) }} عدد کالا</p>
+              </div>
             </div>
-            <div
-              v-if="order.items.length > 4"
-              class="w-14 h-14 rounded-xl bg-ink/5 border-2 border-cardLight grid place-items-center text-[11px] font-bold text-inkSoft shrink-0"
-            >
-              +{{ fa(order.items.length - 4) }}
-            </div>
-          </div>
 
-          <div class="min-w-0 flex-1">
-            <p class="text-[13px] text-ink line-clamp-1">
-              {{ order.title || 'سفارش' }}
-            </p>
-            <p class="text-[11.5px] text-inkSoft mt-1">
-              {{ order.subtitle || `${faNumber(order.items.length)} قلم کالا` }}
-            </p>
-          </div>
+            <div class="min-w-0 flex-1">
+              <p class="hidden text-[13px] font-bold text-ink line-clamp-1 sm:block">{{ order.title }}</p>
+              <p class="hidden text-[11px] text-inkSoft mt-0.5 sm:block">{{ faNumber(order.totalQty) }} عدد کالا</p>
+              <div class="mt-1.5 flex flex-wrap items-center gap-1.5">
+                <span v-if="order.sendType" class="flex items-center gap-1 rounded-full bg-ink/5 px-2.5 py-1 text-[11px] font-bold text-inkSoft">
+                  <Icon name="tabler:truck-delivery" class="text-[12px]" />
+                  {{ order.sendType }}
+                </span>
+                <span v-if="order.discount > 0" class="flex items-center gap-1 rounded-full bg-sage/10 px-2.5 py-1 text-[11px] font-bold text-sage">
+                  <Icon name="tabler:discount-2" class="text-[12px]" />
+                  {{ money(order.discount) }} تومان تخفیف
+                </span>
+              </div>
 
-          <div class="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 shrink-0">
-            <div class="text-left">
-              <p class="text-[10.5px] text-inkSoft">مبلغ کل</p>
-              <p class="text-[14px] font-bold text-ink font-latin">{{ money(order.total) }} <span class="text-[10.5px] font-sans text-inkSoft">تومان</span></p>
+              <div class="flex flex-col md:flex-row items-center gap-3">
+                <p v-if="order.sendDate || order.sendTime" class="mt-1.5 text-[11.5px] text-inkSoft">
+                  <template v-if="order.sendDate">تاریخ ارسال: {{ faDate(order.sendDate) }}</template>
+                  <template v-if="order.sendTime"> • {{ order.sendTime }}</template>
+                </p>
+  
+                <!-- کد رهگیری -->
+                <button
+                  v-if="order.trackingCode"
+                  type="button"
+                  class="flex w-fit items-center gap-1.5 rounded-full border border-dashed border-ink/15 px-3 py-1.5 text-[11px] font-bold text-inkSoft transition hover:border-accent/40 hover:text-accent"
+                  @click="copyTracking(order.trackingCode)"
+                >
+                  <Icon name="tabler:copy" class="text-[12px]" />
+                  <span class="font-latin" dir="ltr">{{ order.trackingCode }}</span>
+                </button>
+              </div>
             </div>
-            <NuxtLink
-              :to="`/account/orders/${order.id}`"
-              class="flex items-center gap-1.5 text-[12.5px] font-bold text-cream bg-accent px-4 py-2.5 rounded-full hover:bg-accentHover transition-colors whitespace-nowrap"
-            >
-              جزئیات سفارش
-              <Icon name="tabler:chevron-left" class="text-[13px]" />
-            </NuxtLink>
+
+            <div class="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 shrink-0">
+              <div class="text-left">
+                <p class="text-[10.5px] text-inkSoft">مبلغ کل</p>
+                <p class="text-[14px] font-bold text-ink font-latin">{{ money(order.total) }} <span class="text-[10.5px] font-sans text-inkSoft">تومان</span></p>
+              </div>
+              <NuxtLink
+                :to="`/account/orders/${order.id}`"
+                class="flex items-center gap-1.5 text-[12.5px] font-bold text-cream bg-accent px-4 py-2.5 rounded-full hover:bg-accentHover transition-colors whitespace-nowrap"
+              >
+                جزئیات سفارش
+                <Icon name="tabler:chevron-left" class="text-[13px]" />
+              </NuxtLink>
+            </div>
           </div>
         </div>
       </div>
@@ -173,27 +206,31 @@ function normalizeOrder(invoice) {
     price: Number(detail.unit_price ?? detail.price ?? detail.products?.final_price ?? 0),
   }));
 
-  const fullName = [invoice.user_first_name, invoice.user_last_name].filter(Boolean).join(' ') || invoice.user_full_name || invoice.receiver_name;
+  const totalQty = items.reduce((sum, item) => sum + item.qty, 0);
   const title = items.length
-    ? items.map((item) => `${item.title_fa} (${faNumber(item.qty)} عدد)`).join('، ')
-    : (invoice.receiver_name || fullName ? `سفارش برای ${invoice.receiver_name || fullName}` : 'سفارش جدید');
-
-  const subtitleParts = [
-    invoice.send_type || t(invoice.type_text),
-    invoice.send_date ? `تاریخ ارسال: ${faDate(invoice.send_date)}` : '',
-    invoice.status_text ? `وضعیت: ${t(invoice.status_text)}` : '',
-    invoice.tracking_code ? `کد پیگیری: ${invoice.tracking_code}` : '',
-  ].filter(Boolean);
+    ? items.map((item) => item.title_fa).join('، ')
+    : 'سفارش';
 
   return {
     id: invoice.id || invoice.invoice_id,
-    code: invoice.invoice_number || invoice.code || invoice.invoice_code || invoice.number || invoice.tracking_code || `#${invoice.id || invoice.invoice_id}`,
+    code: invoice.invoice_number
+      ? `#${faNumber(invoice.invoice_number)}`
+      : (invoice.tracking_code ? invoice.tracking_code : `#${fa(invoice.id || invoice.invoice_id)}`),
     date: invoice.document_date || invoice.date || invoice.created_at || invoice.createdAt,
     status,
+    subtotal: Number(invoice.impure_price ?? 0),
+    discount: Number(invoice.discount_price ?? 0),
+    tax: Number(invoice.tax_price ?? 0),
     total: Number(invoice.total_price ?? invoice.total ?? invoice.final_price ?? invoice.price ?? 0),
     title,
-    subtitle: subtitleParts.join(' • '),
+    totalQty,
     items,
+    paymentType: invoice.type_text ? t(invoice.type_text) : null,
+    sendType: invoice.send_type || null,
+    sendDate: invoice.send_date || null,
+    sendTime: invoice.send_time || null,
+    trackingCode: invoice.tracking_code || null,
+    hasAddress: !!invoice.receiver_address,
   };
 }
 
@@ -202,7 +239,7 @@ const filteredOrders = computed(() => orders.value);
 function getPurchasesList(statusList = []) {
   orders.value = [];
   loading.value = true;
-  useGarnetApiFetch('invoices/indexByUser', { conditions: { status: statusList } })
+  useGarnetApiFetch('invoices/indexByUser', { conditions: { status: statusList }, with_detail: true })
     .then((response) => {
       if (response?.error) {
         console.error('[Orders] invoices/indexByUser failed', response.error);
@@ -226,6 +263,15 @@ function getPurchasesList(statusList = []) {
 function changeFilter(value) {
   activeFilter.value = value;
   getPurchasesList(filterStatusMap[value] || []);
+}
+
+async function copyTracking(code) {
+  try {
+    await navigator.clipboard.writeText(code);
+    toast.success('کد رهگیری کپی شد');
+  } catch {
+    toast.error('کپی انجام نشد');
+  }
 }
 
 onMounted(() => getPurchasesList(filterStatusMap.all));
