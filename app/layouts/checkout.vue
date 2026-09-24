@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-cream">
+  <div class="min-h-screen flex flex-col bg-[#f8f2ec]">
     <header class="border-b border-ink/10 bg-cream/95 backdrop-blur">
       <div class="max-w-[1280px] mx-auto px-4 md:px-6 h-[72px] flex items-center justify-between gap-6">
         <NuxtLink to="/" class="flex items-center gap-3 text-ink">

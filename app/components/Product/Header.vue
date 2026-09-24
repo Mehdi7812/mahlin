@@ -1,8 +1,8 @@
 <template>
   <header>
     <!-- برند / دسته -->
-     <div class="flex justify-between items-center">
-      <div v-if="item.brand || item.cat" class="flex flex-wrap items-center gap-2 mb-3">
+     <div class="flex justify-between items-center mb-3">
+      <div v-if="item.brand || item.cat" class="flex flex-wrap items-center gap-2">
         <span
           v-if="item.brand"
           class="text-[13px] font-bold"

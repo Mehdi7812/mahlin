@@ -349,7 +349,7 @@ onBeforeUnmount(() => {
   opacity: 0.6;
 }
 .about-btn:hover .about-arrow {
-  transform: translateX(-5px);
+  transform: rotate(0);
   opacity: 1;
 }
 
