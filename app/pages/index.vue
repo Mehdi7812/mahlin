@@ -3,9 +3,10 @@
 
   <HomeTrustStrip />
 
-  <HomeBrands />
+  <!-- <HomeBrands /> -->
 
   <!-- <HomeSkinQuiz /> -->
+  <HomeBannerSpotLight :slider-id="2" />
 
   <HomeCategory />
 

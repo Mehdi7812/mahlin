@@ -7,7 +7,7 @@
     <!-- ════════ موجود ════════ -->
     <section
       v-if="item.inStock !== false"
-      class="rounded-2xl bg-card border border-ink/[0.07] divide-y divide-ink/[0.06]"
+      class="rounded-2xl bg-cardLight border border-ink/[0.07] divide-y divide-ink/[0.06]"
       aria-label="وضعیت موجودی و ارسال"
     >
       <div class="flex items-center justify-between gap-3 px-4 py-3">
@@ -33,7 +33,7 @@
     <!-- ════════ ناموجود ════════ -->
     <section
       v-else
-      class="flex items-start gap-3 px-4 py-4 rounded-2xl bg-card border border-ink/[0.07]"
+      class="flex items-start gap-3 px-4 py-4 rounded-2xl bg-cardLight border border-ink/[0.07]"
       role="status"
     >
       <span class="grid place-items-center w-9 h-9 rounded-full shrink-0 bg-blushLight" aria-hidden="true">
@@ -54,7 +54,7 @@
     <!-- ════════ سوالات متداول ════════ -->
     <section
       v-if="!isCourse"
-      class="rounded-2xl bg-card border border-ink/[0.07] overflow-hidden"
+      class="rounded-2xl bg-cardLight border border-ink/[0.07] overflow-hidden"
       aria-label="سوالات متداول خرید و ارسال"
     >
       <div

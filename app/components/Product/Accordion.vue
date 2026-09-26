@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="sections.length"
-    class="rounded-2xl bg-card border border-ink/[0.07] overflow-hidden divide-y divide-ink/[0.06]"
+    class="rounded-2xl bg-cardLight border border-ink/[0.07] overflow-hidden divide-y divide-ink/[0.06]"
   >
     <section v-for="s in sections" :key="s.id">
       <!-- ─── سربرگ ─── -->

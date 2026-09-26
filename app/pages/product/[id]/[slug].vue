@@ -3,84 +3,96 @@
 
   <div v-else-if="item" class="max-w-[1280px] mx-auto px-4 md:px-6 py-10 md:py-16 pb-28 md:pb-16">
 
-    <ProductBreadcrumb :category-tree="categoryTree" :product-name="item.name" />
+    <div v-reveal>
+      <ProductBreadcrumb :category-tree="categoryTree" :product-name="item.name" />
+    </div>
 
     <div class="grid md:grid-cols-12 gap-8 lg:gap-16 items-start">
 
+      <!-- ستون گالری (sticky) — خود ستون reveal نمی‌گیره تا sticky خراب نشه -->
       <div class="md:col-span-5 md:sticky md:top-[100px]">
-        <ProductGallery
-          v-model:active-image="activeImage"
-          v-model:is-wishlisted="isWishlisted"
-          :images="item.images"
-          :product-name="item.name"
-          :discount-percent="discountPercent"
-          :in-stock="item.inStock"
-          :copied="copied"
-          :cat-info="catInfo"
-          :product-id="item.id"
-          @share="shareProduct"
-        />
-        <ProductTrustBadges :is-course="isCourse" />
+        <div v-reveal class="relative">
+          <ProductAmbient />
+          <div class="relative z-[1]">
+            <ProductGallery
+              v-model:active-image="activeImage"
+              v-model:is-wishlisted="isWishlisted"
+              :images="item.images"
+              :product-name="item.name"
+              :discount-percent="discountPercent"
+              :in-stock="item.inStock"
+              :copied="copied"
+              :cat-info="catInfo"
+              :product-id="item.id"
+              @share="shareProduct"
+            />
+          </div>
+        </div>
+        <div v-reveal="200" class="relative z-[1]">
+          <ProductTrustBadges :is-course="isCourse" />
+        </div>
       </div>
 
+      <!-- ستون اطلاعات: ورود پلکانی -->
       <div class="md:col-span-7 space-y-6">
-        <ProductHeader
-          :item="item"
-          :cat-info="catInfo"
-          :comments-count="commentsCount"
-          :avg-rating="avgRating"
-          @scroll-to-reviews="scrollToReviews"
-        />
+        <div v-reveal="60">
+          <ProductHeader
+            :item="item"
+            :cat-info="catInfo"
+            :comments-count="commentsCount"
+            :avg-rating="avgRating"
+            @scroll-to-reviews="scrollToReviews"
+          />
+        </div>
 
-        <ProductPriceBox
-          :item="item"
-          :cat-info="catInfo"
-          :qty="qty"
-          :min-qty="item.minQty || 1"
-          :at-max-stock="atMaxStock"
-          :just-added="justAdded"
-          @increment="increment"
-          @decrement="decrement"
-          @add="handleAdd"
-        />
+        <div v-reveal="140">
+          <ProductPriceBox
+            :item="item"
+            :cat-info="catInfo"
+            :qty="qty"
+            :min-qty="item.minQty || 1"
+            :at-max-stock="atMaxStock"
+            :just-added="justAdded"
+            @increment="increment"
+            @decrement="decrement"
+            @add="handleAdd"
+          />
+        </div>
 
-        <ProductStockStatus
-          :item="item"
-          :is-course="isCourse"
-          :low-stock="lowStock"
-          :access-deadline="accessDeadline"
-          :delivery-estimate="deliveryEstimate"
-          :cat-info="catInfo"
-        />
+        <div v-reveal="220">
+          <ProductStockStatus
+            :item="item"
+            :is-course="isCourse"
+            :low-stock="lowStock"
+            :access-deadline="accessDeadline"
+            :delivery-estimate="deliveryEstimate"
+            :cat-info="catInfo"
+          />
+        </div>
 
-        <!-- <ProductQuantityCart
-          :qty="qty"
-          :at-max-stock="atMaxStock"
-          :in-stock="item.inStock"
-          :just-added="justAdded"
-          :cat-info="catInfo"
-          :product-id="item.id"
-          @increment="increment"
-          @decrement="decrement"
-          @add="handleAdd"
-        /> -->
+        <!-- جایگاه محصول در روتین پوست (برای دوره‌ها نمایش داده نمی‌شه) -->
+        <!-- <div v-if="!isCourse" v-reveal="300">
+          <ProductRoutine :item="item" :category-tree="categoryTree" :cat-info="catInfo" />
+        </div> -->
 
-        <ProductAccordion v-model="activeTab" :item="item" :cat-info="catInfo" />
+        <div v-reveal="120">
+          <ProductAccordion v-model="activeTab" :item="item" :cat-info="catInfo" />
+        </div>
       </div>
     </div>
 
-    <section ref="reviewsSectionRef" class="mt-16 md:mt-24 pt-10 border-t border-ink/10 scroll-mt-24">
+    <section ref="reviewsSectionRef" v-reveal class="mt-16 md:mt-24 pt-10 border-t border-ink/10 scroll-mt-24">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div class="flex items-center gap-2">
-          <span class="w-6 h-px bg-gold/60"></span>
+          <svg class="w-4 h-4 shrink-0" viewBox="-2 -2 28 28" aria-hidden="true">
+            <path d="M12 0C12.6 6.6 17.4 11.4 24 12 17.4 12.6 12.6 17.4 12 24 11.4 17.4 6.6 12.6 0 12 6.6 11.4 11.4 6.6 12 0Z" fill="#FFF8EE" stroke="#B8894F" stroke-width="1.6" vector-effect="non-scaling-stroke" />
+          </svg>
           <h2 class="text-xl sm:text-2xl font-display text-ink font-bold">نظرات و تجربیات خریداران</h2>
         </div>
 
         <div v-if="avgRating" class="flex items-center gap-3 bg-card px-4 py-2.5 rounded-full w-fit">
           <span class="text-xl font-bold text-ink font-latin">{{ avgRating }}</span>
-          
           <ProductStarRating :value="avgRating" :size="17" />
-
           <span class="text-xs text-ink/40">از {{ fa(commentsCount) }} نظر</span>
         </div>
       </div>
@@ -106,9 +118,13 @@
       </div>
     </section>
 
-    <ProductRelated :pending="relatedPending" :products="related" />
+    <div v-reveal>
+      <ProductRelated :pending="relatedPending" :products="related" />
+    </div>
 
-    <ProductRecentlyViewed :products="recentlyViewed" />
+    <div v-reveal>
+      <ProductRecentlyViewed :products="recentlyViewed" />
+    </div>
 
     <ProductMobileBar
       :qty="qty"
@@ -130,7 +146,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import { fa } from '~/utils/format';
 import { toast } from 'vue-sonner';
 
@@ -141,15 +157,24 @@ const customizer  = useCustomizerStore();
 const isUserLogin = computed(() => !!customizer.auth);
 
 const { addToCart } = useAddToCart();
+const { toCart, sparkle, captureOrigin } = useStarBurst();
+
+// تصویر جایگزین وقتی محصول عکس نداره (قبلاً عکس مؤسس بود)
+const PLACEHOLDER = '/assets/product-placeholder.svg';
 
 async function handleAdd() {
   if (!item.value || item.value.inStock === false) return;
+  // مبدأ انیمیشن قبل از await گرفته می‌شه، چون دکمه موقع لودینگ disabled می‌شه
+  const origin = process.client ? captureOrigin(document.activeElement) : null;
+
   const ok = await addToCart({
     productId: item.value.id,
     qty: qty.value,
     currencyId: +Product.value.currency_id || 1,
   });
   if (!ok) return;
+
+  toCart(origin);
   justAdded.value = true;
   setTimeout(() => { justAdded.value = false; }, 1800);
 }
@@ -166,9 +191,10 @@ const pending      = ref(true);
 const fetchError   = ref(null);
 
 // ─── سایر state های صفحه ────────────────────────────────────
-const qty              = ref(1);
+const qty               = ref(1);
 const activeTab         = ref('long');
 const isWishlisted      = ref(false);
+const wishlistReady     = ref(false); // تا مقدار اولیه از API نیومده، انیمیشن قلب اجرا نشه
 const copied            = ref(false);
 const justAdded         = ref(false);
 const activeImage       = ref(null);
@@ -178,34 +204,29 @@ const relatedPending    = ref(false);
 const reviewsSectionRef = ref(null);
 
 // ─── state مخصوص نظرات ────────────────────────────────────────
-const comments          = ref([]);
+const comments           = ref([]);
 const loadingPosts       = ref(true);
 const loadMoreBtn        = ref(false);
 const commentsPage       = ref(1);
 const commentsTotalPages = ref(1);
 const commentsCount      = ref(0);
 
-const commentForm    = ref({ name: '', contact: '', text: '', rate: 5, error: false });
-const submitLoading   = ref(false);
+const commentForm   = ref({ name: '', contact: '', text: '', rate: 5, error: false });
+const submitLoading = ref(false);
 
 // ─── کمک‌کننده‌ها ─────────────────────────────────────────────
 function stripHtml(html) {
   if (!html) return '';
   return html
-    // پایان تگ‌های بلاکی → دو خط جدید (فاصله‌ی پاراگراف)
     .replace(/<\/(p|div|h[1-6]|li|blockquote)>/gi, '\n\n')
-    // تگ br → یک خط جدید
     .replace(/<br\s*\/?>/gi, '\n')
-    // حذف بقیه‌ی تگ‌ها
     .replace(/<[^>]*>/g, '')
-    // دیکد کردن entity های رایج HTML
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
-    // فشرده‌سازی خط‌های خالی متوالی (حداکثر یک خط خالی بینشون)
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
@@ -215,10 +236,7 @@ function scrollToReviews() {
 }
 
 // ─── نرمال‌سازی محصول برای استفاده در تمپلیت ──────────────────
-// ⚠️ این computed حتماً باید قبل از فراخوانی getProductDetail()
-// تعریف بشه، وگرنه چون داخل getProductDetail بلافاصله از
-// fetchRelated (که به item.value وابسته است) استفاده می‌شه،
-// به خطای «Cannot access 'item' before initialization» می‌خوریم.
+// ⚠️ این computed حتماً باید قبل از فراخوانی getProductDetail() تعریف بشه
 const item = computed(() => {
   const p = Product.value;
   if (!p) return null;
@@ -238,7 +256,7 @@ const item = computed(() => {
     price:     hasDiscount ? p.final_price : p.price,
     oldPrice:  hasDiscount ? p.price : null,
     size:      p.unit_text ? `${fa(p.capacity)} ${p.unit_text}` : null,
-    img:       p.cover_image || '/assets/founder-portrait.png',
+    img:       p.cover_image || PLACEHOLDER,
     images:    (p.product_images || []).map((im) => im.file),
     inStock:   p.allow_sale === 1,
     stockCount: p.stock,
@@ -327,16 +345,11 @@ function decrement() {
   qty.value = Math.max(min, qty.value - 1);
 }
 
-// function handleAdd() {
-//   if (!item.value || item.value.inStock === false) return;
-//   add(item.value.id, qty.value);
-//   justAdded.value = true;
-//   setTimeout(() => { justAdded.value = false; }, 1800);
-// }
-
-function toggleWishlist() {
-  isWishlisted.value = !isWishlisted.value;
-}
+// ─── انیمیشن قلب وقتی کاربر محصول رو به علاقه‌مندی‌ها اضافه می‌کنه ──
+watch(isWishlisted, (now, before) => {
+  if (!wishlistReady.value || !now || before) return;
+  sparkle(process.client ? document.activeElement : null, { shape: 'heart', count: 7, spread: 38, size: [9, 15] });
+});
 
 async function shareProduct() {
   const shareData = {
@@ -375,11 +388,12 @@ async function submitCommentForm() {
 
   if (!validateComment()) {
     commentForm.value.error = true;
-    toast.error('لطفا تمامی فیلد ها را پر کنید');
+    toast.error('لطفاً همه‌ی فیلدها را پر کنید');
     return;
   }
 
   submitLoading.value = true;
+  const origin = process.client ? captureOrigin(document.activeElement) : null;
 
   let sendUrl = '';
   let sendData = {};
@@ -407,6 +421,7 @@ async function submitCommentForm() {
   try {
     const response = await useGarnetApiFetch(sendUrl, sendData);
     if (response?.code === 2000) {
+      sparkle(origin, { count: 10, spread: 56 });
       toast.success('ممنون از نظرتان! پس از بررسی و تأیید، نمایش داده خواهد شد');
       resetCommentForm();
       comments.value = [];
@@ -414,11 +429,11 @@ async function submitCommentForm() {
       loadingPosts.value = true;
       await loadComments();
     } else {
-      toast.error('ارسال نظر با مشکل مواجه شده است');
+      toast.error('ارسال نظر با مشکل مواجه شد. دوباره تلاش کنید');
     }
   } catch (e) {
     console.error('[ProductDetail] خطا در ثبت نظر:', e);
-    toast.error('خطا در ارسال نظر');
+    toast.error('ارسال نظر انجام نشد. اتصال اینترنت را بررسی کنید');
   } finally {
     submitLoading.value = false;
   }
@@ -442,7 +457,7 @@ async function loadComments() {
     }
   } catch (e) {
     console.error('[ProductDetail] خطا در دریافت نظرات:', e);
-    toast.error('خطا در دریافت دیدگاه‌ها');
+    toast.error('دریافت نظرات انجام نشد');
   } finally {
     loadingPosts.value = false;
     loadMoreBtn.value  = false;
@@ -463,11 +478,7 @@ const avgRating = computed(() => {
 
   if (!rated.length) return null;
 
-  const sum = rated.reduce((acc, r) => acc + r, 0);
-  const avg = sum / rated.length;
-
-  // اگه عدد رند بود، بدون اعشار نمایش بده (مثلاً 5 به‌جای 5.0)
-  // در غیر این صورت با یک رقم اعشار (مثلاً 4.5)
+  const avg = rated.reduce((acc, r) => acc + r, 0) / rated.length;
   return avg % 1 === 0 ? String(avg) : avg.toFixed(1);
 });
 
@@ -506,7 +517,7 @@ function saveToRecentlyViewed() {
       id:                Product.value.id,
       title_fa:          Product.value.title_fa,
       slug_fa:           Product.value.slug_fa,
-      cover_image:       Product.value.cover_image || '/assets/founder-portrait.png',
+      cover_image:       Product.value.cover_image || PLACEHOLDER,
       price:             Product.value.price,
       final_price:       Product.value.final_price,
       discount_percent:  Product.value.discount_percent,
@@ -534,17 +545,13 @@ function loadRecentlyViewed() {
 
 // ═══════════════════════════════════════════════════════════════
 // ─── دریافت جزئیات محصول ───────────────────────────────────────
-// ⚠️ برگردانده‌شده به useGarnetApiFetch ساده (دقیقاً مثل fetchRelated
-// و loadComments در همین فایل) به‌جای useGarnetApiFetchReactive.
-// این هماهنگی باعث می‌شه رفتار SSR این فچ هم مثل بقیه‌ی فچ‌های پروژه
-// (که به‌درستی کار می‌کنن، مثلاً در shop.vue) قابل‌اعتماد باشه.
 // ═══════════════════════════════════════════════════════════════
 async function getProductDetail() {
-  pending.value    = true;
-  fetchError.value = null;
+  pending.value       = true;
+  fetchError.value    = null;
+  wishlistReady.value = false;
 
   try {
-    // دیگه نیاز به nextTick نیست — auth از watch مدیریت میشه
     const sendUrl = customizer.auth
       ? 'products/showByUser'
       : 'products/showByPub';
@@ -570,9 +577,10 @@ async function getProductDetail() {
     }));
 
     isWishlisted.value = !!Product.value.is_fave;
-    activeImage.value  = Product.value.cover_image || '/assets/founder-portrait.png'
+    // قبلاً «|| عکس مؤسس» وسط زنجیره بود و گزینه‌های بعدی هیچ‌وقت اجرا نمی‌شدن
+    activeImage.value  = Product.value.cover_image
       || Product.value.product_images?.[0]?.file
-      || null;
+      || PLACEHOLDER;
     qty.value = Product.value.minimum_sale_quantity || 1;
 
     fetchRelated();
@@ -592,10 +600,12 @@ async function getProductDetail() {
     Product.value    = null;
   } finally {
     pending.value = false;
+    await nextTick();
+    wishlistReady.value = true;
   }
 }
 
-// ─── بار اول: با await تا SSR کامل با دیتای واقعی رندر بشه ────
+// ─── بار اول ───────────────────────────────────────────────
 await getProductDetail();
 
 // ─── تغییر محصول در حین ناوبری سمت کلاینت ─────────────────────

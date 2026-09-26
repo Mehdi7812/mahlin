@@ -1,7 +1,7 @@
 <template>
   <div
-    class="bg-card border rounded-2xl"
-    :style="{ borderColor: catInfo.borderColor }"
+    class="bg-cardLight border rounded-2xl" 
+    :style="{ borderColor: catInfo.borderColor,  }"
   >
     <!-- ════════ قیمت و حجم ════════ -->
     <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 px-5 pt-4 pb-4">
