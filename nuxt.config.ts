@@ -16,6 +16,25 @@ export default defineNuxtConfig({
       htmlAttrs: { lang: "fa", dir: "rtl" },
 
       title: "ماهلین اسکین‌کر",
+
+      // پریلود فونت‌های حیاتی — تا وقتی CSS پارس بشه فونت‌ها از قبل
+      // در حال دانلودن و پرش (FOUT) موقع لود صفحه دیده نمی‌شه
+      link: [
+        {
+          rel: "preload",
+          href: "/fonts/Vazirmatn-Variable.woff2",
+          as: "font",
+          type: "font/woff2",
+          crossorigin: "anonymous",
+        },
+        {
+          rel: "preload",
+          href: "/fonts/Lalezar-Regular.woff2",
+          as: "font",
+          type: "font/woff2",
+          crossorigin: "anonymous",
+        },
+      ],
     },
 
     buildAssetsDir: `/_nuxt_${pkg.version}/`,
@@ -42,7 +61,18 @@ export default defineNuxtConfig({
         '/faq', '/privacy', '/shipping', '/terms',
         '/account/favorites', '/account/loyalty',
       ]
-    }
+    },
+    // فونت‌ها اسم ثابت دارن (بدون hash)، پس اگه محتواشون عوض بشه باید
+    // اسم فایل رو دستی عوض کنیم؛ در ازاش می‌تونیم کش رو یک‌ساله و immutable
+    // بذاریم تا بعد از اولین بازدید، رفرش‌های بعدی هیچ درخواست شبکه‌ای
+    // برای فونت نزنن و مستقیم از کش دیسک لود بشن.
+    routeRules: {
+      "/fonts/**": {
+        headers: {
+          "cache-control": "public, max-age=31536000, immutable",
+        },
+      },
+    },
   },
 
   i18n: {

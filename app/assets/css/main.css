@@ -4,8 +4,8 @@
    ═══════════════════════════════════════════════════════════ */
 @font-face {
   font-family: 'Vazirmatn';
-  src: url('../fonts/vazir/Vazirmatn[wght].woff2') format('woff2-variations'),
-       url('../fonts/vazir/Vazirmatn[wght].woff2') format('woff2');
+  src: url('/fonts/Vazirmatn-Variable.woff2') format('woff2-variations'),
+       url('/fonts/Vazirmatn-Variable.woff2') format('woff2');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
@@ -81,7 +81,8 @@
    ═══════════════════════════════════════════════════════════ */
 @font-face {
   font-family: 'Lalezar';
-  src: url('../fonts/Lalezar-Font/TTF/Lalezar-Regular.ttf') format('truetype'),
+  src: url('/fonts/Lalezar-Regular.woff2') format('woff2'),
+       url('../fonts/Lalezar-Font/TTF/Lalezar-Regular.ttf') format('truetype'),
        url('../fonts/Lalezar-Font/OTF/Lalezar-Regular.otf') format('opentype');
   font-weight: 400;
   font-style: normal;
