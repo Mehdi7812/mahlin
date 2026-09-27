@@ -304,7 +304,7 @@ async function fetchCategories() {
 
 const companyLinks = [
   { to: '/about',   label: 'درباره ما' },
-  { to: '/journal', label: 'وبلاگ' },
+  { to: '/Blog', label: 'وبلاگ' },
   { to: '/contact', label: 'ارتباط با ما' },
   { to: '/faq',     label: 'سوالات متداول' },
   { to: '/terms',   label: 'قوانین و مقررات' },

@@ -1,6 +1,6 @@
 <template>
   <NuxtLink
-    :to="'/journal/'+ blog.id + '/' + blog.slug_fa"
+    :to="'/Blog/'+ blog.id + '/' + blog.slug_fa"
     class="group relative flex flex-col h-full bg-card hover:bg-cardLight border rounded-[24px] sm:rounded-[28px] overflow-hidden transition-all duration-400 ease-out transform-gpu"
     :style="{
       borderColor: hover ? catInfo.borderHoverColor : 'rgba(63,58,53,0.03)',

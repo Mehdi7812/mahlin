@@ -188,7 +188,7 @@ async function fetchBlogs(page = 1) {
       blogCategories.value = cats;
     }
   } catch (err) {
-    console.error('[Journal] خطا:', err);
+    console.error('[Blog] خطا:', err);
     error.value = err;
   } finally {
     pending.value = false;

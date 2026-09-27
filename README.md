@@ -52,7 +52,7 @@ npm run generate
 
 - `app/` — Vue pages, components, layouts, styles, and app-level assets
 - `app/components/` — reusable UI and storefront components
-- `app/pages/` — route pages such as home, shop, product, cart, checkout, journal, account, and legal pages
+- `app/pages/` — route pages such as home, shop, product, cart, checkout, Blog, account, and legal pages
 - `app/composables/` — shared logic such as cart state and API helpers
 - `app/data/` — static marketplace data and product catalog content
 - `app/utils/` — formatting utilities and validation helpers

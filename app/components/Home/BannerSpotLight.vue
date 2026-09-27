@@ -58,7 +58,7 @@
         :ref="(el) => setCardRef(el, i)"
         class="banner-card-wrap"
         :class="[{ 'is-visible': visible[i] }, i % 2 === 0 ? 'from-right' : 'from-left']"
-        :style="{ transitionDelay: (i * 0.15) + 's' }"
+        :style="{ transitionDelay: (i * 0.08) + 's' }"
       >
         <NuxtLink
           :to="banner.link || '/shop'"
@@ -223,12 +223,12 @@ const setupObserver = () => {
         }
       });
     },
-    { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+    { threshold: 0, rootMargin: '0px 0px 150px 0px' }
   );
 
   cardRefs.value.forEach((el) => el && observer.observe(el));
 
-  fallbackTimer = setTimeout(revealAll, 1000);
+  fallbackTimer = setTimeout(revealAll, 600);
 };
 
 const getContent = () => {
@@ -297,7 +297,7 @@ onBeforeUnmount(() => {
 <style>
 html,
 body {
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 </style>
 
@@ -365,14 +365,14 @@ body {
 /* ── Scroll Reveal کارت‌ها: ورود منقطع (زیگزاگ) با کمی چرخش ── */
 .banner-card-wrap {
   opacity: 0;
-  filter: blur(6px);
+  filter: blur(3px); /* به‌جای 6px */
   transition:
-    opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),   /* به‌جای 0.9s */
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), /* به‌جای 0.9s */
+    filter 0.5s cubic-bezier(0.22, 1, 0.36, 1);    /* به‌جای 0.9s */
 }
-.banner-card-wrap.from-right { transform: translate(40px, 50px) rotate(1.5deg) scale(0.96); }
-.banner-card-wrap.from-left  { transform: translate(-40px, 50px) rotate(-1.5deg) scale(0.96); }
+.banner-card-wrap.from-right { transform: translate(24px, 24px) rotate(1deg) scale(0.98); } /* کمتر از 40px/50px */
+.banner-card-wrap.from-left  { transform: translate(-24px, 24px) rotate(-1deg) scale(0.98); }
 .banner-card-wrap.is-visible {
   opacity: 1;
   filter: blur(0);
@@ -400,6 +400,22 @@ body {
 .banner-card-wrap.is-visible .img-reveal {
   clip-path: inset(0 0 0 0%);
   transition-delay: 0.12s;
+}
+
+.banner-card-wrap.is-visible .img-reveal {
+  transition-delay: 0.05s; /* به‌جای 0.12s */
+}
+
+.banner-card-wrap.is-visible .glow-ring {
+  animation-delay: 0.4s; /* به‌جای 0.8s */
+}
+
+.banner-card-wrap.is-visible .peek-icon {
+  transition-delay: 0.3s; /* به‌جای 0.65s */
+}
+
+.banner-card-wrap.is-visible .peek-icon-pulse {
+  animation-delay: 0.7s; /* به‌جای 1.4s */
 }
 
 /* ── نفس‌کشیدن آرام تصویر (متوقف در هاور) ─────────────────── */

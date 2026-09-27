@@ -43,7 +43,7 @@
               فروشگاه
               <span class="absolute -bottom-[1px] start-0 end-0 h-[1.5px] bg-gold scale-x-0 origin-center transition-transform duration-200 [.router-link-active_&]:scale-x-100 hover:scale-x-100" />
             </NuxtLink>
-            <NuxtLink to="/journal" class="relative text-ink py-1.5 transition-colors hover:text-gold" active-class="text-gold">
+            <NuxtLink to="/Blog" class="relative text-ink py-1.5 transition-colors hover:text-gold" active-class="text-gold">
               وبلاگ
               <span class="absolute -bottom-[1px] start-0 end-0 h-[1.5px] bg-gold scale-x-0 origin-center transition-transform duration-200 [.router-link-active_&]:scale-x-100 hover:scale-x-100" />
             </NuxtLink>
@@ -360,7 +360,7 @@
 
         <div class="flex flex-col px-5 py-2">
           <NuxtLink to="/shop" class="text-base font-semibold py-4 border-b border-ink/10 text-ink" active-class="text-gold" @click="open = false">فروشگاه</NuxtLink>
-          <NuxtLink to="/journal" class="text-base font-semibold py-4 border-b border-ink/10 text-ink" active-class="text-gold" @click="open = false">وبلاگ</NuxtLink>
+          <NuxtLink to="/Blog" class="text-base font-semibold py-4 border-b border-ink/10 text-ink" active-class="text-gold" @click="open = false">وبلاگ</NuxtLink>
           <NuxtLink to="/about" class="text-base font-semibold py-4 border-b border-ink/10 text-ink" active-class="text-gold" @click="open = false">درباره ما</NuxtLink>
           <NuxtLink to="/contact" class="text-base font-semibold py-4 border-b border-ink/10 text-ink" active-class="text-gold" @click="open = false">ارتباط با ما</NuxtLink>
         </div>

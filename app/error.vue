@@ -171,7 +171,7 @@
 const quickLinks = [
   { label: 'صفحه اصلی',   to: '/'        },
   { label: 'فروشگاه',     to: '/shop'    },
-  { label: 'مجله ماهلین', to: '/journal' },
+  { label: 'مجله ماهلین', to: '/Blog' },
   { label: 'تماس با ما',  to: '/contact' },
 ];
 

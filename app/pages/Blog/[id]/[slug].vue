@@ -32,7 +32,7 @@
         <path d="M12 8v4m0 4h.01" stroke-linecap="round"/>
       </svg>
       <p class="text-sm">مقاله مورد نظر یافت نشد.</p>
-      <NuxtLink to="/journal" class="mt-4 inline-block text-xs font-bold text-gold">
+      <NuxtLink to="/Blog" class="mt-4 inline-block text-xs font-bold text-gold">
         بازگشت به مجله
       </NuxtLink>
     </div>
@@ -43,7 +43,7 @@
 
         <!-- دکمه بازگشت -->
         <NuxtLink
-          to="/journal"
+          to="/Blog"
           class="inline-flex items-center gap-2 text-xs font-bold text-gold hover:text-ink transition-colors duration-300 group mb-8"
         >
           <svg class="w-4 h-4 transform group-hover:-translate-x-1 rtl:group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -298,7 +298,7 @@
             </div>
             <h2 class="text-xl sm:text-2xl font-display text-ink font-bold">مقالات پیشنهادی</h2>
           </div>
-          <NuxtLink to="/journal" class="text-xs font-bold text-gold hover:text-ink transition-colors">
+          <NuxtLink to="/Blog" class="text-xs font-bold text-gold hover:text-ink transition-colors">
             مشاهده همه مقالات ←
           </NuxtLink>
         </div>

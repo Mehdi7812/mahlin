@@ -28,7 +28,7 @@
       <!-- دکمه‌های دسکتاپ -->
       <div class="nav-in hidden md:flex items-center gap-5">
         <NuxtLink
-          to="/journal"
+          to="/Blog"
           class="view-all-link relative flex items-center gap-2 text-xs font-bold text-gold hover:text-ink transition-colors duration-300 group"
         >
           <span class="relative">
@@ -137,7 +137,7 @@
     <!-- دکمه موبایل -->
     <div v-if="blogs.length && !pending" class="flex justify-center mt-6 md:hidden">
       <NuxtLink
-        to="/journal"
+        to="/Blog"
         class="flex items-center gap-2 bg-ink/5 hover:bg-ink/10 text-ink text-xs font-bold px-6 py-3.5 rounded-full transition-colors duration-300"
       >
         <span>مشاهده همه مقالات</span>
