@@ -94,8 +94,8 @@
                     class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-inkSoft text-[15px] place-self-center place-items-center"
                   />
                   <DatePicker
-                    v-if="DatePicker"
-                    v-model="form.birth_date"
+                    ref="birthPicker"
+                    v-model="birthdayModel"
                     type="date"
                     locale="fa"
                     simple
@@ -104,7 +104,11 @@
                     format="YYYY-MM-DD"
                     display-format="jYYYY/jMM/jDD"
                     custom-input="#birth-date-input"
-                  />
+                    @year-change="selectFirstDay"
+                    @month-change="selectFirstDay"
+                    @change="profileErrors.birthday = ''"
+                  >
+                  </DatePicker>
                 </div>
                 <template #fallback>
                   <input
@@ -762,6 +766,24 @@ function toJalaliDisplay(gregorianStr) {
 }
 
 const birthDateDisplay = computed(() => toJalaliDisplay(form.birth_date));
+
+const birthPicker = ref(null)
+
+/** بعد از تغییر سال/ماه، اولین روزِ قابل‌انتخاب ماه (معمولاً ۱) را انتخاب می‌کند. */
+function selectFirstDay() {
+  const vm = birthPicker.value
+  if (!vm) return
+
+  const firstDay = vm.month.flat().find((d) => d.date && !d.disabled)
+  if (firstDay) vm.selectDay(firstDay)
+}
+
+/** آیا روزِ انتخاب‌شده در همان سال و ماهی است که تقویم نشان می‌دهد؟ */
+function hasDayInView(vm) {
+  const selected = vm?.selectedDates?.[0]
+  if (!selected || !vm?.date) return false
+  return selected.xYear() === vm.date.xYear() && selected.xMonth() === vm.date.xMonth()
+}
 </script>
 
 <style>

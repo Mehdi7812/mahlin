@@ -19,190 +19,192 @@
       </div>
     </header>
 
-    <!-- نوار ابزار -->
-    <div class="sticky top-[71px] md:top-[81px] z-30 -mx-4 px-4 md:mx-0 md:px-0 py-2.5 mb-6 bg-cream/95 backdrop-blur-md border-b border-ink/[0.04] md:border-b-0">
-      <div class="relative flex items-center gap-2">
+    <!-- ════════ نوار ابزار شناور شیشه‌ای جدید (بدون برش لبه‌ها در اسکرول) ════════ -->
+    <div class="sticky top-[75px] md:top-[85px] z-30 mb-8 transition-all duration-300">
+      <div class="bg-card/85 backdrop-blur-md border border-ink/[0.06] rounded-[22px] md:rounded-full px-3.5 py-2 shadow-[0_12px_30px_-10px_rgba(63,55,51,0.12)]">
+        <div class="relative flex items-center gap-2.5">
 
-        <!-- جستجو -->
-        <div ref="searchContainerRef" class="flex-1 min-w-0">
-          <div class="relative">
-            <svg class="absolute start-3.5 top-1/2 -translate-y-1/2 text-ink/40 pointer-events-none" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-              <circle cx="11" cy="11" r="6.5"/>
-              <path d="M20 20 L16 16" stroke-linecap="round"/>
-            </svg>
-            <input
-              v-model="searchQuery"
-              type="search"
-              placeholder="جستجو در محصولات..."
-              aria-label="جستجو در محصولات"
-              class="w-full h-10 ps-10 pe-3 bg-card border border-ink/[0.06] rounded-full text-sm text-ink placeholder:text-ink/40 focus:outline-none focus:border-gold/40 transition-colors"
-              @focus="onSearchFocus"
-            />
-          </div>
+          <!-- جستجو -->
+          <div ref="searchContainerRef" class="flex-1 min-w-0">
+            <div class="relative">
+              <svg class="absolute start-3.5 top-1/2 -translate-y-1/2 text-ink/40 pointer-events-none" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <circle cx="11" cy="11" r="6.5"/>
+                <path d="M20 20 L16 16" stroke-linecap="round"/>
+              </svg>
+              <input
+                v-model="searchQuery"
+                type="search"
+                placeholder="جستجو در محصولات تخصصی ماهلین..."
+                aria-label="جستجو در محصولات"
+                class="w-full h-10 ps-10 pe-3 bg-ink/[0.03] focus:bg-card border-0 focus:ring-1 focus:ring-gold/30 rounded-full text-sm text-ink placeholder:text-ink/40 focus:outline-none transition-all duration-200"
+                @focus="onSearchFocus"
+              />
+            </div>
 
-          <!-- دراپ‌داون نتایج (عرض کامل نوار، حتی در موبایل) -->
-          <Transition
-            enter-active-class="transition-all duration-200 ease-out"
-            enter-from-class="opacity-0 translate-y-1.5 scale-[0.98]"
-            enter-to-class="opacity-100 translate-y-0 scale-100"
-            leave-active-class="transition-all duration-150 ease-in"
-            leave-from-class="opacity-100 translate-y-0 scale-100"
-            leave-to-class="opacity-0 translate-y-1.5 scale-[0.98]"
-          >
-            <div
-              v-if="showSearchDropdown"
-              class="absolute inset-x-0 top-full mt-2 bg-card border border-ink/[0.06] rounded-2xl shadow-[0_16px_40px_rgba(0,0,0,0.08)] z-50 overflow-hidden"
+            <!-- دراپ‌داون نتایج جستجو -->
+            <Transition
+              enter-active-class="transition-all duration-200 ease-out"
+              enter-from-class="opacity-0 translate-y-2 scale-[0.99]"
+              enter-to-class="opacity-100 translate-y-0 scale-100"
+              leave-active-class="transition-all duration-150 ease-in"
+              leave-from-class="opacity-100 translate-y-0 scale-100"
+              leave-to-class="opacity-0 translate-y-2 scale-[0.99]"
             >
-              <!-- لودینگ -->
-              <div v-if="searchLoading" class="p-4 space-y-3">
-                <div v-for="n in 3" :key="n" class="flex items-center gap-3 animate-pulse">
-                  <div class="w-11 h-11 rounded-xl bg-ink/[0.06] shrink-0"></div>
-                  <div class="flex-1 space-y-2">
-                    <div class="h-3 w-3/4 bg-ink/[0.06] rounded-full"></div>
-                    <div class="h-2.5 w-1/3 bg-ink/[0.06] rounded-full"></div>
+              <div
+                v-if="showSearchDropdown"
+                class="absolute inset-x-0 top-[calc(100%+10px)] bg-card border border-ink/[0.08] rounded-2xl shadow-[0_20px_50px_rgba(63,55,51,0.15)] z-50 overflow-hidden"
+              >
+                <!-- لودینگ -->
+                <div v-if="searchLoading" class="p-4 space-y-3">
+                  <div v-for="n in 3" :key="n" class="flex items-center gap-3 animate-pulse">
+                    <div class="w-11 h-11 rounded-xl bg-ink/[0.06] shrink-0"></div>
+                    <div class="flex-1 space-y-2">
+                      <div class="h-3 w-3/4 bg-ink/[0.06] rounded-full"></div>
+                      <div class="h-2.5 w-1/3 bg-ink/[0.06] rounded-full"></div>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <!-- نتایج -->
-              <div v-else-if="searchResults.length" class="max-h-[60vh] md:max-h-[420px] overflow-y-auto">
-                <button
-                  v-for="r in searchResults"
-                  :key="r.id"
-                  type="button"
-                  class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-cardLight transition-colors text-start border-b border-ink/[0.04] last:border-b-0"
-                  @click="goToSearchResult(r)"
-                >
-                  <img
-                    :src="r.cover_image || '/assets/founder-portrait.png'"
-                    :alt="r.title_fa"
-                    class="w-11 h-11 rounded-xl object-cover shrink-0 bg-ink/[0.04]"
-                    @error="(e) => { e.target.src = '/assets/founder-portrait.png'; e.target.onerror = null }"
-                  />
-                  <div class="flex-1 min-w-0">
-                    <p class="text-[13px] font-bold text-ink truncate">{{ r.title_fa }}</p>
-                    <p v-if="r.category_title_fa" class="text-[11px] text-ink/45 mt-0.5 truncate">{{ r.category_title_fa }}</p>
-                  </div>
-                  <div class="text-end shrink-0">
-                    <div v-if="r.discount > 0" class="text-[10px] text-ink/35 line-through tabular-nums">
-                      {{ money(r.price) }}
+                <!-- نتایج -->
+                <div v-else-if="searchResults.length" class="max-h-[60vh] md:max-h-[420px] overflow-y-auto">
+                  <button
+                    v-for="r in searchResults"
+                    :key="r.id"
+                    type="button"
+                    class="w-full flex items-center gap-3 px-4 py-3 hover:bg-cardLight transition-colors text-start border-b border-ink/[0.04] last:border-b-0"
+                    @click="goToSearchResult(r)"
+                  >
+                    <img
+                      :src="r.cover_image || '/assets/founder-portrait.png'"
+                      :alt="r.title_fa"
+                      class="w-11 h-11 rounded-xl object-cover shrink-0 bg-ink/[0.04]"
+                      @error="(e) => { e.target.src = '/assets/founder-portrait.png'; e.target.onerror = null }"
+                    />
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[13px] font-bold text-ink truncate">{{ r.title_fa }}</p>
+                      <p v-if="r.category_title_fa" class="text-[11px] text-ink/45 mt-0.5 truncate">{{ r.category_title_fa }}</p>
                     </div>
-                    <div class="text-xs font-bold text-gold tabular-nums">
-                      {{ money(r.final_price) }} <span class="text-[10px] text-ink/40 font-normal">تومان</span>
+                    <div class="text-end shrink-0">
+                      <div v-if="r.discount > 0" class="text-[10px] text-ink/35 line-through tabular-nums">
+                        {{ money(r.price) }}
+                      </div>
+                      <div class="text-xs font-bold text-gold tabular-nums">
+                        {{ money(r.final_price) }} <span class="text-[10px] text-ink/40 font-normal">تومان</span>
+                      </div>
                     </div>
-                  </div>
-                </button>
+                  </button>
 
-                <button
-                  v-if="searchPage < searchTotalPages"
-                  type="button"
-                  class="w-full flex items-center justify-center gap-1.5 py-3 text-xs font-bold text-gold hover:bg-cardLight transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                  :disabled="searchLoadingMore"
-                  @click="loadMoreSearchResults"
-                >
-                  <svg v-if="searchLoadingMore" class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M21 12a9 9 0 1 1-9-9" stroke-linecap="round" />
+                  <button
+                    v-if="searchPage < searchTotalPages"
+                    type="button"
+                    class="w-full flex items-center justify-center gap-1.5 py-3 text-xs font-bold text-gold hover:bg-cardLight transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                    :disabled="searchLoadingMore"
+                    @click="loadMoreSearchResults"
+                  >
+                    <svg v-if="searchLoadingMore" class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <path d="M21 12a9 9 0 1 1-9-9" stroke-linecap="round" />
+                    </svg>
+                    {{ searchLoadingMore ? 'در حال دریافت...' : 'مشاهده‌ی نتایج بیشتر' }}
+                  </button>
+                </div>
+
+                <!-- بدون نتیجه -->
+                <div v-else class="flex flex-col items-center text-center py-7 px-4">
+                  <svg class="w-7 h-7 text-ink/20 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="11" cy="11" r="7"/>
+                    <path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
                   </svg>
-                  {{ searchLoadingMore ? 'در حال دریافت...' : 'مشاهده‌ی نتایج بیشتر' }}
-                </button>
+                  <p class="text-xs text-ink/45">نتیجه‌ای برای «{{ searchQuery.trim() }}» یافت نشد</p>
+                </div>
               </div>
+            </Transition>
+          </div>
 
-              <!-- بدون نتیجه -->
-              <div v-else class="flex flex-col items-center text-center py-7 px-4">
-                <svg class="w-7 h-7 text-ink/20 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <circle cx="11" cy="11" r="7"/>
-                  <path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
-                </svg>
-                <p class="text-xs text-ink/45">نتیجه‌ای برای «{{ searchQuery.trim() }}» یافت نشد</p>
-              </div>
-            </div>
-          </Transition>
-        </div>
-
-        <!-- فیلتر (فقط موبایل، آیکونی) -->
-        <button
-          type="button"
-          class="md:hidden relative shrink-0 w-10 h-10 grid place-items-center rounded-full bg-ink text-cream active:scale-95 transition-transform"
-          :aria-label="activeFiltersCount ? `فیلترها (${fa(activeFiltersCount)} فعال)` : 'فیلترها'"
-          @click="mobileFilterOpen = true"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M4 6h16M7 12h10M10 18h4" stroke-linecap="round" />
-          </svg>
-          <span
-            v-if="activeFiltersCount > 0"
-            class="absolute -top-1 -end-1 min-w-[18px] h-[18px] px-1 bg-gold text-card text-[10px] font-bold rounded-full grid place-items-center ring-2 ring-cream"
-          >
-            {{ fa(activeFiltersCount) }}
-          </span>
-        </button>
-
-        <!-- مرتب‌سازی -->
-        <div ref="sortDropdownRef" class="relative shrink-0">
+          <!-- فیلتر (مخصوص موبایل) -->
           <button
             type="button"
-            class="h-10 w-10 md:w-auto md:px-4 flex items-center justify-center md:justify-start gap-2 bg-card hover:bg-cardLight border border-ink/[0.06] hover:border-gold/30 rounded-full text-sm text-ink transition-colors"
-            :aria-label="`مرتب‌سازی: ${currentSortLabel}`"
-            :aria-expanded="isSortOpen"
-            @click="isSortOpen = !isSortOpen"
+            class="md:hidden relative shrink-0 w-10 h-10 grid place-items-center rounded-full bg-ink text-cream active:scale-95 transition-all"
+            :aria-label="activeFiltersCount ? `فیلترها (${fa(activeFiltersCount)} فعال)` : 'فیلترها'"
+            @click="mobileFilterOpen = true"
           >
-            <span class="relative">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="text-ink/60" aria-hidden="true">
-                <path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-              <!-- نقطه: مرتب‌سازی غیرپیش‌فرض (موبایل) -->
-              <span
-                v-if="sortBy !== DEFAULT_SORT.value || sortDirection !== DEFAULT_SORT.direction"
-                class="md:hidden absolute -top-0.5 -end-0.5 w-1.5 h-1.5 rounded-full bg-gold"
-              ></span>
-            </span>
-            <span class="hidden md:inline text-ink/55">مرتب‌سازی:</span>
-            <span class="hidden md:inline font-bold">{{ currentSortLabel }}</span>
-            <svg
-              class="hidden md:block text-ink/40 transition-transform duration-200"
-              :class="isSortOpen && 'rotate-180'"
-              width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"
-            >
-              <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M4 6h16M7 12h10M10 18h4" stroke-linecap="round" />
             </svg>
+            <span
+              v-if="activeFiltersCount > 0"
+              class="absolute -top-1 -end-1 min-w-[18px] h-[18px] px-1 bg-gold text-card text-[10px] font-bold rounded-full grid place-items-center ring-2 ring-cream"
+            >
+              {{ fa(activeFiltersCount) }}
+            </span>
           </button>
 
-          <Transition
-            enter-active-class="transition-all duration-200 ease-out"
-            enter-from-class="opacity-0 translate-y-1.5 scale-95"
-            enter-to-class="opacity-100 translate-y-0 scale-100"
-            leave-active-class="transition-all duration-150 ease-in"
-            leave-from-class="opacity-100 translate-y-0 scale-100"
-            leave-to-class="opacity-0 translate-y-1.5 scale-95"
-          >
-            <div
-              v-if="isSortOpen"
-              class="absolute end-0 top-full mt-2 w-48 bg-card border border-ink/[0.06] rounded-2xl shadow-[0_12px_30px_rgba(0,0,0,0.08)] py-1.5 z-50 origin-top-left"
+          <!-- مرتب‌سازی -->
+          <div ref="sortDropdownRef" class="relative shrink-0">
+            <button
+              type="button"
+              class="h-10 w-10 md:w-auto md:px-4 flex items-center justify-center md:justify-start gap-2 bg-ink/[0.03] hover:bg-ink/[0.06] rounded-full text-sm text-ink transition-all"
+              :aria-label="`مرتب‌سازی: ${currentSortLabel}`"
+              :aria-expanded="isSortOpen"
+              @click="isSortOpen = !isSortOpen"
             >
-              <button
-                v-for="opt in sortOptions"
-                :key="opt.value + opt.direction"
-                type="button"
-                class="w-full text-start px-4 py-2.5 text-sm transition-colors flex items-center justify-between"
-                :class="sortBy === opt.value && sortDirection === opt.direction ? 'text-gold font-bold bg-gold/5' : 'text-ink/70 hover:bg-cardLight hover:text-ink'"
-                @click="selectSort(opt)"
-              >
-                <span>{{ opt.label }}</span>
-                <svg v-if="sortBy === opt.value && sortDirection === opt.direction" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-gold" aria-hidden="true">
-                  <path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round" />
+              <span class="relative">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="text-ink/60" aria-hidden="true">
+                  <path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
-              </button>
-            </div>
-          </Transition>
-        </div>
+                <span
+                  v-if="sortBy !== DEFAULT_SORT.value || sortDirection !== DEFAULT_SORT.direction"
+                  class="md:hidden absolute -top-0.5 -end-0.5 w-1.5 h-1.5 rounded-full bg-gold animate-ping"
+                ></span>
+              </span>
+              <span class="hidden md:inline text-ink/55">مرتب‌سازی:</span>
+              <span class="hidden md:inline font-bold text-ink">{{ currentSortLabel }}</span>
+              <svg
+                class="hidden md:block text-ink/40 transition-transform duration-200"
+                :class="isSortOpen && 'rotate-180'"
+                width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"
+              >
+                <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
 
+            <!-- دراپ‌داون مرتب‌سازی -->
+            <Transition
+              enter-active-class="transition-all duration-200 ease-out"
+              enter-from-class="opacity-0 translate-y-2 scale-95"
+              enter-to-class="opacity-100 translate-y-0 scale-100"
+              leave-active-class="transition-all duration-150 ease-in"
+              leave-from-class="opacity-100 translate-y-0 scale-100"
+              leave-to-class="opacity-0 translate-y-2 scale-95"
+            >
+              <div
+                v-if="isSortOpen"
+                class="absolute end-0 top-[calc(100%+10px)] w-48 bg-card border border-ink/[0.08] rounded-2xl shadow-[0_16px_40px_rgba(63,55,51,0.15)] py-1.5 z-50 origin-top-left"
+              >
+                <button
+                  v-for="opt in sortOptions"
+                  :key="opt.value + opt.direction"
+                  type="button"
+                  class="w-full text-start px-4 py-2.5 text-sm transition-colors flex items-center justify-between"
+                  :class="sortBy === opt.value && sortDirection === opt.direction ? 'text-gold font-bold bg-gold/5' : 'text-ink/70 hover:bg-cardLight hover:text-ink'"
+                  @click="selectSort(opt)"
+                >
+                  <span>{{ opt.label }}</span>
+                  <svg v-if="sortBy === opt.value && sortDirection === opt.direction" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-gold" aria-hidden="true">
+                    <path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+              </div>
+            </Transition>
+          </div>
+
+        </div>
       </div>
     </div>
 
     <!-- گرید: سایدبار + محصولات -->
     <div class="flex gap-8 lg:gap-10">
 
-      <!-- سایدبار -->
+      <!-- سایدبار دسکتاپ -->
       <aside class="w-[260px] hidden md:block shrink-0">
         <ShopFilterPanel
           :cats="categories"
@@ -347,7 +349,6 @@
         </div>
       </Transition>
     </Teleport>
-
   </div>
 </template>
 
@@ -362,10 +363,8 @@ const router = useRouter();
 const isSortOpen      = ref(false);
 const sortDropdownRef = ref(null);
 
-// گزینه‌های مرتب‌سازی — value با API ست شده
 const sortOptions = [
-  { label: 'پیش‌فرض',   value: 'order',   direction: 'desc' },
-  { label: 'جدیدترین',   value: 'created', direction: 'desc' },
+  { label: 'جدیدترین',   value: 'order', direction: 'desc' },
   { label: 'ارزان‌ترین', value: 'price',   direction: 'asc'  },
   { label: 'گران‌ترین',  value: 'price',   direction: 'desc' },
   { label: 'پربازدید',   value: 'visits',  direction: 'desc' },
@@ -373,8 +372,6 @@ const sortOptions = [
 
 const DEFAULT_SORT = sortOptions[0];
 
-// ?order=visits  |  ?order=price&direction=asc
-// direction اختیاری است؛ اگر نبود، اولین گزینه با همان order انتخاب می‌شود
 function sortFromQuery(query) {
   const order = String(query.order || '');
   const dir   = query.direction === 'asc' || query.direction === 'desc' ? query.direction : null;
@@ -389,7 +386,6 @@ const currentSortLabel = computed(() =>
   sortOptions.find(o => o.value === sortBy.value && o.direction === sortDirection.value)?.label ?? 'پیش‌فرض'
 );
 
-// مرتب‌سازی در URL نوشته می‌شود؛ fetch را watcher پایین انجام می‌دهد
 function selectSort(opt) {
   isSortOpen.value = false;
   const { order, direction, ...rest } = route.query;
@@ -397,7 +393,6 @@ function selectSort(opt) {
 
   if (opt !== DEFAULT_SORT) {
     query.order = opt.value;
-    // direction فقط وقتی لازم است که چند گزینه order یکسان دارند (قیمت)
     if (sortOptions.filter(o => o.value === opt.value).length > 1) {
       query.direction = opt.direction;
     }
@@ -417,13 +412,15 @@ function handleClickOutside(e) {
 onMounted(() => { if (import.meta.client) window.addEventListener('click', handleClickOutside); });
 onUnmounted(() => { if (import.meta.client) window.removeEventListener('click', handleClickOutside); });
 
-// ─── State ────────────────────────────────────────────────
-const searchQuery       = ref('');
-const mobileFilterOpen  = ref(false);
-const priceRange        = ref([0, 50000000]);
-const maxPrice          = ref(50000000);
+// ─── سقف قیمت مبنای اسلایدر (۱۰ میلیون تومان) ───────────────────────
+const FIXED_MAX_PRICE = 100000000; // ۱0۰,۰۰۰,۰۰۰ تومان
 
-// ─── جستجوی سریع (Quick Search Dropdown) ───────────────────
+const searchQuery      = ref('');
+const mobileFilterOpen = ref(false);
+const maxPrice         = ref(FIXED_MAX_PRICE); // به عنوان متغیر واکنشی قابل رشد تعریف شد
+const priceRange       = ref([0, FIXED_MAX_PRICE]);
+
+// ─── جستجوی سریع ───────────────────
 const SEARCH_PAGE_SIZE   = 5;
 const searchContainerRef = ref(null);
 const showSearchDropdown = ref(false);
@@ -434,7 +431,6 @@ const searchPage         = ref(1);
 const searchTotalCount   = ref(0);
 const searchTotalPages   = computed(() => Math.ceil(searchTotalCount.value / SEARCH_PAGE_SIZE) || 1);
 
-// شناسه‌ی آخرین درخواست؛ جواب درخواست‌های قدیمی‌تر نادیده گرفته می‌شود
 let searchRequestId = 0;
 
 function requestSearch(word, page) {
@@ -447,7 +443,6 @@ function requestSearch(word, page) {
   });
 }
 
-// اگر API تعداد کل را نداد: صفحه‌ی پر یعنی احتمالاً ادامه دارد
 function estimateTotal(response, loaded, lastPageSize) {
   const total = Number(response?.TotalCount);
   if (Number.isFinite(total) && total > 0) return total;
@@ -500,7 +495,7 @@ async function loadMoreSearchResults() {
 
   try {
     const response = await requestSearch(word, nextPage);
-    if (reqId !== searchRequestId) return; // در این فاصله عبارت جستجو عوض شده
+    if (reqId !== searchRequestId) return;
 
     if (response?.code === 2000) {
       const list = response.Result || [];
@@ -529,7 +524,7 @@ function goToSearchResult(item) {
 
 // ─── Data از API ──────────────────────────────────────────
 const products    = ref([]);
-const categories  = ref([]);   // از categories API جدا پر میشه
+const categories  = ref([]);   
 const totalCount  = ref(0);
 const currentPage = ref(1);
 const PAGE_SIZE   = 24;
@@ -538,7 +533,6 @@ const error       = ref(null);
 
 const totalPages = computed(() => Math.ceil(totalCount.value / PAGE_SIZE));
 
-// ─── Query params ─────────────────────────────────────────
 const activeCatId = computed(() => {
   const v = route.query.cat_id;
   return v ? Number(v) : null;
@@ -548,7 +542,6 @@ const activeCatTitle = computed(() =>
   categories.value.find(c => c.id === activeCatId.value)?.title_fa ?? null
 );
 
-// تعداد محصول هر کتگوری (بر اساس نتایج صفحه فعلی)
 const catCounts = computed(() => {
   const counts = {};
   categories.value.forEach(c => { counts[c.id] = 0; });
@@ -558,10 +551,20 @@ const catCounts = computed(() => {
   return counts;
 });
 
+// محاسبه پویای تعداد فیلتر فعال با در نظر گرفتن رِنج‌های جدید بی نهایت واقعی
 const activeFiltersCount = computed(() => {
   let n = 0;
   if (activeCatId.value) n++;
-  if (priceRange.value[0] > 0 || priceRange.value[1] < maxPrice.value) n++;
+
+  const minPriceToSend = priceRange.value[0] <= 0 ? 1 : priceRange.value[0];
+  
+  // اگر مقدار انتخاب شده بزرگتر یا مساوی سقف داینامیک یا مبنا باشد، سقف نخواهیم داشت (بی‌نهایت واقعی)
+  const isInfiniteMax = priceRange.value[1] >= maxPrice.value || priceRange.value[1] >= FIXED_MAX_PRICE;
+  const maxPriceToSend = isInfiniteMax ? 99999999 : priceRange.value[1];
+
+  if (minPriceToSend > 1 || maxPriceToSend < 99999999) {
+    n++;
+  }
   return n;
 });
 
@@ -581,36 +584,33 @@ async function fetchProducts() {
     withAttrib: true,
   };
 
-  // کتگوری
   if (activeCatId.value) {
     payload.category = String(activeCatId.value);
   }
 
-  // جستجو
-  // if (searchQuery.value.trim()) {
-  //   payload.searchWord = searchQuery.value.trim();
-  // }
+  // ─── منطق فیلترهای هوشمند رنج قیمت بی‌نهایت واقعی ───
+  let minPriceToSend = priceRange.value[0];
+  let maxPriceToSend = priceRange.value[1];
 
-  // فیلتر قیمت (حالا هم min و هم max واقعی از فیلتر می‌آد)
-  if (priceRange.value[0] > 0 || priceRange.value[1] < maxPrice.value) {
-    payload.minPrice = priceRange.value[0];
-    payload.maxPrice = priceRange.value[1];
+  if (minPriceToSend <= 0) {
+    minPriceToSend = 1;
+  }
+
+  // اگر سقف انتخابی به تهِ اسلایدر چسبیده باشد (یا بزرگتر مساوی سقف پویای فعلی باشد) یعنی کاربر فیلتر سقف نمی‌خواهد
+  if (maxPriceToSend >= maxPrice.value || maxPriceToSend >= FIXED_MAX_PRICE) {
+    maxPriceToSend = 99999999;
+  }
+
+  // اگر رِنج انتخابی کل محصولات را شامل نشود [1, 99999999]، فیلترها را به وب‌سرویس بفرست
+  if (minPriceToSend > 1 || maxPriceToSend < 99999999) {
+    payload.minPrice = minPriceToSend;
+    payload.maxPrice = maxPriceToSend;
   }
 
   try {
     const response = await useGarnetApiFetch('products/indexLite', payload);
-
     products.value   = response.Products   || [];
     totalCount.value = response.TotalCount ?? 0;
-
-    // maxPrice رو از بیشترین قیمت محصولات بساز (فقط بار اول)
-    if (maxPrice.value === 50000000 && products.value.length) {
-      const max = Math.max(...products.value.map(p => p.price || 0));
-      if (max > 0) {
-        maxPrice.value      = max;
-        priceRange.value[1] = max;
-      }
-    }
   } catch (err) {
     console.error('[Shop] خطا در دریافت محصولات:', err);
     error.value = err;
@@ -631,16 +631,15 @@ async function fetchCategories() {
   }
 }
 
-// جستجو از هدر (/shop?q=...) در کادر جستجو نوشته شود
 if (typeof route.query.q === 'string' && route.query.q.trim()) {
   searchQuery.value = route.query.q.trim();
 }
 
-// ─── اولین بار ───────────────────────────────────────────
+// ─── فراخوانی اولیه ───────────────────────────────────────────
 await fetchCategories();
 await fetchProducts();
 
-// ─── Watch: تغییر کتگوری یا مرتب‌سازی از URL ─────────────
+// ─── Watch: تغییر کوئری آدرس ─────────────
 watch(
   () => [route.query.cat_id, route.query.order, route.query.direction],
   () => {
@@ -652,31 +651,28 @@ watch(
   },
 );
 
-// ─── Watch: جستجو (debounce برای گرید اصلی + دراپ‌داون سریع) ─
+// ─── Watch: جستجو ─────────
 let searchTimer = null;
 watch(searchQuery, (val) => {
   clearTimeout(searchTimer);
-
   const trimmed = val.trim();
 
   if (!trimmed) {
-    searchRequestId++; // جواب درخواست‌های در راه نادیده گرفته شود
+    searchRequestId++;
     showSearchDropdown.value = false;
     searchResults.value      = [];
     searchTotalCount.value   = 0;
-    searchLoading.value      = false;
+    searchLoading.value = false;
     return;
   }
 
   searchTimer = setTimeout(() => fetchSearchSuggestions(trimmed), 400);
 });
 
-// جستجوی دوباره از هدر وقتی کاربر همین حالا در فروشگاه است
 watch(() => route.query.q, (q) => {
   if (typeof q === 'string' && q.trim()) searchQuery.value = q.trim();
 });
 
-// جستجوی آمده از هدر: نتایج بعد از mount نمایش داده شود
 onMounted(() => {
   const q = searchQuery.value.trim();
   if (q) fetchSearchSuggestions(q);
@@ -690,7 +686,6 @@ function goToPage(p) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// صفحات قابل نمایش با ellipsis
 const visiblePages = computed(() => {
   const total   = totalPages.value;
   const current = currentPage.value;
@@ -710,7 +705,6 @@ const visiblePages = computed(() => {
 
 // ─── Helpers ──────────────────────────────────────────────
 function toggleCat(catId) {
-  // مرتب‌سازی فعلی حفظ شود
   const { cat_id, ...rest } = route.query;
   router.push({
     path: '/shop',
@@ -718,8 +712,16 @@ function toggleCat(catId) {
   });
 }
 
-// این تابع فقط پس از اتمام debounce داخل ShopFilterPanel صدا زده می‌شود
+// به‌روزرسانی رنج قیمت به صورت داینامیک و بدون محدودیت
 function updatePriceRange(range) {
+  // اگر مقدار جدید حداکثر بزرگتر از حداکثر پویای فعلی باشد، سقف اسلایدر را ارتقا بده
+  if (range[1] > maxPrice.value) {
+    maxPrice.value = range[1];
+  } else if (range[1] <= FIXED_MAX_PRICE) {
+    // اگر کاربر رنج را کم کرد و به زیر ۱۰ میلیون آورد، سقف را مجددا روی همان ۱۰ میلیون قفل کن تا ظاهر اسلایدر تمیز بماند
+    maxPrice.value = FIXED_MAX_PRICE;
+  }
+
   priceRange.value  = range;
   currentPage.value = 1;
   fetchProducts();
@@ -728,7 +730,8 @@ function updatePriceRange(range) {
 function resetAll() {
   const hadQuery = Object.keys(route.query).length > 0;
 
-  priceRange.value    = [0, maxPrice.value];
+  maxPrice.value      = FIXED_MAX_PRICE; // بازگرداندن سقف به مبنای ۱۰ میلیون
+  priceRange.value    = [0, FIXED_MAX_PRICE];
   searchQuery.value   = '';
   sortBy.value        = DEFAULT_SORT.value;
   sortDirection.value = DEFAULT_SORT.direction;
@@ -738,7 +741,6 @@ function resetAll() {
   searchTotalCount.value = 0;
   searchRequestId++;
 
-  // اگر URL کوئری داشت، watcher بعد از تغییر مسیر fetch می‌کند (جلوگیری از درخواست دوباره)
   if (hadQuery) router.push({ path: '/shop' });
   else fetchProducts();
 }

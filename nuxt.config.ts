@@ -7,7 +7,7 @@ export default defineNuxtConfig({
 
   devtools: { enabled: true },
 
-  modules: ["@nuxtjs/tailwindcss", "@pinia/nuxt", "@nuxtjs/i18n", "@nuxt/icon"],
+  modules: ["@nuxtjs/tailwindcss", "@pinia/nuxt", "@nuxtjs/i18n", "@nuxt/icon", "nuxt-umami",],
 
   css: ["~/assets/css/main.css"],
 
@@ -16,6 +16,14 @@ export default defineNuxtConfig({
       htmlAttrs: { lang: "fa", dir: "rtl" },
 
       title: "ماهلین اسکین‌کر",
+
+      // ─── تگ مِتا برای جلوگیری از زوم خودکار در ایفون و اندروید ───
+      meta: [
+        {
+          name: "viewport",
+          content: "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        }
+      ],
 
       // پریلود فونت‌های حیاتی — تا وقتی CSS پارس بشه فونت‌ها از قبل
       // در حال دانلودن و پرش (FOUT) موقع لود صفحه دیده نمی‌شه
@@ -97,5 +105,12 @@ export default defineNuxtConfig({
     defaultDirection: "rtl",
     detectBrowserLanguage: false,
     vueI18n: "./i18n.config.ts",
+  },
+
+  umami: {
+    host: "https://analytics.sinatech-dm.com",
+    autoTrack: true,
+    tag: "GarnetCMS-V" + pkg.version,
+    id: "4d7b5da4-f2e4-4c7d-9d7c-9acb25512ea9",
   },
 });

@@ -42,27 +42,10 @@
             <img v-if="currentUser.photo" :src="currentUser.photo" alt="تصویر پروفایل" class="w-full h-full object-cover" />
             <span v-else class="font-display text-xl text-gold">{{ userInitial }}</span>
           </div>
-          <!-- <span class="absolute -bottom-0.5 -end-0.5 w-5 h-5 rounded-full bg-[#3f3733] grid place-items-center ring-2 ring-[#3f3733]">
-            <span class="w-full h-full rounded-full bg-gradient-to-br from-[#e8b4bc] to-gold grid place-items-center">
-              <Icon name="tabler:crown-filled" class="text-[9px] text-ink" />
-            </span>
-          </span> -->
         </div>
 
         <p class="font-bold text-[15px]">{{ currentUser.full_name || (currentUser.first_name + ' ' + currentUser.last_name) }}</p>
         <p class="text-[11px] text-cream/40 mt-1 font-latin" dir="ltr">0{{ currentUser.mobile }}</p>
-
-        <!-- استریپ آمار کوچک -->
-        <!-- <div class="flex items-center justify-center gap-2 mt-4">
-          <div class="flex-1 max-w-[104px] bg-white/[0.04] rounded-xl py-2 border border-white/[0.06]">
-            <p class="font-latin text-sm font-bold text-gold">{{ faNumber(totalOrders) }}</p>
-            <p class="text-[9.5px] text-cream/40 mt-0.5">سفارش</p>
-          </div>
-          <div class="flex-1 max-w-[104px] bg-white/[0.04] rounded-xl py-2 border border-white/[0.06]">
-            <p class="font-latin text-sm font-bold text-[#e8b4bc]">{{ faNumber(pendingOrdersCount) }}</p>
-            <p class="text-[9.5px] text-cream/40 mt-0.5">در جریان</p>
-          </div>
-        </div> -->
       </div>
       <div v-else class="relative px-6 py-6 text-center animate-pulse" aria-busy="true">
         <div class="mx-auto mb-3.5 h-16 w-16 rounded-full bg-white/10" />
@@ -78,8 +61,6 @@
 
       <!-- منو -->
       <nav class="relative px-3.5 py-4">
-        <!-- <p class="px-3.5 pb-2.5 text-[10.5px] font-bold text-cream/30 tracking-wide">امکانات عمومی</p> -->
-
         <NuxtLink
           v-for="item in items"
           :key="item.to"
@@ -98,13 +79,6 @@
             class="absolute start-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-full bg-gradient-to-b from-[#e8b4bc] to-gold"
           />
           <span class="relative flex-1 text-right truncate">{{ item.label }}</span>
-          <!-- <span
-            v-if="item.badge"
-            class="relative text-[10px] font-bold min-w-[18px] h-[18px] px-1 rounded-full grid place-items-center font-latin shrink-0"
-            :class="isActive(item.to) ? 'bg-gradient-to-br from-[#e8b4bc] to-gold text-ink' : 'bg-white/[0.08] text-cream/60'"
-          >
-            {{ faNumber(item.badge) }}
-          </span> -->
           <span
             class="relative w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300"
             :class="isActive(item.to) ? 'bg-gradient-to-br from-[#e8b4bc]/25 to-gold/25 text-gold' : 'bg-white/[0.04] text-cream/40 group-hover:bg-white/[0.07]'"
@@ -115,19 +89,35 @@
 
         <div class="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent my-3 mx-3.5" />
 
+        <!-- لینک تیکت با استایل اکتیو -->
         <NuxtLink
           to="/tickets"
-          class="group flex items-center gap-3 px-3 py-2 rounded-2xl text-[13.5px] font-semibold text-cream/50 hover:text-cream/80 transition-colors"
+          class="group relative flex items-center gap-3 px-3 py-2 mb-1 rounded-xl text-[13.5px] font-semibold transition-all duration-300"
+          :class="isActive('/tickets') ? 'text-cream hover:text-white' : 'text-cream/50 hover:text-cream'"
         >
-          <span class="flex-1 text-right">تیکت</span>
-          <span class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-white/[0.04] text-cream/40 group-hover:bg-white/[0.07] transition-colors">
+          <!-- پس‌زمینه فعال -->
+          <span
+            v-if="isActive('/tickets')"
+            class="absolute inset-0 rounded-xl bg-white/[0.06] border border-white/[0.08]"
+          />
+          <!-- نوار کناری فعال -->
+          <span
+            v-if="isActive('/tickets')"
+            class="absolute start-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-full bg-gradient-to-b from-[#e8b4bc] to-gold"
+          />
+          <span class="relative flex-1 text-right truncate">تیکت پشتیبانی</span>
+          <span
+            class="relative w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300"
+            :class="isActive('/tickets') ? 'bg-gradient-to-br from-[#e8b4bc]/25 to-gold/25 text-gold' : 'bg-white/[0.04] text-cream/40 group-hover:bg-white/[0.07]'"
+          >
             <Icon name="tabler:headset" class="text-[15px]" />
           </span>
         </NuxtLink>
 
+        <!-- خروج -->
         <button
           type="button"
-          class="group w-full flex items-center gap-3 px-3 py-2 rounded-2xl text-[13.5px] font-semibold text-[#e29a9a] hover:text-[#f0b3b3] transition-colors"
+          class="group w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13.5px] font-semibold text-[#e29a9a] hover:text-[#f0b3b3] transition-colors"
           @click="$emit('logout')"
         >
           <span class="flex-1 text-right">خروج از حساب</span>
@@ -166,6 +156,23 @@
           {{ faNumber(item.badge) }}
         </span>
       </NuxtLink>
+
+      <!-- تیکت در نوار موبایل -->
+      <NuxtLink
+        to="/tickets"
+        class="relative flex items-center gap-2 pl-3.5 pr-2 py-2 rounded-full text-[12.5px] font-bold whitespace-nowrap border transition-all duration-300"
+        :class="isActive('/tickets')
+          ? 'bg-ink text-cream border-ink'
+          : 'bg-cardLight text-inkSoft border-ink/10 hover:border-ink/20'"
+      >
+        <span
+          class="w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+          :class="isActive('/tickets') ? 'bg-gradient-to-br from-[#e8b4bc] to-gold text-ink' : 'bg-ink/5 text-inkSoft/70'"
+        >
+          <Icon name="tabler:headset" class="text-[12px]" />
+        </span>
+        تیکت پشتیبانی
+      </NuxtLink>
     </div>
   </div>
 </template>
@@ -195,7 +202,6 @@ const items = computed(() => [
   { to: '/account/favorites', label: 'علاقه‌مندی‌ها', icon: 'tabler:heart' },
   { to: '/account/addresses', label: 'آدرس‌ها', icon: 'tabler:map-pin' },
   { to: '/account/wallet', label: 'کیف پول', icon: 'tabler:wallet' },
-  // { to: '/account/loyalty', label: 'باشگاه مشتریان', icon: 'tabler:sparkles' },
   { to: '/account/profile', label: 'اطلاعات حساب', icon: 'tabler:user' },
 ]);
 

@@ -261,19 +261,18 @@
             ورود
           </NuxtLink>
 
-          <!-- منوی موبایل -->
+          <!-- منوی موبایل (دکمه‌ی همبرگر مورفینگ) -->
           <button
             type="button"
             :aria-label="open ? 'بستن منو' : 'باز کردن منو'"
-            class="md:hidden w-9 h-9 sm:w-10 sm:h-10 grid place-items-center rounded-full hover:bg-ink/5 transition-colors"
+            class="relative md:hidden w-6 h-6 sm:w-10 sm:h-10 grid place-items-center rounded-full hover:bg-ink/5 transition-colors"
             @click="open = !open"
           >
-            <svg v-if="!open" width="22" height="22" viewBox="0 0 24 24" stroke="#3F3A35" stroke-width="1.4" fill="none">
-              <path d="M4 8 H20 M4 13 H20 M4 18 H14" stroke-linecap="round" />
-            </svg>
-            <svg v-else width="20" height="20" viewBox="0 0 24 24" stroke="#3F3A35" stroke-width="1.4" fill="none">
-              <path d="M5 5 L19 19 M19 5 L5 19" stroke-linecap="round" />
-            </svg>
+            <span class="relative block h-[13px] w-[19px]">
+              <span class="burger-line" :class="open ? 'burger-line--top-open' : 'burger-line--top'" />
+              <span class="burger-line" :class="open ? 'burger-line--mid-open' : 'burger-line--mid'" />
+              <span class="burger-line" :class="open ? 'burger-line--bottom-open' : 'burger-line--bottom'" />
+            </span>
           </button>
         </div>
 
@@ -305,7 +304,7 @@
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
-      <div v-if="open" class="fixed inset-0 z-40 bg-ink/40 md:hidden" @click="open = false" />
+      <div v-if="open" class="fixed inset-0 z-40 bg-ink/40 backdrop-blur-[2px] md:hidden" @click="open = false" />
     </Transition>
 
     <Transition
@@ -319,67 +318,145 @@
       <nav
         v-if="open"
         aria-label="منوی موبایل"
-        class="fixed top-0 bottom-0 end-0 z-50 w-[80%] max-w-[320px] bg-cream shadow-2xl md:hidden flex flex-col overflow-y-auto"
+        class="fixed top-0 bottom-0 end-0 z-50 flex w-[85%] max-w-[340px] flex-col overflow-hidden bg-cream shadow-2xl md:hidden"
       >
-        <div class="flex items-center justify-between px-5 h-[72px] border-b border-ink/10">
-          <span class="font-display text-lg text-ink">منو</span>
-          <button
-            type="button"
-            aria-label="بستن منو"
-            class="w-9 h-9 grid place-items-center rounded-full hover:bg-ink/5 transition-colors"
-            @click="open = false"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" stroke="#3F3A35" stroke-width="1.4" fill="none">
-              <path d="M5 5 L19 19 M19 5 L5 19" stroke-linecap="round" />
-            </svg>
-          </button>
+        <!-- هدر دراور با گرادیان طلایی و گوی‌های نورانی -->
+        <div class="relative shrink-0 overflow-hidden border-b border-ink/10 bg-gradient-to-br from-gold/[0.08] via-cream to-cream">
+          <span class="pointer-events-none absolute -top-12 -end-12 size-40 rounded-full bg-gold/25 blur-3xl" aria-hidden="true" />
+          <span class="pointer-events-none absolute -bottom-16 -start-16 size-36 rounded-full bg-accent/10 blur-3xl" aria-hidden="true" />
+
+          <div class="relative flex h-[72px] items-center justify-between px-5">
+            <span class="flex items-center gap-2.5 font-display text-lg text-ink">
+              <span class="grid size-9 place-items-center rounded-full bg-gold/15 text-gold ring-1 ring-gold/20">
+                <Icon name="tabler:sparkles" class="text-base" />
+              </span>
+              منو
+            </span>
+            <button
+              type="button"
+              aria-label="بستن منو"
+              class="group grid size-9 place-items-center rounded-full text-ink transition-colors hover:bg-ink/5 active:scale-90"
+              @click="open = false"
+            >
+              <svg width="17" height="17" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" class="transition-transform duration-300 group-hover:rotate-90">
+                <path d="M5 5 L19 19 M19 5 L5 19" stroke-linecap="round" />
+              </svg>
+            </button>
+          </div>
         </div>
 
-        <!-- کاربر -->
-        <NuxtLink
-          v-if="isLoggedIn"
-          to="/account"
-          class="flex items-center gap-3 mx-5 mt-4 p-3 rounded-2xl bg-ink/[0.04]"
-          @click="open = false"
-        >
-          <img v-if="userPhoto" :src="userPhoto" alt="" class="w-11 h-11 rounded-full object-cover" />
-          <span v-else class="w-11 h-11 rounded-full grid place-items-center bg-gold/15 text-gold font-bold" aria-hidden="true"><svg v-if="!userInitial" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.2" /><path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke-linecap="round" /></svg><template v-else>{{ userInitial }}</template></span>
-          <span class="min-w-0">
-            <span class="block text-sm font-bold text-ink truncate">{{ displayName }}</span>
-            <span class="block text-xs text-ink/50 mt-0.5">مشاهده‌ی حساب کاربری</span>
-          </span>
-        </NuxtLink>
-        <NuxtLink
-          v-else-if="!authLoading"
-          to="/login"
-          class="flex items-center justify-center gap-2 mx-5 mt-4 h-12 rounded-2xl border border-ink/15 text-sm font-bold text-ink"
-          @click="open = false"
-        >
-          ورود / ثبت‌نام
-        </NuxtLink>
+        <!-- بدنه‌ی قابل اسکرول -->
+        <div class="flex-1 overflow-y-auto no-scrollbar">
+          <!-- کارت کاربر -->
+          <div class="px-5 pt-5">
+            <NuxtLink
+              v-if="isLoggedIn"
+              to="/account"
+              class="menu-reveal group relative flex items-center gap-3 overflow-hidden rounded-2xl border border-ink/10 bg-white/70 p-3.5 transition-colors hover:border-gold/40"
+              style="--i: 0"
+              @click="open = false"
+            >
+              <span class="pointer-events-none absolute -end-6 -top-6 size-16 rounded-full bg-gold/10 blur-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" aria-hidden="true" />
+              <span class="relative shrink-0">
+                <img v-if="userPhoto" :src="userPhoto" alt="" class="size-12 rounded-full object-cover ring-2 ring-gold/25" />
+                <span v-else class="grid size-12 place-items-center rounded-full bg-gold/15 font-bold text-gold ring-2 ring-gold/25" aria-hidden="true">
+                  <svg v-if="!userInitial" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.2" /><path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke-linecap="round" /></svg>
+                  <template v-else>{{ userInitial }}</template>
+                </span>
+              </span>
+              <span class="relative min-w-0 flex-1">
+                <span class="block truncate text-sm font-bold text-ink">{{ displayName }}</span>
+                <span class="mt-0.5 flex items-center gap-1 text-xs text-ink/50">
+                  مشاهده‌ی حساب کاربری
+                  <Icon name="tabler:chevron-left" class="text-[13px] transition-transform duration-300 group-hover:-translate-x-1 rtl:group-hover:translate-x-1" />
+                </span>
+              </span>
+            </NuxtLink>
 
-        <div class="flex flex-col px-5 py-2">
-          <NuxtLink to="/shop" class="text-base font-semibold py-4 border-b border-ink/10 text-ink" active-class="text-gold" @click="open = false">فروشگاه</NuxtLink>
-          <NuxtLink to="/Blog" class="text-base font-semibold py-4 border-b border-ink/10 text-ink" active-class="text-gold" @click="open = false">وبلاگ</NuxtLink>
-          <NuxtLink to="/about" class="text-base font-semibold py-4 border-b border-ink/10 text-ink" active-class="text-gold" @click="open = false">درباره ما</NuxtLink>
-          <NuxtLink to="/contact" class="text-base font-semibold py-4 border-b border-ink/10 text-ink" active-class="text-gold" @click="open = false">ارتباط با ما</NuxtLink>
+            <NuxtLink
+              v-else-if="!authLoading"
+              to="/login"
+              class="menu-reveal flex h-12 items-center justify-center gap-2 rounded-2xl border border-dashed border-gold/40 bg-gold/5 text-sm font-bold text-ink transition-colors hover:bg-gold/10"
+              style="--i: 0"
+              @click="open = false"
+            >
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <circle cx="12" cy="8" r="3.2" />
+                <path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke-linecap="round" />
+              </svg>
+              ورود / ثبت‌نام
+            </NuxtLink>
+
+            <div v-else class="menu-reveal h-16 animate-pulse rounded-2xl bg-ink/[0.06]" style="--i: 0" aria-hidden="true" />
+          </div>
+
+          <!-- دکمه‌ی جستجوی سریع -->
+          <div class="menu-reveal px-5 pt-3" style="--i: 1">
+            <button
+              type="button"
+              class="flex h-11 w-full items-center gap-2.5 rounded-2xl border border-ink/10 bg-white/60 px-4 text-sm font-semibold text-ink/60 transition-colors hover:border-gold/40 hover:text-ink"
+              @click="openSearch"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <circle cx="11" cy="11" r="6.5" />
+                <path d="M20 20 L16 16" stroke-linecap="round" />
+              </svg>
+              جستجوی محصول...
+            </button>
+          </div>
+
+          <!-- لینک‌های ناوبری -->
+          <div class="flex flex-col px-5 pt-3 pb-2">
+            <NuxtLink
+              v-for="(item, i) in navItems"
+              :key="item.to"
+              :to="item.to"
+              class="menu-reveal group relative flex items-center justify-between gap-3 border-b border-ink/10 py-3.5 text-ink last:border-b-0"
+              active-class="text-gold"
+              :style="{ '--i': i + 2 }"
+              @click="open = false"
+            >
+              <span
+                class="absolute inset-y-2.5 start-[-20px] w-[3px] rounded-full bg-gold opacity-0 transition-opacity duration-300 [.router-link-active_&]:opacity-100"
+                aria-hidden="true"
+              />
+              <span class="flex items-center gap-3">
+                <span class="grid size-9 shrink-0 place-items-center rounded-xl bg-ink/[0.04] text-ink/55 transition-colors duration-300 group-hover:bg-gold/10 group-hover:text-gold [.router-link-active_&]:bg-gold/10 [.router-link-active_&]:text-gold">
+                  <Icon :name="item.icon" class="text-[17px]" />
+                </span>
+                <span class="text-[15px] font-semibold">{{ item.label }}</span>
+              </span>
+              <Icon
+                name="tabler:chevron-left"
+                class="text-ink/25 transition-transform duration-300 group-hover:-translate-x-1 group-hover:text-gold rtl:group-hover:translate-x-1 [.router-link-active_&]:text-gold"
+              />
+            </NuxtLink>
+          </div>
         </div>
 
-        <div class="mt-auto px-5 py-5 border-t border-ink/10">
+        <!-- CTA سبد خرید (ثابت پایین) -->
+        <div class="menu-reveal shrink-0 border-t border-ink/10 bg-cream/95 px-5 py-5" style="--i: 6">
           <NuxtLink
             to="/cart"
-            class="flex items-center justify-between bg-ink text-cream rounded-lg px-4 py-3.5 font-bold text-sm"
+            class="group relative flex items-center justify-between overflow-hidden rounded-2xl bg-ink px-4 py-3.5 text-sm font-bold text-cream shadow-lg shadow-ink/10 transition-transform duration-200 active:scale-[0.98]"
             @click="open = false"
           >
-            <span class="flex items-center gap-2">
+            <span class="menu-cart-shine pointer-events-none absolute inset-0" aria-hidden="true" />
+            <span class="relative z-10 flex items-center gap-2">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
                 <path d="M5 7.5 H19 L17.8 20 H6.2 Z" stroke-linejoin="round" />
                 <path d="M8.5 7.5 V6 A3.5 3.5 0 0 1 15.5 6 V7.5" />
               </svg>
               سبد خرید
             </span>
-            <span v-if="customizer.cartCount > 0" class="bg-gold text-card text-xs rounded-full min-w-[20px] h-5 grid place-items-center px-1.5">
+            <span
+              v-if="customizer.cartCount > 0"
+              class="relative z-10 grid h-[22px] min-w-[22px] place-items-center rounded-full bg-gold px-1.5 text-[11px] font-bold text-card"
+            >
               {{ fa(customizer.cartCount) }}
+            </span>
+            <span v-else class="relative z-10 text-cream/60">
+              <Icon name="tabler:arrow-left" class="text-base rtl:rotate-180" />
             </span>
           </NuxtLink>
         </div>
@@ -407,6 +484,14 @@ const showSearchDropdown = ref(false);
 const route = useRoute();
 const router = useRouter();
 let searchTimer = null;
+
+// آیتم‌های منوی موبایل (برای رندر پویا + ورود پلکانی با انیمیشن‌دیلی)
+const navItems = [
+  { to: '/shop', label: 'فروشگاه', icon: 'tabler:building-store' },
+  { to: '/Blog', label: 'وبلاگ', icon: 'tabler:notebook' },
+  { to: '/about', label: 'درباره ما', icon: 'tabler:sparkles' },
+  { to: '/contact', label: 'ارتباط با ما', icon: 'tabler:phone' },
+];
 
 // ─── کاربر ─────────────────────────────────────────────────
 // منبع واحد: store که app.vue بعد از mount با users/userInfo پرش می‌کند
@@ -658,15 +743,60 @@ function submitFullSearch() {
   45%      { opacity: 0;   transform: scale(0) rotate(135deg); }
 }
 
-/* ════════ هاور ════════ */
+/* ════════ هاور لوگو ════════ */
 .logo-img { transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .logo-link:hover .logo-img  { transform: scale(1.03); }
 .logo-link:hover .logo-glow { opacity: 1; animation-play-state: paused; }
+
+/* ════════ ورود پلکانی آیتم‌های منوی موبایل ════════ */
+.menu-reveal {
+  opacity: 0;
+  animation: menuItemIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 70ms + 120ms);
+}
+@keyframes menuItemIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* درخشش عبوری روی دکمه‌ی سبد خرید داخل منوی موبایل */
+.menu-cart-shine {
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.18) 50%, transparent 65%);
+  transform: translateX(-130%);
+  transition: transform 0.9s ease;
+}
+.group:hover .menu-cart-shine { transform: translateX(130%); }
+
+/* ════════ دکمه‌ی همبرگر مورفینگ (سه خط ↔ ضربدر) ════════ */
+.burger-line {
+  position: absolute;
+  inset-inline: 0;
+  height: 1.6px;
+  border-radius: 999px;
+  background: #3F3A35;
+  transition:
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.2s ease,
+    top 0.3s ease,
+    bottom 0.3s ease,
+    width 0.3s ease;
+}
+.burger-line--top    { top: 0; }
+.burger-line--mid    { top: 50%; width: 72%; margin-inline-start: auto; transform: translateY(-50%); }
+.burger-line--bottom { bottom: 0; width: 50%; margin-inline-start: auto; }
+
+.burger-line--top-open    { top: 50%; transform: translateY(-50%) rotate(45deg); }
+.burger-line--mid-open    { top: 50%; width: 100%; opacity: 0; transform: translateY(-50%) scaleX(0); }
+.burger-line--bottom-open { bottom: 50%; width: 100%; transform: translateY(50%) rotate(-45deg); }
 
 @media (prefers-reduced-motion: reduce) {
   .logo-glow,
   .logo-shine { animation: none; }
   .sparkle { animation: none; opacity: 0.8; transform: scale(1); }
   .logo-link:hover .logo-img { transform: none; }
+
+  .menu-reveal { animation: none !important; opacity: 1 !important; }
+  .menu-cart-shine { transition: none !important; }
+  .burger-line { transition: none !important; }
 }
 </style>

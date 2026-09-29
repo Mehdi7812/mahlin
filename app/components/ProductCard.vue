@@ -12,9 +12,9 @@
       :style="{ background: `linear-gradient(to left, ${catInfo.stripeEnd}, ${catInfo.stripeStart})` }"
     />
 
-    <!-- بج تخفیف -->
+    <!-- بج تخفیف (فقط در صورتی که نیاز به تماس نباشد و تخفیف داشته باشد) -->
     <span
-      v-if="discountPercent > 0"
+      v-if="!isCallForPrice && discountPercent > 0"
       class="absolute top-3.5 start-3.5 z-20 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm"
       :style="{ backgroundColor: catInfo.accent }"
     >
@@ -102,40 +102,63 @@
           <span class="line-clamp-1">{{ productSubtitle }}</span>
         </div>
 
-        <!-- ═══════════ قیمت ═══════════ -->
+        <!-- ═══════════ قیمت / تماس بگیرید ═══════════ -->
         <div class="price-block relative mt-auto pt-3 flex items-end justify-between gap-2 border-t border-ink/[0.04]">
 
           <div class="flex flex-col gap-0.5 min-w-0">
-            <!-- قیمت اصلی خط‌خورده (فقط وقتی تخفیف داره) -->
-            <span
-              v-if="hasDiscount"
-              class="text-[12px] text-ink/40 line-through font-latin leading-none"
-            >
-              {{ money(product.price) }}
-            </span>
-
-            <!-- قیمت نهایی -->
-            <div class="flex items-baseline gap-1">
+            <!-- حالت قیمت صفر (تماس بگیرید) -->
+            <template v-if="isCallForPrice">
               <span
-                class="price-final font-black font-latin tracking-tight leading-none whitespace-nowrap"
-                :style="priceStyle"
+                class="price-final text-[15px] font-bold tracking-tight leading-none whitespace-nowrap"
+                :style="{ color: catInfo.accent }"
               >
-                {{ money(product.final_price) }}
+                تماس بگیرید
               </span>
-              <span class="text-[10px] text-ink/45 font-medium leading-none whitespace-nowrap">
-                {{ product.currency_name || 'تومان' }}
+            </template>
+
+            <!-- حالت عادی (دارای قیمت) -->
+            <template v-else>
+              <!-- قیمت اصلی خط‌خورده (فقط وقتی تخفیف داره) -->
+              <span
+                v-if="hasDiscount"
+                class="text-[12px] text-ink/40 line-through font-latin leading-none"
+              >
+                {{ money(product.price) }}
               </span>
-            </div>
+
+              <!-- قیمت نهایی -->
+              <div class="flex items-baseline gap-1">
+                <span
+                  class="price-final font-black font-latin tracking-tight leading-none whitespace-nowrap"
+                  :style="priceStyle"
+                >
+                  {{ money(product.final_price) }}
+                </span>
+                <span class="text-[10px] text-ink/45 font-medium leading-none whitespace-nowrap">
+                  {{ product.currency_name || 'تومان' }}
+                </span>
+              </div>
+            </template>
           </div>
 
-          <!-- آیکون کوچک وضعیت قیمت: تخفیف یا قیمت عادی -->
+          <!-- آیکون کوچک وضعیت قیمت: تخفیف یا قیمت عادی / تماس بگیرید -->
           <span
             class="flex-shrink-0 w-7 h-7 rounded-full grid place-items-center transition-transform duration-300 group-hover:scale-110"
             :style="{ backgroundColor: catInfo.iconBg }"
           >
+            <!-- حالت تماس بگیرید: آیکون تلفن -->
+            <svg
+              v-if="isCallForPrice"
+              class="w-4 h-4"
+              :style="{ color: catInfo.accent }"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            >
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+
             <!-- حالت تخفیف: آیکون درصد -->
             <svg
-              v-if="hasDiscount"
+              v-else-if="hasDiscount"
               class="w-3.5 h-3.5"
               :style="{ color: catInfo.accent }"
               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
@@ -145,7 +168,7 @@
               <path d="M18 6L6 18" stroke-linecap="round"/>
             </svg>
 
-            <!-- حالت عادی: آیکون دلار در دایره (Circle Dollar Sign) -->
+            <!-- حالت عادی: آیکون دلار در دایره -->
             <svg
               v-else
               class="w-5.5 h-5.5"
@@ -178,8 +201,6 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  // وقتی کارت روی پس‌زمینه‌ی تیره (مثل سکشن تخفیف‌ها) قرار می‌گیرد،
-  // پس‌زمینه را روشن و سایه را قوی‌تر می‌کند تا از زمینه جدا دیده شود.
   onDark: {
     type: Boolean,
     default: false,
@@ -197,11 +218,18 @@ const productLink = computed(() =>
   `/product/${props.product.id}/${props.product.slug_fa}`
 );
 
+// مشخص کردن اینکه آیا محصول نیاز به تماس تلفنی دارد یا خیر (قیمت آن صفر یا خالی است)
+const isCallForPrice = computed(() => {
+  const price = parseFloat(props.product.final_price);
+  return isNaN(price) || price <= 0;
+});
+
 const hasDiscount = computed(() =>
-  props.product.final_price < props.product.price
+  !isCallForPrice.value && props.product.final_price < props.product.price
 );
 
 const discountPercent = computed(() => {
+  if (isCallForPrice.value) return 0;
   if (props.product.discount_percent)
     return Math.round(parseFloat(props.product.discount_percent));
   const { price, final_price } = props.product;
@@ -209,8 +237,9 @@ const discountPercent = computed(() => {
   return Math.round(((price - final_price) / price) * 100);
 });
 
-// ─── استایل قیمت نهایی: گرادینت هنگام تخفیف، رنگ ساده در غیر این‌صورت ───
+// ─── استایل قیمت نهایی ───
 const priceStyle = computed(() => {
+  if (isCallForPrice.value) return {};
   if (!hasDiscount.value) {
     return { fontSize: '17px', color: catInfo.value.accent };
   }
@@ -223,7 +252,7 @@ const priceStyle = computed(() => {
   };
 });
 
-// ─── زیرعنوان کارت: خلاصه محصول (پاک‌سازی‌شده از HTML) یا نام برند ───
+// ─── زیرعنوان کارت ───
 function stripHtml(html) {
   if (!html) return '';
   return html
@@ -262,7 +291,6 @@ h3:hover {
   color: var(--hover-color, #A28466);
 }
 
-/* ── بزرگ‌نمایی نرم قیمت روی هاور ─────────────────────── */
 .price-final {
   display: inline-block;
   transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -271,7 +299,6 @@ h3:hover {
   transform: scale(1.04);
 }
 
-/* ── خط درخشان زیر بلوک قیمت که روی هاور ظاهر می‌شود ──── */
 .price-glow {
   width: 0;
   opacity: 0;

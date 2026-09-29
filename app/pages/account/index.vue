@@ -116,9 +116,10 @@
 
     <!-- آمار کلی -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-      <div
+      <NuxtLink
         v-for="s in stats"
         :key="s.label"
+        :to="s.link"
         class="rounded-[20px] p-4 sm:p-5 border border-ink/[0.06] bg-cardLight"
       >
         <div class="flex items-start justify-between">
@@ -139,7 +140,7 @@
         </div>
         <p class="text-lg sm:text-xl font-bold text-ink font-latin">{{ s.value }}</p>
         <p class="text-[11.5px] text-inkSoft mt-0.5">{{ s.label }}</p>
-      </div>
+      </NuxtLink>
     </div>
 
     <div class="grid lg:grid-cols-3 gap-5">
@@ -503,10 +504,10 @@ const spendingBars = computed(() => {
 });
 
 const stats = computed(() => [
-  { label: 'کل سفارش‌ها', value: faNumber(totalOrdersCount.value), icon: 'tabler:package', bg: 'rgba(143,193,217,0.14)', color: '#6BA5C4', delta: '+۲ این ماه', deltaType: 'up' },
-  { label: 'در حال پردازش', value: faNumber(processingOrdersCount.value), icon: 'tabler:truck-delivery', bg: 'rgba(185,166,222,0.14)', color: '#9C87C4' },
-  { label: 'تیکت‌ها', value: faNumber(currentUser.value.ticket_count ?? 0), icon: 'tabler:headset', bg: 'rgba(224,183,88,0.16)', color: '#C29A45', delta: 'تیکت', deltaType: 'up' },
-  { label: 'موجودی کیف پول', value: faNumber(walletBalance.value), icon: 'tabler:wallet', bg: 'rgba(156,191,160,0.16)', color: '#7BA582' },
+  { label: 'کل سفارش‌ها', value: faNumber(totalOrdersCount.value), icon: 'tabler:package', bg: 'rgba(143,193,217,0.14)', color: '#6BA5C4', delta: '+۲ این ماه', deltaType: 'up', link: "/account/orders" },
+  { label: 'در حال پردازش', value: faNumber(processingOrdersCount.value), icon: 'tabler:truck-delivery', bg: 'rgba(185,166,222,0.14)', color: '#9C87C4', link: "/account/orders" },
+  { label: 'تیکت‌ها', value: faNumber(currentUser.value.ticket_count ?? 0), icon: 'tabler:headset', bg: 'rgba(224,183,88,0.16)', color: '#C29A45', delta: 'تیکت', deltaType: 'up', link: "/tickets" },
+  { label: 'موجودی کیف پول', value: faNumber(walletBalance.value), icon: 'tabler:wallet', bg: 'rgba(156,191,160,0.16)', color: '#7BA582', link: "/account/wallet" },
 ]);
 
 const quickLinks = [
@@ -514,4 +515,4 @@ const quickLinks = [
   { to: '/account/addresses', title: 'آدرس‌های من', desc: 'مدیریت آدرس‌های تحویل', icon: 'tabler:map-pin', bg: 'rgba(143,193,217,0.16)', color: '#6BA5C4' },
   { to: '/account/profile', title: 'اطلاعات حساب', desc: 'ویرایش مشخصات فردی', icon: 'tabler:user', bg: 'rgba(162,132,102,0.14)', color: '#A28466' },
 ];
-</script>
+</script>

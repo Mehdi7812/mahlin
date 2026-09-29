@@ -1,7 +1,8 @@
 <template>
   <!-- هاله‌ی مرواریدی و ستاره‌های لوگو دور گالری -->
-  <div class="ambient" aria-hidden="true">
+  <div class="ambient max-sm:overflow-x-clip" aria-hidden="true">
     <span class="halo" />
+    
     <svg
       v-for="(s, i) in STARS"
       :key="i"

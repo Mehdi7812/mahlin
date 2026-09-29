@@ -8,7 +8,6 @@
     </div>
 
     <div class="grid md:grid-cols-12 gap-8 lg:gap-16 items-start">
-
       <!-- ستون گالری (sticky) — خود ستون reveal نمی‌گیره تا sticky خراب نشه -->
       <div class="md:col-span-5 md:sticky md:top-[100px]">
         <div v-reveal class="relative">

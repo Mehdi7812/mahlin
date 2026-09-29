@@ -1,13 +1,14 @@
 <template>
   <div>
+    <!-- والد اصلی مجهز به هک ماسک برای جلوگیری از به هم ریختگی ریبون و ردیوس در هاور -->
     <div
-      class="aspect-square bg-white border rounded-tr-[80px] sm:rounded-tr-[100px] rounded-[24px] relative flex items-center justify-center p-2 group"
+      class="aspect-square bg-white border rounded-tr-[80px] sm:rounded-tr-[100px] rounded-[24px] relative flex items-center justify-center p-2 group overflow-hidden mask-clip-bug-fix isolation-auto"
       :style="{ borderColor: catInfo.borderColor }"
     >
       <!-- بج تخفیف -->
       <span
         v-if="discountPercent > 0"
-        class="absolute top-4 start-4 z-10 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md"
+        class="absolute top-4 start-4 z-10 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md animate-fade-in"
         :style="{ backgroundColor: catInfo.accent }"
       >
         {{ fa(discountPercent) }}٪ تخفیف
@@ -61,15 +62,20 @@
         </button>
       </div>
 
-      <!-- تصویر محصول -->
-      <img
-        :src="displayImage"
-        :alt="productName"
-        loading="lazy"
-        class="w-[90%] h-[90%] object-contain transition-transform duration-700 ease-out group-hover:scale-105 transform-gpu relative z-[1] rounded-tr-[50px] sm:rounded-tr-[60px] rounded-[14px] cursor-zoom-in"
-        @error="onImageError"
-        @click="openLightbox"
-      />
+      <!-- باکس تصویر با انیمیشن تعویض عکس اسلایدر سه‌بعدی نرم -->
+      <div class="w-[90%] h-[90%] relative flex items-center justify-center overflow-hidden rounded-tr-[50px] sm:rounded-tr-[60px] rounded-[14px]">
+        <Transition :name="slideDirection">
+          <img
+            :key="displayImage"
+            :src="displayImage"
+            :alt="productName"
+            loading="lazy"
+            class="absolute max-w-full max-h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105 transform-gpu rounded-tr-[50px] sm:rounded-tr-[60px] rounded-[14px] cursor-zoom-in"
+            @error="onImageError"
+            @click="openLightbox"
+          />
+        </Transition>
+      </div>
     </div>
 
     <!-- تصاویر مینیاتوری -->
@@ -78,14 +84,14 @@
         v-for="(img, i) in images"
         :key="i"
         v-show="img"
-        class="w-16 h-16 rounded-xl overflow-hidden border-2 transition-all duration-200 flex-shrink-0 hover:scale-105 transform-gpu"
+        class="w-16 h-16 rounded-xl overflow-hidden border-2 transition-all duration-300 flex-shrink-0 hover:scale-105 transform-gpu"
         :style="{
           borderColor: activeImageModel === img ? catInfo.accent : 'transparent',
           boxShadow: activeImageModel === img
             ? `0 0 0 1px ${catInfo.accent}40`
             : 'none',
         }"
-        @click="activeImageModel = img"
+        @click="setWithDirection(img)"
       >
         <img :src="img" class="w-full h-full object-cover" @error="onThumbError" />
       </button>
@@ -96,22 +102,22 @@
       <Transition name="lightbox-fade">
         <div
           v-if="lightboxOpen"
-          class="fixed inset-0 z-[1000] bg-black/90 backdrop-blur-sm flex items-center justify-center"
-          @click.self="closeLightbox"
+          class="fixed inset-0 z-[1000] bg-black/95 backdrop-blur-md flex items-center justify-center cursor-zoom-out"
+          @click="closeLightbox"
         >
           <!-- دکمه بستن -->
           <button
             type="button"
             aria-label="بستن"
             class="absolute top-5 end-5 z-10 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white grid place-items-center transition-colors backdrop-blur-md"
-            @click="closeLightbox"
+            @click.stop="closeLightbox"
           >
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>
 
-          <!-- دکمه قبلی -->
+          <!-- دکمه قبلی (با جلوگیری از بستن لایت‌باکس) -->
           <button
             v-if="images && images.length > 1"
             type="button"
@@ -124,7 +130,7 @@
             </svg>
           </button>
 
-          <!-- دکمه بعدی -->
+          <!-- دکمه بعدی (با جلوگیری از بستن لایت‌باکس) -->
           <button
             v-if="images && images.length > 1"
             type="button"
@@ -137,13 +143,18 @@
             </svg>
           </button>
 
-          <!-- تصویر بزرگ -->
-          <img
-            :src="displayImage"
-            :alt="productName"
-            class="max-w-[92vw] max-h-[88vh] object-contain rounded-lg select-none"
-            @click.stop
-          />
+          <!-- کادر بزرگ‌نمایی تصویر (کلیک روی کادر دور تصویر هم لایت‌باکس را می‌بندد) -->
+          <div class="w-[85vw] h-[85vh] relative flex items-center justify-center overflow-hidden">
+            <Transition :name="slideDirection">
+              <img
+                :key="displayImage"
+                :src="displayImage"
+                :alt="productName"
+                class="absolute max-w-full max-h-full object-contain rounded-lg select-none cursor-default"
+                @click.stop
+              />
+            </Transition>
+          </div>
         </div>
       </Transition>
     </Teleport>
@@ -166,7 +177,6 @@ const props = defineProps({
   isWishlisted:    { type: Boolean, default: false      },
   copied:          { type: Boolean, default: false      },
   catInfo:         { type: Object,  required: true      },
-  // شناسه محصول برای API علاقه‌مندی
   productId:       { type: Number,  required: true      },
 });
 
@@ -176,6 +186,8 @@ const router     = useRouter();
 const route      = useRoute();
 const customizer = useCustomizerStore();
 
+const slideDirection = ref('slide-forward');
+
 // ─── تصویر فعال ──────────────────────────────────────────
 const activeImageModel = computed({
   get: () => props.activeImage,
@@ -183,6 +195,16 @@ const activeImageModel = computed({
 });
 
 const displayImage = computed(() => activeImageModel.value || DEFAULT_IMG);
+
+function setWithDirection(newImg) {
+  const oldIdx = props.images.indexOf(activeImageModel.value);
+  const newIdx = props.images.indexOf(newImg);
+  
+  if (newIdx !== -1 && oldIdx !== -1) {
+    slideDirection.value = newIdx > oldIdx ? 'slide-forward' : 'slide-backward';
+  }
+  activeImageModel.value = newImg;
+}
 
 function onImageError() {
   if (activeImageModel.value) activeImageModel.value = null;
@@ -208,7 +230,7 @@ function closeLightbox() {
 
 function onKeydown(e) {
   if (e.key === 'Escape') closeLightbox();
-  if (e.key === 'ArrowLeft') showNext();  // در RTL جهت‌ها برعکس می‌شن
+  if (e.key === 'ArrowLeft') showNext();  
   if (e.key === 'ArrowRight') showPrev();
 }
 
@@ -216,6 +238,7 @@ function showNext() {
   if (!props.images || props.images.length < 2) return;
   const idx = props.images.indexOf(activeImageModel.value);
   const nextIdx = idx === -1 ? 0 : (idx + 1) % props.images.length;
+  slideDirection.value = 'slide-forward';
   activeImageModel.value = props.images[nextIdx];
 }
 
@@ -223,6 +246,7 @@ function showPrev() {
   if (!props.images || props.images.length < 2) return;
   const idx = props.images.indexOf(activeImageModel.value);
   const prevIdx = idx === -1 ? 0 : (idx - 1 + props.images.length) % props.images.length;
+  slideDirection.value = 'slide-backward';
   activeImageModel.value = props.images[prevIdx];
 }
 
@@ -235,7 +259,6 @@ onBeforeUnmount(() => {
 const wishlistLoading = ref(false);
 
 async function handleToggleWishlist() {
-  // کاربر لاگین نکرده
   if (!customizer.auth) {
     router.push('/login?back=' + route.fullPath);
     return;
@@ -246,7 +269,6 @@ async function handleToggleWishlist() {
 
   try {
     if (props.isWishlisted) {
-      // حذف از علاقه‌مندی
       await useGarnetApiFetch('users/deleteFavorite', {
         kind:      1,
         target_id: props.productId,
@@ -254,7 +276,6 @@ async function handleToggleWishlist() {
       emit('update:isWishlisted', false);
       toast.success('از علاقه‌مندی‌ها حذف شد');
     } else {
-      // افزودن به علاقه‌مندی
       await useGarnetApiFetch('users/createFavorite', {
         kind:      1,
         target_id: props.productId,
@@ -272,9 +293,49 @@ async function handleToggleWishlist() {
 </script>
 
 <style scoped>
+/* ─── هک برطرف کردن باگ کلیپ شدن لبه‌های گرد والد در هاور ─── */
+.mask-clip-bug-fix {
+  mask-image: -webkit-radial-gradient(white, black);
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* ─── انیمیشن اسلایدر مدرن و روان ─── */
+.slide-forward-enter-active,
+.slide-forward-leave-active,
+.slide-backward-enter-active,
+.slide-backward-leave-active {
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s ease;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+/* اسلاید بعدی */
+.slide-forward-enter-from {
+  opacity: 0;
+  transform: translateX(100%) scale(0.95);
+}
+.slide-forward-leave-to {
+  opacity: 0;
+  transform: translateX(-100%) scale(0.95);
+}
+
+/* اسلاید قبلی */
+.slide-backward-enter-from {
+  opacity: 0;
+  transform: translateX(-100%) scale(0.95);
+}
+.slide-backward-leave-to {
+  opacity: 0;
+  transform: translateX(100%) scale(0.95);
+}
+
+/* ─── ترانزیشن فید بک‌گراند لایت باکس ─── */
 .lightbox-fade-enter-active,
 .lightbox-fade-leave-active {
-  transition: opacity 0.25s ease;
+  transition: opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
 .lightbox-fade-enter-from,
 .lightbox-fade-leave-to {
