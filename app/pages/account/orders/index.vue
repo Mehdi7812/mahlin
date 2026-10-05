@@ -118,7 +118,7 @@
                 </p>
   
                 <!-- کد رهگیری -->
-                <button
+                <!-- <button
                   v-if="order.trackingCode"
                   type="button"
                   class="flex w-fit items-center gap-1.5 rounded-full border border-dashed border-ink/15 px-3 py-1.5 text-[11px] font-bold text-inkSoft transition hover:border-accent/40 hover:text-accent"
@@ -126,7 +126,7 @@
                 >
                   <Icon name="tabler:copy" class="text-[12px]" />
                   <span class="font-latin" dir="ltr">{{ order.trackingCode }}</span>
-                </button>
+                </button> -->
               </div>
             </div>
 

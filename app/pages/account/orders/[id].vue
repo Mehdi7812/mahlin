@@ -383,7 +383,7 @@ const trackingSteps = [
 
 const progressIndex = computed(() => getOrderProgressIndex(order.value?.status || 'pending'));
 const currentStepLabel = computed(() => {
-  if (order.value?.status === 'delivered') return 'سفارش شما تحویل شده است.';
+  if (order.value?.status === 'delivered') return 'سفارش شما ارسال شده است.';
   return `سفارش شما در مرحله «${trackingSteps[progressIndex.value].label}» قرار دارد.`;
 });
 

@@ -213,7 +213,7 @@ const couponSuccess = ref(false)
 function applyCoupon() {
   if (!coupon.value.trim()) return
   couponLoading.value = true
-  couponError.value = null
+  setCouponError(null)
   useGarnetApiFetch('promotions/checkCode', {
     code: coupon.value.trim(),
     invoice_id: invoice.value.id,
@@ -224,20 +224,20 @@ function applyCoupon() {
         couponSuccess.value = true
         toast.success('کد تخفیف اعمال شد')
       } else {
-        couponError.value = response.msg
+        setCouponError(response.msg)
         toast.error(t(response.msg))
       }
       getCart(false)
     })
     .catch((error: any) => {
       couponLoading.value = false
-      couponError.value = 'خطا در اعمال کد تخفیف'
+      setCouponError('خطا در اعمال کد تخفیف')
       toast.error(t(error))
     })
 }
 function removeCoupon() {
   coupon.value = ''
-  couponError.value = null
+  setCouponError(null)
   couponSuccess.value = false
   useGarnetApiFetch('promotions/checkCode', { code: '', invoice_id: invoice.value.id }).then(() =>
     getCart(false),
@@ -467,6 +467,63 @@ const hasValidMapLatLng = computed(
   () => Array.isArray(geoLatLng.value) && geoLatLng.value.length === 2 && geoLatLng.value.every((n) => Number.isFinite(n)),
 )
 
+/* ─── تشخیص لود نقشه ─── */
+const mapContainer = ref<HTMLElement | null>(null)
+const mapLoading = ref(true)
+const MAP_TIMEOUT = 8000
+
+let mapObserver: MutationObserver | null = null
+let mapTimer: ReturnType<typeof setTimeout> | null = null
+
+function stopMapWatch() {
+  mapObserver?.disconnect()
+  mapObserver = null
+  if (mapTimer) clearTimeout(mapTimer)
+  mapTimer = null
+  mapContainer.value?.removeEventListener('load', checkMapLoaded, true)
+}
+
+function markMapReady() {
+  setTimeout(() => { mapLoading.value = false }, 250)
+  stopMapWatch()
+}
+
+function checkMapLoaded() {
+  const el = mapContainer.value
+  if (!el) return
+  const canvas = el.querySelector('canvas')
+  if (canvas && canvas.width > 0 && canvas.height > 0) return markMapReady()
+  const tiles = el.querySelectorAll<HTMLImageElement>('img.leaflet-tile, .leaflet-tile-loaded, .ol-layer img, img')
+  if ([...tiles].some((img) => img.complete && img.naturalWidth > 0)) return markMapReady()
+}
+
+async function startMapWatch() {
+  stopMapWatch()
+  mapLoading.value = true
+  await nextTick()
+  if (!import.meta.client || !mapContainer.value) {
+    mapLoading.value = false
+    return
+  }
+  mapObserver = new MutationObserver(checkMapLoaded)
+  mapObserver.observe(mapContainer.value, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['class', 'width', 'src'],
+  })
+  mapContainer.value.addEventListener('load', checkMapLoaded, true)
+  mapTimer = setTimeout(markMapReady, MAP_TIMEOUT)
+  checkMapLoaded()
+}
+
+watch([addressModalOpen, addressStep], ([open, s]) => {
+  if (open && s === 1) startMapWatch()
+  else stopMapWatch()
+})
+
+onBeforeUnmount(stopMapWatch)
+
 function openNewAddressForm() {
   isEditing.value = false
   selectedProvinceTitle.value = ''
@@ -667,8 +724,8 @@ function getPaymentProcedure() {
   useGarnetApiFetch('options/indexPaymentProcedure', { language_id: 1, currency_id: 1 })
     .then((response: any) => {
       const list: any[] = []
-      let walletItem: any = null
-      ;(response.PaymentProcedure || []).forEach((value: any) => {
+      let walletItem: any = null;
+      (response.PaymentProcedure || []).forEach((value: any) => {
         if (value.dynamic_column_01 === 'onlinePayment' && value.gateways?.length) {
           value.gateways.forEach((gateway: any) => {
             list.push({
@@ -680,14 +737,17 @@ function getPaymentProcedure() {
             })
           })
         }
+
         if (value.dynamic_column_01 === 'offlinePayment') {
           list.push({ pp_id: value.id, pp_title: value.title, pp_d1: value.dynamic_column_01 })
         }
+        
         if (value.dynamic_column_01 === 'walletPayment') {
           walletItem = { pp_id: value.id, pp_title: value.title, pp_d1: value.dynamic_column_01 }
           list.push(walletItem)
         }
       })
+
       paymentProcedures.value = list
       if (walletItem) getWalletBalance()
       if (list.length && !paymentMethod.value) paymentMethod.value = list[0]
@@ -852,10 +912,56 @@ function updateUserInfo() {
 const orderDescription = ref('')
 const paymentError = ref<string | null>(null)
 
+/* ─── پاک شدن خودکار پیام‌های خطا ─── */
+const ERROR_TIMEOUT = 6000 // ۶ ثانیه
+
+let paymentErrorTimer: ReturnType<typeof setTimeout> | null = null
+let infoErrorTimer: ReturnType<typeof setTimeout> | null = null
+let couponErrorTimer: ReturnType<typeof setTimeout> | null = null
+
+function setPaymentError(msg: string | null) {
+  if (paymentErrorTimer) clearTimeout(paymentErrorTimer)
+  paymentError.value = msg
+  if (msg) {
+    paymentErrorTimer = setTimeout(() => {
+      paymentError.value = null
+      paymentErrorTimer = null
+    }, ERROR_TIMEOUT)
+  }
+}
+
+function setInfoError(msg: string | null) {
+  if (infoErrorTimer) clearTimeout(infoErrorTimer)
+  infoError.value = msg
+  if (msg) {
+    infoErrorTimer = setTimeout(() => {
+      infoError.value = null
+      infoErrorTimer = null
+    }, ERROR_TIMEOUT)
+  }
+}
+
+function setCouponError(msg: string | null) {
+  if (couponErrorTimer) clearTimeout(couponErrorTimer)
+  couponError.value = msg
+  if (msg) {
+    couponErrorTimer = setTimeout(() => {
+      couponError.value = null
+      couponErrorTimer = null
+    }, ERROR_TIMEOUT)
+  }
+}
+
+onBeforeUnmount(() => {
+  if (paymentErrorTimer) clearTimeout(paymentErrorTimer)
+  if (infoErrorTimer) clearTimeout(infoErrorTimer)
+  if (couponErrorTimer) clearTimeout(couponErrorTimer)
+})
+
 function submitOrder() {
-  paymentError.value = null
+  setPaymentError(null)
   if (!paymentMethod.value) {
-    paymentError.value = 'روش پرداخت را انتخاب کنید'
+    setPaymentError('روش پرداخت را انتخاب کنید')
     return
   }
 
@@ -880,8 +986,9 @@ function submitOrder() {
           openUserInfoDialog()
           return
         }
-        paymentError.value = t(response.error || response.msg || 'ثبت سفارش با خطا مواجه شد');
-        toast.error(t(response.error || response.msg || 'ثبت سفارش با خطا مواجه شد'))
+        const msg = t(response.error || response.msg || 'ثبت سفارش با خطا مواجه شد')
+        setPaymentError(msg)
+        toast.error(msg)
         return
       }
       const gatewayTitle = response.GatewayTitle
@@ -896,15 +1003,16 @@ function submitOrder() {
       ) {
         window.location.replace(paymentUrl)
       } else {
-        submitting.value = false;
-        toast.error('درگاه پرداخت پشتیبانی نمی‌شود');
-        paymentError.value = 'درگاه پرداخت پشتیبانی نمی‌شود';
+        submitting.value = false
+        toast.error('درگاه پرداخت پشتیبانی نمی‌شود')
+        setPaymentError('درگاه پرداخت پشتیبانی نمی‌شود')
       }
     })
     .catch((error: any) => {
       submitting.value = false
-      toast.error(t(error) || 'ثبت سفارش با خطا مواجه شد');
-      paymentError.value = t(error) || 'ثبت سفارش با خطا مواجه شد'
+      const msg = t(error) || 'ثبت سفارش با خطا مواجه شد'
+      toast.error(msg)
+      setPaymentError(msg)
     })
 }
 
@@ -1514,7 +1622,7 @@ const primaryDisabled = computed(() => {
                     <label
                       v-for="opt in paymentProcedures"
                       :key="opt.pp_id + '-' + (opt.gateway_id || '')"
-                      class="flex cursor-pointer items-start gap-3 rounded-2xl border p-3.5 transition-all duration-200 sm:gap-4 sm:p-4"
+                      class="flex cursor-pointer items-center gap-3 rounded-2xl border p-3.5 transition-all duration-200 sm:gap-4 sm:p-4"
                       :class="
                         paymentMethod === opt
                           ? 'border-gold bg-gold/8 ring-2 ring-gold/20'
@@ -1522,6 +1630,7 @@ const primaryDisabled = computed(() => {
                       "
                     >
                       <input v-model="paymentMethod" type="radio" class="sr-only" :value="opt" />
+
                       <span
                         class="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-xl transition-colors"
                         :class="paymentMethod === opt ? 'bg-gold text-white' : 'bg-cream text-ink-muted'"
@@ -1537,17 +1646,19 @@ const primaryDisabled = computed(() => {
                           class="text-h3"
                         />
                       </span>
+
                       <div class="min-w-0 flex-1">
                         <span class="block truncate text-[13.5px] font-bold text-gold sm:text-[14px]">
                           {{ opt.pp_title }}<span v-if="opt.gateway_title"> ({{ opt.gateway_title }})</span>
                         </span>
-                        <p v-if="opt.pp_d1 === 'walletPayment'" class="mt-0.5 flex flex-wrap items-center gap-1 text-meta text-ink-muted">
+                        <p v-if="opt.pp_d1 === 'walletPayment'" class="flex flex-wrap items-center gap-1 text-meta text-ink-muted text-[13px]">
                           <Icon name="tabler:coin" class="shrink-0 text-[13px] text-gold-deep" />
                           موجودی: {{ faPrice(walletInfo.balance || 0) }}
                         </p>
                       </div>
+
                       <span
-                        class="mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition-colors"
+                        class="grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition-colors"
                         :class="paymentMethod === opt ? 'border-gold bg-gold' : 'border-line'"
                       >
                         <Icon v-if="paymentMethod === opt" name="tabler:check" class="text-[11px] text-white" />
@@ -1843,12 +1954,54 @@ const primaryDisabled = computed(() => {
 
                 <!-- Step 1: map -->
                 <div v-else-if="addressStep === 1" class="space-y-4">
-                  <ClientOnly>
-                    <!-- <CartAddressMapPicker v-model="geoLatLng" /> -->
-                    <AccountNeshanMapInput @handle-lat-lng="geoLatLng = $event" />
-                  </ClientOnly>
+                  <div ref="mapContainer" class="relative min-h-[300px] overflow-hidden rounded-2xl">
+                    <ClientOnly>
+                      <AccountNeshanMapInput
+                        :input-lat-lng="geoLatLng"
+                        @handle-lat-lng="geoLatLng = $event"
+                        @map-ready="markMapReady"
+                      />
+                    </ClientOnly>
+
+                    <Transition name="map-skel">
+                      <div
+                        v-if="mapLoading"
+                        class="map-skeleton absolute inset-0 z-[500]"
+                        role="status"
+                        aria-live="polite"
+                      >
+                        <div class="map-skeleton-grid absolute inset-0" />
+                        <span class="absolute left-[-5%] top-[22%] h-[7px] w-[70%] rotate-[10deg] rounded-full bg-white/70" />
+                        <span class="absolute right-[-8%] top-[48%] h-[9px] w-[85%] -rotate-[6deg] rounded-full bg-white/80" />
+                        <span class="absolute bottom-[18%] left-[10%] h-[6px] w-[65%] rotate-[3deg] rounded-full bg-white/60" />
+                        <span class="absolute left-[30%] top-[-5%] h-[110%] w-[7px] rotate-[14deg] rounded-full bg-white/60" />
+                        <span class="absolute right-[22%] top-[-5%] h-[110%] w-[5px] -rotate-[9deg] rounded-full bg-white/50" />
+                        <span class="absolute left-[8%] top-[56%] h-14 w-20 rounded-xl bg-[#dfe6d3]/80" />
+                        <span class="absolute right-[10%] top-[12%] h-12 w-16 rounded-xl bg-[#dfe6d3]/70" />
+                        <span class="absolute bottom-[8%] right-[30%] h-10 w-24 rounded-xl bg-ink/[0.04]" />
+
+                        <div class="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center">
+                          <span class="map-pin grid h-12 w-12 place-items-center rounded-full bg-white text-gold-deep shadow-lg">
+                            <Icon name="tabler:map-pin-filled" class="text-[24px]" />
+                          </span>
+                          <span class="map-pin-shadow mt-1 h-1.5 w-6 rounded-full bg-ink/15" />
+                          <span class="mt-3 flex items-center gap-1.5 rounded-full bg-white/90 px-3.5 py-1.5 text-micro font-bold text-ink-muted shadow-sm">
+                            <Icon name="tabler:loader-2" class="animate-spin text-[13px]" />
+                            در حال بارگذاری نقشه...
+                          </span>
+                        </div>
+
+                        <div class="absolute end-3 top-3 flex flex-col gap-1.5">
+                          <span class="h-8 w-8 rounded-lg bg-white/80" />
+                          <span class="h-8 w-8 rounded-lg bg-white/80" />
+                        </div>
+                        <span class="map-skeleton-shine absolute inset-y-0 w-1/2" aria-hidden="true" />
+                      </div>
+                    </Transition>
+                  </div>
+
                   <div class="flex justify-end">
-                    <UiBaseButton :disabled="!hasValidMapLatLng" @click="addressStep = 2">
+                    <UiBaseButton :disabled="mapLoading || !hasValidMapLatLng" @click="addressStep = 2">
                       تایید و ادامه
                       <Icon name="tabler:arrow-left" class="mr-1.5" />
                     </UiBaseButton>
@@ -2285,6 +2438,31 @@ const primaryDisabled = computed(() => {
 }
 .animate-ping-slow {
   animation: pingSlow 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* اسکلتون نقشه */
+.map-skeleton { background: #efeae2; border-radius: inherit; }
+.map-skeleton-grid {
+  background-image:
+    linear-gradient(rgb(63 58 53 / 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(63 58 53 / 0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+.map-skeleton-shine {
+  left: -60%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.55), transparent);
+  transform: skewX(-15deg);
+  animation: mapShine 1.6s ease-in-out infinite;
+}
+@keyframes mapShine { to { left: 130%; } }
+.map-pin { animation: pinBounce 1.4s ease-in-out infinite; }
+.map-pin-shadow { animation: pinShadow 1.4s ease-in-out infinite; }
+@keyframes pinBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes pinShadow { 0%, 100% { transform: scale(1); opacity: .6; } 50% { transform: scale(.6); opacity: .3; } }
+.map-skel-leave-active { transition: opacity 0.4s ease; }
+.map-skel-leave-to { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .map-skeleton-shine, .map-pin, .map-pin-shadow { animation: none; }
 }
 
 @keyframes checkPop {
