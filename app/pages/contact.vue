@@ -187,7 +187,7 @@
           </div>
 
           <!-- آدرس فیزیکی -->
-          <div class="flex items-start gap-4 p-5 bg-cardLight border border-ink/[0.02] rounded-2xl transition-all duration-300 hover:border-gold/20">
+          <!-- <div class="flex items-start gap-4 p-5 bg-cardLight border border-ink/[0.02] rounded-2xl transition-all duration-300 hover:border-gold/20">
             <div class="w-10 h-10 rounded-xl bg-gold/10 text-gold flex items-center justify-center shrink-0">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/>
@@ -200,7 +200,7 @@
                 تهران، خیابان ولیعصر، بالاتر از میدان ونک، برج نگار، طبقه ۱۲، واحد ۳
               </p>
             </div>
-          </div>
+          </div> -->
 
         </div>
       </div>

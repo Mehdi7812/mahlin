@@ -99,7 +99,7 @@
             </label>
 
             <svg
-              class="pointer-events-none absolute start-5 top-1/2 h-5 w-5 -translate-y-1/2 text-cream/30"
+              class="pointer-events-none absolute end-5 top-1/2 h-5 w-5 -translate-y-1/2 text-white/30"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -116,10 +116,10 @@
             <input
               id="faq-search"
               v-model="searchQuery"
-              type="search"
+              type="text"
               autocomplete="off"
               placeholder="مثلاً: زمان ارسال، مرجوعی، انتخاب محصول..."
-              class="h-14 w-full rounded-2xl border border-cream/10 bg-cream/[0.07] ps-13 pe-12 text-sm text-cream outline-none backdrop-blur-xl transition-all duration-200 placeholder:text-cream/30 hover:bg-cream/[0.09] focus:border-gold/50 focus:bg-cream/[0.1] focus:ring-4 focus:ring-gold/10 sm:h-16 sm:rounded-3xl"
+              class="h-14 w-full rounded-2xl border border-cream/10 bg-cream/[0.07] pe-13 ps-12 text-sm text-cream outline-none backdrop-blur-xl transition-all duration-200 placeholder:text-cream/30 hover:bg-cream/[0.09] focus:border-gold/50 focus:bg-cream/[0.1] focus:ring-4 focus:ring-gold/10 sm:h-16 sm:rounded-3xl"
               @input="activeCategory = 'all'"
               @keydown.esc="clearSearch"
             />

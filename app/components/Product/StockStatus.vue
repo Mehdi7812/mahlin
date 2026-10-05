@@ -6,7 +6,7 @@
 
     <!-- ════════ موجود ════════ -->
     <section
-      v-if="item.inStock !== false"
+      v-if="isAvailable"
       class="rounded-2xl bg-cardLight border border-ink/[0.07] divide-y divide-ink/[0.06]"
       aria-label="وضعیت موجودی و ارسال"
     >
@@ -118,16 +118,34 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { fa } from '~/utils/format.ts';
 
-defineProps({
+const props = defineProps({
   item: { type: Object, required: true },
   isCourse: { type: Boolean, default: false },
   lowStock: { type: Boolean, default: false },
   accessDeadline: { type: String, default: null },
   deliveryEstimate: { type: String, default: '' },
   catInfo: { type: Object, required: true },
+});
+
+const isAvailable = computed(() => {
+  // برای دوره‌ها: فقط وضعیت فروش فعال مهم است
+  if (props.isCourse) {
+    return props.item.inStock === true;
+  }
+
+  // برای کالای فیزیکی: باید حتماً قیمت معتبر و مثبت داشته باشد
+  const price = Number(props.item?.price);
+  const hasValidPrice = Number.isFinite(price) && price > 0;
+
+  // بررسی تعداد موجودی در انبار (در صورت عددی بودن)
+  const stock = Number(props.item?.stockCount);
+  const hasValidStock = isNaN(stock) ? true : stock > 0;
+
+  // کالا باید هم قیمت داشته باشد، هم اجازه فروش فعال باشد و هم موجودی صفر نباشد
+  return hasValidPrice && props.item?.inStock === true && hasValidStock;
 });
 
 // ─── سوالات متداول ─────────────────────────────────────────

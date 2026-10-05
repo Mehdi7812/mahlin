@@ -207,10 +207,10 @@
     </div>
 
     <!-- ────── اسلایدر محصولات ────── -->
-    <div v-else class="relative overflow-hidden -mx-1 px-1 pt-2 pb-4">
+    <div v-else class="relative overflow-hidden -mx-1 px-1 pt-2 pb-2">
       <Swiper
         dir="rtl"
-        style="padding-top: 7px;"
+        style="padding-top: 7px; padding-bottom: 7px;"
         :modules="[Pagination]"
         :slides-per-view="1.6"
         :space-between="12"
@@ -218,7 +218,7 @@
         :watch-overflow="true"
         :pagination="{ el: paginationEl, clickable: true, dynamicBullets: true }"
         :breakpoints="{
-          400:  { slidesPerView: 2,   spaceBetween: 14 },
+          400:  { slidesPerView: 1.3,   spaceBetween: 14 },
           640:  { slidesPerView: 3,   spaceBetween: 24 },
           1024: { slidesPerView: 4,   spaceBetween: 32 },
         }"

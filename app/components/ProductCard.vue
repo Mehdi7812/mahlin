@@ -168,15 +168,26 @@
               <path d="M18 6L6 18" stroke-linecap="round"/>
             </svg>
 
-            <!-- حالت عادی: آیکون دلار در دایره -->
+            <!-- حالت عادی: آیکون پول / اسکناس -->
             <svg
               v-else
-              class="w-5.5 h-5.5"
+              class="w-4 h-4"
               :style="{ color: catInfo.accent }"
-              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
             >
-              <path d="M12 6.5v11" stroke-linecap="round"/>
-              <path d="M15 9.2c0-1.16-1.34-2.1-3-2.1s-3 .94-3 2.1c0 1.16 1.34 1.75 3 2.1 1.66.35 3 .94 3 2.1 0 1.16-1.34 2.1-3 2.1s-3-.94-3-2.1" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- لایه اسکناس پشت -->
+              <path d="M6 5h14a2 2 0 0 1 2 2v8" />
+              <!-- اسکناس جلو -->
+              <rect x="2" y="8" width="18" height="12" rx="2" />
+              <!-- دایره وسط اسکناس -->
+              <circle cx="11" cy="14" r="2.5" />
+              <!-- خطوط دو طرف اسکناس -->
+              <path d="M6 14h.01M16 14h.01" />
             </svg>
           </span>
 

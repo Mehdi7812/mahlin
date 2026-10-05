@@ -55,11 +55,8 @@
               class="social-btn"
               :style="{ '--sc': social.rgb, '--d': (0.15 + i * 0.09) + 's' }"
             >
-              <!-- موج حلقه‌ای هنگام هاور -->
               <span class="social-ring" aria-hidden="true"></span>
-              <!-- درخشش عبوری -->
               <span class="social-shine" aria-hidden="true"><span class="social-shine-bar"></span></span>
-              <!-- آیکون -->
               <svg
                 class="social-icon"
                 :viewBox="social.viewBox || '0 0 24 24'"
@@ -68,11 +65,9 @@
               >
                 <path :d="social.path" :fill-rule="social.fillRule || 'nonzero'" />
               </svg>
-              <!-- تولتیپ نام -->
               <span class="social-tooltip" aria-hidden="true">{{ social.name }}</span>
             </a>
 
-            <!-- خط تکمیلی کنار آیکون‌ها -->
             <span class="socials-line" aria-hidden="true"></span>
           </div>
         </div>
@@ -84,12 +79,10 @@
             دسته‌بندی
           </h3>
 
-          <!-- اسکلتون لودینگ -->
           <ul v-if="categoriesLoading" class="space-y-3">
             <li v-for="n in 5" :key="n" class="h-3 w-20 bg-cream/[0.07] rounded-full animate-pulse"></li>
           </ul>
 
-          <!-- لیست دسته‌بندی‌ها -->
           <ul v-else-if="categories.length" class="space-y-2.5">
             <li v-for="c in categories" :key="c.id">
               <NuxtLink
@@ -102,7 +95,6 @@
             </li>
           </ul>
 
-          <!-- خطا/عدم وجود دسته‌بندی -->
           <p v-else class="text-xs text-cream/35">دسته‌بندی‌ای یافت نشد.</p>
         </div>
 
@@ -132,23 +124,38 @@
             آخرین یادداشت‌های پوستی و کدهای تخفیف را دریافت کنید.
           </p>
 
-          <form @submit.prevent="subscribe" class="space-y-2">
+          <form novalidate class="space-y-2" @submit.prevent="subscribe">
             <div class="flex relative">
-              <svg class="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-cream/25 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg class="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-cream/25 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <path d="M3 6l9 6 9-6M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
+
               <input
-                v-model="email"
+                v-model.trim="email"
                 type="email"
-                required dir="ltr"
+                name="email"
+                autocomplete="email"
+                dir="ltr"
                 placeholder="ایمیل شما"
-                class="flex-1 min-w-0 bg-cream/[0.06] border border-cream/10 rounded-e-xl pe-10 ps-3 py-3 text-sm placeholder:text-cream/30 text-cream focus:outline-none focus:border-gold/50 focus:bg-cream/[0.09] transition-all duration-200"
+                class="footer-email-input flex-1 min-w-0 bg-cream/[0.06] border rounded-e-xl ps-10 pe-3 py-3 text-sm placeholder:text-cream/30 text-cream outline-none focus:bg-cream/[0.09] transition-all duration-200"
+                :class="status === 'error'
+                  ? 'border-blush/60 focus:border-blush/70 focus:ring-4 focus:ring-blush/10'
+                  : 'border-cream/10 focus:border-gold/50 focus:ring-4 focus:ring-gold/10'"
+                @input="status === 'error' && (status = null)"
               />
+
               <button
                 type="submit"
-                class="bg-gold text-white px-5 py-3 text-sm font-bold rounded-e-xl hover:bg-gold/85 active:scale-95 transition-all duration-200 whitespace-nowrap"
+                :disabled="subscribing"
+                class="bg-gold text-white px-5 py-3 text-sm font-bold rounded-e-xl hover:bg-gold/85 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 whitespace-nowrap"
               >
-                عضویت
+                <span v-if="subscribing" class="inline-flex items-center gap-2">
+                  <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M21 12a9 9 0 1 1-9-9" stroke-linecap="round"/>
+                  </svg>
+                  در حال ثبت...
+                </span>
+                <template v-else>عضویت</template>
               </button>
             </div>
 
@@ -169,7 +176,7 @@
                 <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01" stroke-linecap="round"/>
                 </svg>
-                لطفاً یک ایمیل معتبر وارد کنید.
+                {{ email ? 'لطفاً یک ایمیل معتبر وارد کنید.' : 'وارد کردن ایمیل الزامی است.' }}
               </div>
             </Transition>
           </form>
@@ -203,24 +210,38 @@
         </div>
       </div>
 
-      <!-- ── نمادهای اعتماد ── -->
+      <!-- ── نمادهای اعتماد و مجوزها (اینماد) ── -->
       <div class="mt-12 pt-8 border-t border-cream/[0.08]">
-        <div class="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-8">
-          <div
-            v-for="trust in trustBadges"
-            :key="trust.label"
-            class="trust-badge flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-cream/[0.04] border border-cream/[0.07] hover:border-cream/15 transition-all duration-300"
-          >
-            <Icon :name="trust.icon" class="text-xl text-gold" />
-            <div>
-              <p class="text-xs font-bold text-cream/80">{{ trust.label }}</p>
-              <p class="text-[10px] text-cream/40">{{ trust.sub }}</p>
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-6 mb-8">
+          
+          <!-- ویژگی‌ها و مزایای خرید -->
+          <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-4 flex-1">
+            <div
+              v-for="trust in trustBadges"
+              :key="trust.label"
+              class="trust-badge flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-cream/[0.04] border border-cream/[0.07] hover:border-cream/15 transition-all duration-300"
+            >
+              <Icon :name="trust.icon" class="text-xl text-gold shrink-0" />
+              <div>
+                <p class="text-xs font-bold text-cream/80">{{ trust.label }}</p>
+                <p class="text-[10px] text-cream/40">{{ trust.sub }}</p>
+              </div>
             </div>
           </div>
+
+          <!-- ── کارت اینماد ── -->
+          <div class="enamad-wrapper shrink-0">
+            <!-- 
+              نکته: در صورت داشتن کد اختصاصی اینماد، می‌توانید تگ <a> زیر را جایگزین کرده
+              یا شناسه (ID) و کد اختصاصی خود را در لینک زیر وارد کنید.
+            -->
+            <a referrerpolicy='origin' target='_blank' href='https://trustseal.enamad.ir/?id=8021448&Code=oPcp1T9OwENWTYQJizBEFtd3QkPOAjcK'><img referrerpolicy='origin' src='https://trustseal.enamad.ir/logo.aspx?id=8021448&Code=oPcp1T9OwENWTYQJizBEFtd3QkPOAjcK' alt='' style='cursor:pointer' code='oPcp1T9OwENWTYQJizBEFtd3QkPOAjcK'></a>
+          </div>
+
         </div>
 
         <!-- کپی‌رایت -->
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-cream/[0.04]">
           <div class="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 text-center sm:text-start">
             <span class="text-xs text-cream/35">
               © ۱۴۰۵ ماهلین اسکین‌کر — همه حقوق محفوظ است.
@@ -293,7 +314,7 @@ async function fetchCategories() {
     categories.value = (res.ProductCategories || [])
       .filter(c => c.status === 1 && c.parent_id === null)
       .sort((a, b) => b.order - a.order)
-      .slice(0, 6) // در فوتر جای محدودی هست، حداکثر ۶ دسته نمایش می‌دیم
+      .slice(0, 6)
   } catch (e) {
     console.warn('[Footer] خطا در دریافت دسته‌بندی‌ها:', e)
     categories.value = []
@@ -317,7 +338,6 @@ const trustBadges = [
   { icon: 'tabler:flask', label: 'آزمایش‌شده', sub: 'تایید شده توسط متخصصان' },
 ]
 
-// viewBox و fillRule اختیاری‌اند (پیش‌فرض: 0 0 24 24 و nonzero)
 const socials = [
   {
     name: 'اینستاگرام',
@@ -342,25 +362,22 @@ const socials = [
     href: 'https://ble.ir/09922655520',
     rgb: '76, 235, 180',
     viewBox: '12 12 1000 1000',
-    fillRule: 'evenodd', // تیک داخل آیکون به‌صورت برش توخالی دیده می‌شود
+    fillRule: 'evenodd',
     path: 'M1010.36,547.36c-.73,17.77-2.6,36-6.85,53.41-1.54,16.48-6.36,32.54-10.76,48.52-5.14,19.5-12.48,38.33-19.9,57.17-6.77,15.66-14.35,30.91-22.26,46.08C942.92,766,934.93,779.2,926.29,792q-14.32,21-30.5,40.45c-11.18,13.13-22.68,26.09-35.15,37.92a503.68,503.68,0,0,1-51.3,43.55,453.44,453.44,0,0,1-48.44,31.56C742.06,956.74,722.16,966,702,974.6a548,548,0,0,1-65.89,21.86c-19.49,4.32-39,9.21-58.88,10.76-37,5.71-74.86,5.79-112.13,2.2-33.6-2.61-66.87-9.78-99.25-19.32l-.08-.58C210.19,944.18,82.32,816.07,34.94,661.2c-10.36-33.35-17.62-67.93-20.31-102.83-3.83-33.85-2-68-2.2-102q-.37-40.74-.08-81.64-.26-41.83,0-83.83c-.17-24-.08-47.95-.08-71.93s-.17-48.19.16-72.25c-.33-23.82-.08-47.63-.16-71.44-1.64-17.94,4.24-36.7,17.86-48.85C44.48,13.44,65.68,8.55,84,14.91c11.09,3.75,20.71,10.6,30.58,16.72,36,23.4,70.54,48.85,104.71,74.78a86.74,86.74,0,0,0,10.68-6.77A426.86,426.86,0,0,1,272.58,73.3a483.59,483.59,0,0,1,45.75-22.1c16.39-6.85,33.19-12.8,50.15-18.1,18.1-5,36.29-10.11,55-12.72a392.65,392.65,0,0,1,61.82-7.26,451.46,451.46,0,0,1,76.41,1.71A413.36,413.36,0,0,1,619,24c128.53,27,244.08,108.3,314.46,219a493,493,0,0,1,66.47,159.76c4.73,20.95,8.48,42.32,9.7,63.77A411.89,411.89,0,0,1,1010.36,547.36Z M705.69,273.2a107.59,107.59,0,0,1,62.37,1.3c25.62,9.82,46.29,29.94,57.5,54.9,8.34,22.86,9.31,48.42.91,71.44-6.06,16.2-16.76,30.09-29.4,41.74q-16.7,16.49-33.21,33.14c-11.79,11.79-23.64,23.5-35.33,35.35-11.3,11.28-22.62,22.49-33.85,33.81-12.32,12.34-24.68,24.61-36.95,37-14,14-28.06,27.94-42,42-13.24,13.29-26.55,26.49-39.8,39.78s-26.77,26.71-40.1,40.11c-12.27,11.85-23.51,24.94-37.35,35.06a106.69,106.69,0,0,1-57.95,16C417,753.28,393.79,744,376.87,727.33q-78.53-78.44-157-156.94c-12.82-12.66-21.38-29.07-26-46.38-4.75-23.86-1.94-49.51,10.31-70.75,9.37-16.54,23.79-29.65,40.19-39a107.52,107.52,0,0,1,57.86-9.73c21.38,3.21,42,13,56.91,28.76Q401.7,476,444.37,518.5c8.63-8.18,16.9-16.73,25.19-25.27q18-17.31,35.24-35.35c11.36-10.68,22.33-21.82,33.07-33.12,7.74-6.88,14.75-14.51,22.07-21.8,12-11.68,23.75-23.59,35.49-35.51,11.21-10.83,22.11-21.95,33.07-33,11.79-11.5,23.28-23.28,35-34.87a105.75,105.75,0,0,1,42.21-26.37Z',
   },
 ]
 
-function subscribe() {
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-    status.value = 'error'
-    return
-  }
-
-  status.value = null
-  setTimeout(() => {
-    toast.success("ایمیل شما ثبت شد")
-    email.value = ''
-  }, 2000);
-  // status.value = 'success'
-  // setTimeout(() => { status.value = null }, 4000)
-}
+// function subscribe() {
+//   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+//     status.value = 'error'
+//     return
+//   }
+//   status.value = null
+//   setTimeout(() => {
+//     toast.success("ایمیل شما ثبت شد")
+//     email.value = ''
+//   }, 2000);
+// }
 
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -376,6 +393,34 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
 })
+
+// const email       = ref('')
+// const status      = ref(null)   // null | 'success' | 'error'
+const subscribing = ref(false)
+
+// ولیدیشن سخت‌گیرانه‌تر: ch@domain.tld
+const EMAIL_RE = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/
+
+function subscribe() {
+  const value = email.value.trim()
+
+  if (!value || !EMAIL_RE.test(value)) {
+    status.value = 'error'
+    return
+  }
+
+  status.value      = null
+  subscribing.value = true
+
+  // TODO: بعداً API خبرنامه را اینجا صدا بزن
+  setTimeout(() => {
+    subscribing.value = false
+    status.value      = 'success'   // ← قبلاً ست نمی‌شد و پیام موفقیت هیچ‌وقت نمایش داده نمی‌شد
+    toast.success('ایمیل شما ثبت شد')
+    email.value = ''
+    setTimeout(() => { status.value = null }, 4000)
+  }, 1000)
+}
 </script>
 
 <style scoped>
@@ -501,7 +546,6 @@ onUnmounted(() => {
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* هاور / فوکوس */
 .social-btn:hover,
 .social-btn:focus-visible {
   color: rgb(var(--sc));
@@ -525,7 +569,6 @@ onUnmounted(() => {
   transition-duration: 0.12s;
 }
 
-/* موج حلقه‌ای (فقط یک‌بار در هر هاور) */
 .social-ring {
   position: absolute;
   inset: -1px;
@@ -542,7 +585,6 @@ onUnmounted(() => {
   100% { opacity: 0;   transform: scale(1.55); }
 }
 
-/* درخشش عبوری */
 .social-shine {
   position: absolute;
   inset: 0;
@@ -561,7 +603,6 @@ onUnmounted(() => {
   transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* آیکون */
 .social-icon {
   position: relative;
   width: 1.125rem;
@@ -573,7 +614,6 @@ onUnmounted(() => {
   transform: scale(1.18);
 }
 
-/* تولتیپ نام برند */
 .social-tooltip {
   position: absolute;
   bottom: calc(100% + 0.625rem);
@@ -610,7 +650,6 @@ onUnmounted(() => {
   transform: translate(-50%, 0) scale(1);
 }
 
-/* بدون تولتیپ در دستگاه لمسی */
 @media (hover: none) {
   .social-tooltip { display: none; }
 }
@@ -622,7 +661,7 @@ onUnmounted(() => {
   }
 }
 
-/* ── نماد اعتماد ─────────────────────────────────────── */
+/* ── نمادهای اعتماد ─────────────────────────────────────── */
 .trust-badge {
   animation: trustReveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -634,6 +673,62 @@ onUnmounted(() => {
 @keyframes trustReveal {
   from { opacity: 0; transform: translateY(10px) scale(0.96); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── استایل اختصاصی کارت اینماد ──────────────────────────── */
+.enamad-wrapper {
+  position: relative;
+}
+
+.enamad-card {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.625rem 1rem;
+  border-radius: 1.125rem;
+  background: rgba(242, 235, 227, 0.035);
+  border: 1px solid rgba(162, 132, 102, 0.22);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  overflow: hidden;
+  text-decoration: none;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.enamad-card:hover {
+  background: rgba(242, 235, 227, 0.065);
+  border-color: rgba(162, 132, 102, 0.55);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px -6px rgba(162, 132, 102, 0.25);
+}
+
+.enamad-glow {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(162, 132, 102, 0.12) 0%, transparent 65%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.enamad-card:hover .enamad-glow {
+  opacity: 1;
+}
+
+.enamad-logo-box {
+  width: 3.125rem;
+  height: 3.125rem;
+  display: grid;
+  place-items: center;
+  padding: 0.35rem;
+  border-radius: 0.85rem;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
 }
 
 /* ── پیام خبرنامه ────────────────────────────────────── */
@@ -669,7 +764,6 @@ onUnmounted(() => {
   isolation: isolate;
 }
 
-/* درخشش طلایی پشت قاب */
 .footer-logo-glow {
   position: absolute;
   inset: -45%;
@@ -684,7 +778,6 @@ onUnmounted(() => {
   50%      { opacity: 1;   transform: scale(1.1); }
 }
 
-/* حلقه‌ی نور چرخان دور قاب */
 .footer-logo-ring {
   position: absolute;
   inset: 0;
@@ -697,9 +790,9 @@ onUnmounted(() => {
   background: conic-gradient(
     from 0deg,
     transparent 0 55%,
-    rgba(162, 132, 102, 0.9),   /* gold */
-    rgba(251, 228, 205, 1),     /* peachLight */
-    rgba(242, 168, 104, 0.8),   /* peach */
+    rgba(162, 132, 102, 0.9),
+    rgba(251, 228, 205, 1),
+    rgba(242, 168, 104, 0.8),
     transparent 92%
   );
   animation: logoRing 5s linear infinite;
@@ -708,7 +801,6 @@ onUnmounted(() => {
   to { transform: rotate(360deg); }
 }
 
-/* خود قاب لوگو — روی حلقه می‌نشیند و فقط لبه‌ی ۱٫۵ پیکسلی نور دیده می‌شود */
 .footer-logo-tile {
   position: absolute;
   inset: 1.5px;
@@ -718,18 +810,16 @@ onUnmounted(() => {
   transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* نوشته با برق نور عبوری */
-/* نوشته با برق نور عبوری */
 .footer-logo-text {
   background: linear-gradient(
     100deg,
     #F2EBE3 0%,
     #F2EBE3 35%,
-    #A28466 42%,   /* gold */
-    #F2A868 46%,   /* peach */
-    #FFF8F0 50%,   /* نقطه‌ی اوج نور */
-    #FBE4CD 54%,   /* peachLight */
-    #A28466 58%,   /* gold */
+    #A28466 42%,
+    #F2A868 46%,
+    #FFF8F0 50%,
+    #FBE4CD 54%,
+    #A28466 58%,
     #F2EBE3 65%,
     #F2EBE3 100%
   );
@@ -747,8 +837,6 @@ onUnmounted(() => {
   80%, 100% { background-position: 0% 0; }
 }
 
-/* هاور */
-/* هاور */
 .footer-logo:hover .footer-logo-tile { transform: scale(0.94); }
 .footer-logo:hover .footer-logo-text {
   animation-duration: 2.2s;
@@ -840,7 +928,6 @@ onUnmounted(() => {
   75%, 100% { background-position: 0% 0; }
 }
 
-/* هاور */
 .dev-credit:hover .dev-credit-icon {
   color: #F2A868;
   transform: rotate(-8deg) scale(1.12);

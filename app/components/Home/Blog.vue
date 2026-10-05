@@ -107,7 +107,7 @@
         :centered-slides="false"
         :pagination="{ el: paginationEl, clickable: true, dynamicBullets: true }"
         :breakpoints="{
-          640:  { slidesPerView: 2,   spaceBetween: 24, slidesOffsetBefore: 0, slidesOffsetAfter: 0 },
+          640:  { slidesPerView: 1.3,   spaceBetween: 24, slidesOffsetBefore: 0, slidesOffsetAfter: 0 },
           1024: { slidesPerView: 3,   spaceBetween: 32, slidesOffsetBefore: 0, slidesOffsetAfter: 0 },
         }"
         style="padding-inline: 1rem;"

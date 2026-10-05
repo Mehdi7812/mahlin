@@ -43,22 +43,22 @@
                   <span class="absolute inline-flex h-full w-full rounded-full bg-[#E07A5F] opacity-60 animate-ping motion-reduce:animate-none" />
                   <span class="relative inline-flex h-2 w-2 rounded-full bg-[#E07A5F]" />
                 </span>
-                <span class="text-[11px] sm:text-xs text-[#B5563D] font-bold">فروش ویژه زمان‌دار</span>
+                <span class="text-[11px] sm:text-xs text-[#B5563D] font-bold">{{ badgeText }}</span>
               </div>
 
               <h2 class="text-2xl md:text-3xl font-display text-ink mb-1.5">
-                انتخاب‌های محبوب با قیمت ویژه
+                {{ titleText }}
               </h2>
 
               <p class="text-ink/55 text-xs sm:text-sm max-w-lg leading-relaxed">
-                محصولات منتخب ماهلین را قبل از پایان کمپین و اتمام موجودی، با تخفیف تهیه کن
+                {{ descText }}
               </p>
             </div>
 
             <!-- مشاهده همه + ناوبری دسکتاپ -->
             <div class="hidden md:flex items-center gap-4">
-              <NuxtLink to="/shop?discounted=1" class="see-all group">
-                <span>مشاهده همه پیشنهادهای ویژه</span>
+              <NuxtLink :to="seeAllLink" class="see-all group">
+                <span>{{ seeAllLabel }}</span>
                 <svg class="w-4 h-4 rtl:rotate-180 transition-transform duration-300 group-hover:-translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
@@ -96,9 +96,9 @@
             دریافت محصولات با خطا مواجه شد
           </div>
 
-          <!-- ────── بدون تخفیف فعال ────── -->
+          <!-- ────── بدون داده ────── -->
           <div v-else-if="!dealsProducts.length" class="text-center py-14 text-ink/50 text-sm">
-            در حال حاضر تخفیف فعالی وجود ندارد
+            {{ emptyText }}
           </div>
 
           <!-- ────── اسلایدر محصولات ────── -->
@@ -113,7 +113,7 @@
               :watch-overflow="true"
               :pagination="{ el: paginationEl, clickable: true, dynamicBullets: true }"
               :breakpoints="{
-                400:  { slidesPerView: 2, spaceBetween: 14 },
+                400:  { slidesPerView: 1.3, spaceBetween: 14 },
                 640:  { slidesPerView: 3, spaceBetween: 24 },
                 1024: { slidesPerView: 4, spaceBetween: 32 },
               }"
@@ -121,7 +121,6 @@
               @slide-change="onSlideChange"
             >
               <SwiperSlide v-for="p in dealsProducts" :key="p.id" class="!h-auto">
-                <!-- on-dark = کارت با پس‌زمینه‌ی توپر؛ رنگ و سایه برای پس‌زمینه‌ی روشن بازنویسی شده -->
                 <ProductCard
                   :product="p"
                   on-dark
@@ -137,10 +136,10 @@
           <!-- دکمه مشاهده همه موبایل -->
           <div class="flex justify-center mt-4 md:hidden">
             <NuxtLink
-              to="/shop?discounted=1"
+              :to="seeAllLink"
               class="flex items-center gap-2 bg-white/75 hover:bg-white text-ink ring-1 ring-white text-xs font-bold px-6 py-3.5 rounded-full shadow-[0_8px_20px_-12px_rgba(110,82,58,0.4)] transition-colors duration-300"
             >
-              <span>مشاهده همه تخفیف‌ها</span>
+              <span>{{ mobileSeeAllLabel }}</span>
               <svg class="w-4 h-4 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
@@ -168,33 +167,99 @@ const isEnd          = ref(false);
 const paginationEl   = ref(null);
 
 // ─── Data ────────────────────────────────────────────────
-const products = ref([]);
-const pending  = ref(true);
-const error    = ref(null);
+const products         = ref([]);
+const pending          = ref(true);
+const error            = ref(null);
+const isSpecialFallback = ref(false);
 
-useGarnetApiFetch('products/indexHomeLite', {
-  amount:    12,
-  direction: 'desc',
-  order:     'discount_percent',
-  top_home:  'discount',
-})
-  .then((response) => {
-    products.value = response?.Products || [];
-  })
-  .catch((err) => {
-    console.error('[Deals] خطا در دریافت محصولات تخفیف‌دار:', err);
+// ─── متن‌های واکنش‌گرا بر اساس حالت نمایش ────────────────
+const badgeText = computed(() =>
+  isSpecialFallback.value ? 'پیشنهاد ویژه' : 'فروش ویژه زمان‌دار'
+);
+
+const titleText = computed(() =>
+  isSpecialFallback.value
+    ? 'منتخب‌های ویژه ماهلین'
+    : 'انتخاب‌های محبوب با قیمت ویژه'
+);
+
+const descText = computed(() =>
+  isSpecialFallback.value
+    ? 'پرفروش‌ترین و منتخب‌ترین محصولات ماهلین را همین حالا ببین'
+    : 'محصولات منتخب ماهلین را قبل از پایان کمپین و اتمام موجودی، با تخفیف تهیه کن'
+);
+
+const seeAllLink = computed(() =>
+  isSpecialFallback.value ? '/shop?special=1' : '/shop?discounted=1'
+);
+
+const seeAllLabel = computed(() =>
+  isSpecialFallback.value ? 'مشاهده همه پیشنهادهای ویژه' : 'مشاهده همه پیشنهادهای ویژه'
+);
+
+const mobileSeeAllLabel = computed(() =>
+  isSpecialFallback.value ? 'مشاهده همه پیشنهادهای ویژه' : 'مشاهده همه تخفیف‌ها'
+);
+
+const emptyText = computed(() =>
+  isSpecialFallback.value
+    ? 'در حال حاضر پیشنهاد ویژه وجود ندارد'
+    : 'در حال حاضر تخفیف فعالی وجود ندارد'
+);
+
+// ─── لودیگ پیشنهادهای ویژه ─────────────────────────────
+async function loadDeals() {
+  pending.value = true;
+  error.value   = null;
+
+  try {
+    // ۱) ابتدا محصولات تخفیف‌دار را می‌گیریم
+    const discountRes = await useGarnetApiFetch('products/indexHomeLite', {
+      amount:    12,
+      direction: 'desc',
+      order:     'discount_percent',
+      top_home:  'discount',
+    });
+
+    const discountList = discountRes?.Products || [];
+    const discounted   = discountList.filter(hasDiscount);
+
+    // اگر تخفیف داشتیم، همان‌ها را نمایش می‌دهیم
+    if (discounted.length > 0) {
+      products.value = discounted;
+      return;
+    }
+
+    // ۲) اگر هیچ تخفیفی نبود، محصولات ویژه را می‌گیریم
+    const specialRes = await useGarnetApiFetch('products/indexHomeLite', {
+      amount:        12,
+      order:         'order',
+      direction:     'desc',
+      special_sale:  true,
+      top_home:      'special',
+    });
+
+    isSpecialFallback.value = true;
+    products.value          = specialRes?.Products || [];
+
+  } catch (err) {
+    console.error('[Deals] خطا در دریافت محصولات:', err);
     error.value = err;
-  })
-  .finally(() => {
+  } finally {
     pending.value = false;
-  });
+  }
+}
 
-// فقط محصولاتی که واقعاً تخفیف دارند
+loadDeals();
+
+// ─── فیلتر تخفیف ────────────────────────────────────────
 function hasDiscount(p) {
   if (p.discount_percent) return Number(p.discount_percent) > 0;
   return Number(p.final_price) < Number(p.price);
 }
-const dealsProducts = computed(() => products.value.filter(hasDiscount));
+
+// برای سازگاری با تمپلیت، لیست نهایی را در یک computed نگه می‌داریم
+const dealsProducts = computed(() => products.value);
 
 // ─── Swiper helpers ──────────────────────────────────────
 function onSwiperInit(swiper) {

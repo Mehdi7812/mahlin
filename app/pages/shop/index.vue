@@ -560,9 +560,9 @@ const activeFiltersCount = computed(() => {
   
   // اگر مقدار انتخاب شده بزرگتر یا مساوی سقف داینامیک یا مبنا باشد، سقف نخواهیم داشت (بی‌نهایت واقعی)
   const isInfiniteMax = priceRange.value[1] >= maxPrice.value || priceRange.value[1] >= FIXED_MAX_PRICE;
-  const maxPriceToSend = isInfiniteMax ? 99999999 : priceRange.value[1];
+  const maxPriceToSend = isInfiniteMax ? 999999999 : priceRange.value[1];
 
-  if (minPriceToSend > 1 || maxPriceToSend < 99999999) {
+  if (minPriceToSend > 1 || maxPriceToSend < 999999999) {
     n++;
   }
   return n;
@@ -598,11 +598,11 @@ async function fetchProducts() {
 
   // اگر سقف انتخابی به تهِ اسلایدر چسبیده باشد (یا بزرگتر مساوی سقف پویای فعلی باشد) یعنی کاربر فیلتر سقف نمی‌خواهد
   if (maxPriceToSend >= maxPrice.value || maxPriceToSend >= FIXED_MAX_PRICE) {
-    maxPriceToSend = 99999999;
+    maxPriceToSend = 999999999;
   }
 
-  // اگر رِنج انتخابی کل محصولات را شامل نشود [1, 99999999]، فیلترها را به وب‌سرویس بفرست
-  if (minPriceToSend > 1 || maxPriceToSend < 99999999) {
+  // اگر رِنج انتخابی کل محصولات را شامل نشود [1, 999999999]، فیلترها را به وب‌سرویس بفرست
+  if (minPriceToSend > 1 || maxPriceToSend < 999999999) {
     payload.minPrice = minPriceToSend;
     payload.maxPrice = maxPriceToSend;
   }

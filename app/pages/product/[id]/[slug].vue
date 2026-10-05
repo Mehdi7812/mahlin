@@ -191,7 +191,7 @@ const fetchError   = ref(null);
 
 // ─── سایر state های صفحه ────────────────────────────────────
 const qty               = ref(1);
-const activeTab         = ref('long');
+const activeTab = ref([]);
 const isWishlisted      = ref(false);
 const wishlistReady     = ref(false); // تا مقدار اولیه از API نیومده، انیمیشن قلب اجرا نشه
 const copied            = ref(false);
@@ -288,10 +288,10 @@ const accessDeadline = computed(() => {
 // ─── تب پیش‌فرض هوشمند بر اساس محتوای موجود ────────────────────
 watch(item, (val) => {
   if (!val) return;
-  if (val.long) activeTab.value = 'long';
-  else if (val.attributes.length) activeTab.value = 'attrs';
-  else if (val.installmentPlans.length) activeTab.value = 'installment';
-  else activeTab.value = '';
+  if (val.long) activeTab.value = ['long'];
+  else if (val.attributes.length) activeTab.value = ['attrs'];
+  else if (val.installmentPlans.length) activeTab.value = ['installment'];
+  else activeTab.value = [];
 }, { immediate: true });
 
 // ─── پالت رنگی هماهنگ با دسته‌بندی ─────────────────────────────

@@ -63,6 +63,31 @@
 
             <!-- مشخصات -->
             <div v-else-if="s.id === 'attrs'" class="space-y-4">
+              <!-- همین محصول با حجم متفاوت -->
+              <NuxtLink
+                v-if="variantLink"
+                :to="variantLink"
+                class="flex items-center gap-3 p-4 rounded-xl border transition-colors hover:bg-ink/[0.02]"
+                :style="{ borderColor: accent, color: accent }"
+                >
+                <span
+                  class="grid place-items-center w-9 h-9 rounded-xl shrink-0"
+                  :style="{ backgroundColor: catInfo.iconBg }"
+                  aria-hidden="true"
+                >
+                  <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M7 10h14l-4-4M17 14H3l4 4" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </span>
+                <span class="flex-1 min-w-0">
+                  <span class="block text-[13px] font-bold">همین محصول با حجم متفاوت</span>
+                  <span class="block text-[11px] text-ink/50 mt-0.5">مشاهده نسخه دیگر این محصول</span>
+                </span>
+                <svg class="w-4 h-4 shrink-0 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </NuxtLink>
+
               <!-- جدول مشخصات کوتاه -->
               <dl v-if="specs.length" class="m-0 rounded-xl border border-ink/[0.07] divide-y divide-ink/[0.06]">
                 <div
@@ -138,9 +163,10 @@
 <script setup>
 import { computed } from 'vue';
 import { fa, money } from '~/utils/format.ts';
+const route = useRoute();
 
 const props = defineProps({
-  modelValue: { type: String, default: '' },
+  modelValue: { type: Array, default: () => [] },   // ← آرایه‌ای از idهای باز
   item: { type: Object, required: true },
   catInfo: { type: Object, required: true },
 });
@@ -149,17 +175,40 @@ const emit = defineEmits(['update:modelValue']);
 
 const accent = computed(() => props.catInfo.darkAccent || props.catInfo.accent);
 
-const isOpen = (id) => props.modelValue === id;
+const isOpen = (id) => props.modelValue.includes(id);
+
 function toggle(id) {
-  emit('update:modelValue', isOpen(id) ? '' : id);
+  const next = isOpen(id)
+    ? props.modelValue.filter((x) => x !== id)   // بستن فقط همین یکی
+    : [...props.modelValue, id];                 // باز کردن بدون بستن بقیه
+  emit('update:modelValue', next);
 }
+
+// ─── لینک محصول دوم (همین محصول با حجم متفاوت) ─────────────
+const VARIANT_ATTR_TITLE = 'لینک محصول دوم';
+const isVariantAttr = (a) => String(a?.title ?? '').trim() === VARIANT_ATTR_TITLE;
+
+const variantLink = computed(() => {
+  const attr = (props.item.attributes || []).find(isVariantAttr);
+  const secondId = String(attr?.value ?? '').trim();
+  if (!/^\d+$/.test(secondId)) return null; // خالی یا نامعتبر
+
+  const currentId = props.item.id ?? route.params.id;
+  if (Number(secondId) === Number(currentId)) return null; // لینک به خودش نشود
+
+  const rawSlug = props.item.slug || props.item.slug_fa || route.params.slug;
+  const slug = Array.isArray(rawSlug) ? rawSlug[0] : rawSlug;
+  if (!slug) return null;
+
+  return `/product/${secondId}/${encodeURIComponent(slug)}`;
+});
 
 // ─── دسته‌بندی ویژگی‌ها برای نمایش ─────────────────────────
 const UNITS = { ml: 'میلی‌لیتر', g: 'گرم', gr: 'گرم', kg: 'کیلوگرم', l: 'لیتر', cm: 'سانتی‌متر' };
 const LONG_TEXT = 60;
 
 const parsedAttrs = computed(() =>
-  (props.item.attributes || []).map((a) => {
+  (props.item.attributes || []).filter((a) => !isVariantAttr(a)).map((a) => {
     let title = a.title.trim();
     let value = String(a.value ?? '').trim();
 
@@ -193,7 +242,7 @@ const sections = computed(() => {
       icon: 'M4 6h16M4 12h16M4 18h10',
     });
   }
-  if (parsedAttrs.value.length) {
+  if (parsedAttrs.value.length || variantLink.value) {
     list.push({
       id: 'attrs',
       title: 'مشخصات و راهنمای مصرف',
@@ -225,7 +274,7 @@ const sections = computed(() => {
 
 /* ─── محتوای HTML توضیحات ─── */
 .prose-product > :deep(*:first-child) { margin-top: 0; }
-.prose-product :deep(p) { margin: 0 0 0.9rem; }
+
 .prose-product :deep(h2),
 .prose-product :deep(h3),
 .prose-product :deep(h4) {
@@ -243,6 +292,10 @@ const sections = computed(() => {
   color: v-bind(accent);
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.prose-product :deep(ul) {
+  list-style: disc;
 }
 /* پاراگراف و تیتر خالی که ادیتور تولید می‌کند */
 .prose-product :deep(p:empty),

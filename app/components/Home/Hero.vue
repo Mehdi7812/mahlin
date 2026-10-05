@@ -116,12 +116,14 @@
         <div class="absolute -inset-4 rounded-[32px] border border-gold/20 pointer-events-none"></div>
         <div class="absolute -inset-8 rounded-[40px] border border-blush/20 pointer-events-none hidden md:block"></div>
 
-        <div class="aspect-square overflow-hidden rounded-[24px] shadow-[0_20px_60px_rgba(197,160,89,0.18)] relative">
+        <div class="aspect-square overflow-hidden rounded-[24px] shadow-[0_20px_60px_rgba(197,160,89,0.18)] relative bg-[#F2EBE3]">
           <video
             ref="heroVideo"
             src="/video/brand.webm"
+            poster="/video/brand-poster.webp"
             muted
             playsinline
+            preload="auto"
             class="w-full h-full object-cover"
           ></video>
         </div>
@@ -154,6 +156,10 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 
+useHead({
+  link: [{ rel: 'preload', as: 'image', href: '/video/brand-poster.webp', type: 'image/webp' }],
+})
+
 const heroVideo = ref(null)
 let observer = null
 
@@ -167,7 +173,6 @@ onMounted(() => {
         if (!video) return
 
         if (entry.isIntersecting) {
-          // هر بار که وارد ویوپورت میشه از اول پخش بشه
           video.currentTime = 0
           video.play().catch(() => {})
         } else {
@@ -175,7 +180,7 @@ onMounted(() => {
         }
       })
     },
-    { threshold: 0.4 } // وقتی حداقل ۴۰٪ ویدیو دیده بشه
+    { threshold: 0.4 }
   )
 
   observer.observe(heroVideo.value)
@@ -353,6 +358,34 @@ onBeforeUnmount(() => {
   opacity: 1;
 }
 
+/* ── اسکلتون ویدیو ───────────────────────────────────── */
+.video-skeleton {
+  background: linear-gradient(135deg, rgba(197, 160, 89, 0.10), rgba(197, 160, 89, 0.04));
+  overflow: hidden;
+}
+.video-skeleton-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  animation: videoShimmer 1.8s ease-in-out infinite;
+}
+@keyframes videoShimmer {
+  to { transform: translateX(100%); }
+}
+
+.skeleton-fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+.skeleton-fade-leave-to {
+  opacity: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cta-pulse,
   .cta-shine::before,
@@ -363,6 +396,9 @@ onBeforeUnmount(() => {
   .about-arrow {
     animation: none !important;
     transition: none !important;
+  }
+  .video-skeleton-shimmer {
+    animation: none !important;
   }
 }
 </style>

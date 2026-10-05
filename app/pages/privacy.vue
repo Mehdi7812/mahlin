@@ -588,11 +588,11 @@
                 </NuxtLink>
 
                 <a
-                  href="mailto:privacy@mahlin.com"
+                  href="mailto:mahlinn404@gmail.com"
                   dir="ltr"
                   class="inline-flex items-center rounded-xl border border-cream/10 bg-cream/5 px-5 py-3 text-[13px] font-bold text-cream/70 transition-all duration-200 hover:-translate-y-0.5 hover:border-cream/20 hover:bg-cream/10 hover:text-cream active:translate-y-0 active:scale-95"
                 >
-                  privacy@mahlin.com
+                  mahlinn404@gmail.com
                 </a>
 
                 <NuxtLink
@@ -1036,7 +1036,7 @@ const sections = [
 const metaChips = [
   {
     label: 'آخرین به‌روزرسانی',
-    value: '۱۵ خرداد ۱۴۰۴',
+    value: '۱۵ مهر ۱۴۰۴',
     iconClass: 'text-gold',
     svg: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke-linecap="round"/>',
   },

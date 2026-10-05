@@ -15,23 +15,30 @@
         >
           <div>
             <div class="flex justify-between items-center text-xs mb-2">
-              <span class="font-bold text-ink flex items-center gap-2">
-                <span
-                  class="w-6 h-6 rounded-full grid place-items-center text-[10px] font-bold text-white"
-                  :style="{ backgroundColor: catInfo.accent }"
-                >
-                  {{ (c.user_full_name || c.name || 'ک').charAt(0) }}
+              <span class="font-bold text-ink flex items-center gap-2 min-w-0">
+                <!-- آواتار نویسنده نظر -->
+                <span class="relative w-6 h-6 rounded-full shrink-0 overflow-hidden grid place-items-center">
+                  <img
+                    v-if="photoOf(c)"
+                    :src="photoOf(c)"
+                    :alt="displayName(c)"
+                    class="w-full h-full object-cover"
+                    @error="hidePhoto($event)"
+                  />
+                  <span
+                    v-else
+                    class="w-full h-full grid place-items-center text-[10px] font-bold text-white"
+                    :style="{ backgroundColor: catInfo.accent }"
+                  >
+                    {{ initialOf(c) }}
+                  </span>
                 </span>
-                {{ c.user_full_name || c.name || 'کاربر مهمان' }}
+                <span class="truncate">{{ displayName(c) }}</span>
               </span>
-              <span class="text-ink/40 font-latin">{{ formatDate(c.created_at) }}</span>
+              <span class="text-ink/40 font-latin shrink-0">{{ formatDate(c.created_at) }}</span>
             </div>
 
-            <!-- <div v-if="ratingOf(c) > 0" class="flex gap-0.5 text-gold text-sm mb-3">
-              <span v-for="star in ratingOf(c)" :key="star">★</span>
-            </div> -->
             <ProductStarRating :value="ratingOf(c)" :size="17" />
-
 
             <p class="text-xs sm:text-sm text-ink/70 leading-relaxed">{{ c.comment }}</p>
 
@@ -45,7 +52,6 @@
                 :key="reply.id ?? ri"
                 class="relative ps-4"
               >
-                <!-- خط اتصال عمودی -->
                 <span
                   class="absolute top-0 bottom-0 start-0 w-[2px] rounded-full opacity-25"
                   :style="{ backgroundColor: catInfo.accent }"
@@ -56,22 +62,31 @@
                   class="rounded-xl p-3.5"
                   :style="{ backgroundColor: catInfo.iconBg }"
                 >
-                  <div class="flex items-center justify-between mb-2">
-                    <span class="flex items-center gap-2">
+                  <div class="flex items-center justify-between mb-2 gap-2">
+                    <span class="flex items-center gap-2 min-w-0">
                       <!-- آواتار پاسخ‌دهنده -->
-                      <span
-                        class="w-5.5 h-5.5 rounded-full grid place-items-center text-[9px] font-bold text-white shrink-0"
-                        :style="{ backgroundColor: catInfo.darkAccent || catInfo.accent }"
-                      >
-                        {{ (reply.user_full_name || reply.name || 'ف').charAt(0) }}
+                      <span class="relative w-[22px] h-[22px] rounded-full shrink-0 overflow-hidden grid place-items-center">
+                        <img
+                          v-if="photoOf(reply)"
+                          :src="photoOf(reply)"
+                          :alt="displayName(reply, 'پاسخ فروشگاه')"
+                          class="w-full h-full object-cover"
+                          @error="hidePhoto($event)"
+                        />
+                        <span
+                          v-else
+                          class="w-full h-full grid place-items-center text-[9px] font-bold text-white"
+                          :style="{ backgroundColor: catInfo.darkAccent || catInfo.accent }"
+                        >
+                          {{ initialOf(reply, 'ف') }}
+                        </span>
                       </span>
 
-                      <span class="flex items-center gap-1.5 flex-wrap">
-                        <span class="text-[11px] font-bold text-ink/85">
-                          {{ reply.user_full_name || reply.name || 'پاسخ فروشگاه' }}
+                      <span class="flex items-center gap-1.5 flex-wrap min-w-0">
+                        <span class="text-[11px] font-bold text-ink/85 truncate">
+                          {{ displayName(reply, 'پاسخ فروشگاه') }}
                         </span>
 
-                        <!-- برچسب پاسخ رسمی -->
                         <span
                           class="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full text-white"
                           :style="{ backgroundColor: catInfo.accent }"
@@ -145,16 +160,45 @@ defineProps({
 
 defineEmits(['load-more']);
 
+function displayName(c, fallback = 'کاربر مهمان') {
+  return c?.user_full_name || c?.name || fallback;
+}
+
+function initialOf(c, fallback = 'ک') {
+  return displayName(c, fallback).charAt(0);
+}
+
+function photoOf(c) {
+  const src = c?.user_photo;
+  return typeof src === 'string' && src.trim() ? src.trim() : null;
+}
+
+function hidePhoto(e) {
+  e.target.remove();
+}
+
+// ─── تاریخ و ساعت دقیق ─────────────────────────────────────
 function formatDate(dateStr) {
   if (!dateStr) return '';
   try {
-    return new Date(dateStr.replace(' ', 'T')).toLocaleDateString('fa-IR', { month: 'short', day: 'numeric' });
+    // «2026-10-05 08:11:15» → «2026-10-05T08:11:15» تا Date آن را درست پارس کند
+    const d = new Date(dateStr.replace(' ', 'T'));
+    if (isNaN(d.getTime())) return '';
+
+    return d.toLocaleString('fa-IR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false, // نمایش ۲۴ ساعته (بدون قبل/بعد از ظهر)
+    });
   } catch {
     return '';
   }
 }
 
-// تبدیل امن rate به عدد صحیح بین 0 تا 5 (چون API رشته برمی‌گردونه)
 function ratingOf(comment) {
   const n = Math.round(Number(comment?.rate));
   if (isNaN(n) || n <= 0) return 0;

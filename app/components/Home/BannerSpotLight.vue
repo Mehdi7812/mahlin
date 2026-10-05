@@ -1,5 +1,9 @@
 <template>
-  <section ref="sectionRef" class="relative max-w-[1280px] mx-auto px-4 md:px-6 py-10 md:py-16">
+  <section
+    ref="sectionRef"
+    class="relative max-w-[1280px] mx-auto px-4 md:px-6 py-10 md:py-16"
+    :style="{ '--banner-ar': BANNER_RATIO }"
+  >
     <div class="decor-layer pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 w-screen overflow-hidden -z-10">
       <!-- بلاب‌های تزئینی شناور -->
       <div class="blob blob-1 absolute -top-10 end-4 md:end-16 w-72 h-72 rounded-full bg-lilac/15 blur-[110px]"></div>
@@ -13,28 +17,50 @@
       <span class="particle particle-4" aria-hidden="true"></span>
     </div>
 
-    <!-- هدر بخش -->
-    <div v-if="!loading && banners.length" class="relative z-10 mb-6 md:mb-9 header-in">
-      <div class="flex items-center gap-2 text-gold mb-2">
-        <svg class="w-4 h-4 sparkle-spin" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" />
-        </svg>
-        <span class="text-xs sm:text-sm font-bold tracking-wide">کالکشن ویژه</span>
+    <!-- ═══════════ هدر بخش (در حالت لودینگ هم فضایش رزرو است) ═══════════ -->
+    <div v-if="loading || banners.length" class="relative z-10 mb-6 md:mb-9">
+      <!-- اسکلتِ هدر: ارتفاع‌ها دقیقاً هم‌اندازهٔ هدر واقعی -->
+      <div v-if="loading" aria-hidden="true">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="block w-4 h-4 rounded-full skeleton-shimmer"></span>
+          <span class="block h-4 sm:h-5 w-24 rounded-full skeleton-shimmer"></span>
+        </div>
+        <div class="flex items-end justify-between gap-4 flex-wrap">
+          <span class="block h-7 sm:h-8 md:h-9 w-64 max-w-[75%] rounded-lg skeleton-shimmer"></span>
+        </div>
       </div>
-      <div class="flex items-end justify-between gap-4 flex-wrap">
-        <h2 class="font-display text-xl sm:text-2xl md:text-3xl font-bold text-ink [text-wrap:balance]">
-          زیبایی‌ات را با ما کشف کن
-        </h2>
-        <svg class="hidden sm:block w-28 h-3 text-peach/70 -mb-1" viewBox="0 0 120 12" fill="none">
-          <path class="squiggle" d="M2 8c10-10 20 6 30-2s20-8 30 0 20 6 30-2" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
-        </svg>
+
+      <!-- هدر واقعی -->
+      <div v-else class="header-in">
+        <div class="flex items-center gap-2 text-gold mb-2">
+          <svg class="w-4 h-4 sparkle-spin" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" />
+          </svg>
+          <span class="text-xs sm:text-sm font-bold tracking-wide">کالکشن ویژه</span>
+        </div>
+        <div class="flex items-end justify-between gap-4 flex-wrap">
+          <h2 class="font-display text-xl sm:text-2xl md:text-3xl font-bold text-ink [text-wrap:balance]">
+            زیبایی‌ات را با ما کشف کن
+          </h2>
+          <svg class="hidden sm:block w-28 h-3 text-peach/70 -mb-1" viewBox="0 0 120 12" fill="none">
+            <path class="squiggle" d="M2 8c10-10 20 6 30-2s20-8 30 0 20 6 30-2" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+          </svg>
+        </div>
       </div>
     </div>
 
-    <!-- اسکلتون لودینگ -->
-    <div v-if="loading" class="relative flex flex-col gap-5 md:gap-6 fade-in">
-      <div class="w-full aspect-[16/7] rounded-[28px] overflow-hidden skeleton-shimmer"></div>
-      <div class="w-full aspect-[16/7] rounded-[28px] overflow-hidden skeleton-shimmer"></div>
+    <!-- ═══════════ اسکلتون لودینگ (همان gap و aspect-ratio کارت‌های واقعی) ═══════════ -->
+    <div
+      v-if="loading"
+      class="relative z-10 flex flex-col gap-5 md:gap-6"
+      aria-busy="true"
+      aria-label="در حال بارگذاری بنرها"
+    >
+      <div
+        v-for="n in skeletonCount"
+        :key="n"
+        class="banner-ratio w-full rounded-[28px] overflow-hidden skeleton-shimmer"
+      ></div>
     </div>
 
     <!-- خالی -->
@@ -62,16 +88,16 @@
       >
         <NuxtLink
           :to="banner.link || '/shop'"
-          class="banner-card group relative block rounded-[28px] overflow-hidden shadow-[0_20px_50px_-30px_rgba(63,58,53,0.4)] bg-ink/5"
+          class="banner-card banner-ratio group relative block rounded-[28px] overflow-hidden shadow-[0_20px_50px_-30px_rgba(63,58,53,0.4)] bg-ink/5"
           @pointerenter="onCardEnter"
           @mousemove="onCardMouseMove"
           @mouseleave="onCardLeave"
           @pointerdown="onCardRipple"
         >
-          <!-- قاب نور دور کارت (هاور + یک چشمک خوشامدگویی هنگام ورود) -->
+          <!-- قاب نور دور کارت -->
           <span class="glow-ring" aria-hidden="true"></span>
 
-          <!-- نور نرم دنبال‌کننده‌ی موس (کاملاً خارج از reactivity ویو) -->
+          <!-- نور نرم دنبال‌کننده‌ی موس -->
           <span class="cursor-spot" aria-hidden="true"></span>
 
           <!-- پرده‌کشی تصویر هنگام ورود به دید + نفس‌کشیدن آرام -->
@@ -80,18 +106,22 @@
               <img
                 :src="banner.image"
                 :alt="banner.title || 'بنر فروشگاه'"
-                class="banner-img block w-full h-auto"
+                class="banner-img block w-full h-full object-cover"
+                :class="imgLoaded[banner.id] ? 'is-loaded' : ''"
                 loading="lazy"
+                decoding="async"
+                @load="imgLoaded[banner.id] = true"
+                @error="imgLoaded[banner.id] = true"
               />
             </div>
           </div>
 
-          <!-- شاین‌های مختلف: ورود، هاور، و دوره‌ای خودکار -->
+          <!-- شاین‌ها -->
           <span class="shine shine-auto" aria-hidden="true"></span>
           <span class="shine shine-hover" aria-hidden="true"></span>
           <span class="shine shine-ambient" :style="{ animationDelay: (i * 2 + 1.5) + 's' }" aria-hidden="true"></span>
 
-          <!-- آیکون کوچک ورود با پالس + افکت مغناطیسی -->
+          <!-- آیکون ورود -->
           <span class="peek-icon">
             <span class="peek-icon-pulse" aria-hidden="true"></span>
             <svg class="w-5 h-5 relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -117,11 +147,18 @@ const props = defineProps({
   },
 });
 
+/**
+ * نسبت ابعاد بنرها. اگر بنرهای شما نسبت دیگری دارند (مثلاً 3 / 1)
+ * فقط همین یک مقدار را عوض کنید؛ اسکلتون و کارت واقعی هر دو از آن پیروی می‌کنند.
+ */
+const BANNER_RATIO = '16 / 7';
+
 const banners = ref([]);
 const loading = ref(true);
 const sectionRef = ref(null);
 const cardRefs = ref([]);
 const visible = reactive({});
+const imgLoaded = reactive({});
 
 let observer = null;
 let fallbackTimer = null;
@@ -132,6 +169,22 @@ const sliderIdList = computed(() => {
   if (raw === null || raw === undefined || raw === '') return [];
   return [raw];
 });
+
+// ─── تعداد کارت‌های اسکلتون: حدس هوشمند برای جلوگیری از پرش ──────────
+const cacheKey = computed(() => `banner_stack_count_${sliderIdList.value.join('-')}`);
+const skeletonCount = ref(Math.max(1, sliderIdList.value.length));
+
+function readCachedCount() {
+  try {
+    const n = Number(sessionStorage.getItem(cacheKey.value));
+    if (Number.isInteger(n) && n > 0 && n <= 8) skeletonCount.value = n;
+  } catch {}
+}
+function writeCachedCount(n) {
+  try {
+    sessionStorage.setItem(cacheKey.value, String(n));
+  } catch {}
+}
 
 const setCardRef = (el, i) => {
   if (el) cardRefs.value[i] = el;
@@ -262,6 +315,8 @@ const getContent = () => {
         title: item.title || item.name || '',
       }));
 
+      if (items.length) writeCachedCount(items.length);
+
       cardRefs.value = [];
       nextTick(() => setupObserver());
     })
@@ -274,6 +329,7 @@ const getContent = () => {
 };
 
 onMounted(() => {
+  readCachedCount();
   getContent();
 });
 
@@ -284,15 +340,9 @@ onBeforeUnmount(() => {
 </script>
 
 <!--
-  توجه: این استایل عمداً غیر scoped است، چون باید روی html/body
-  (که خارج از این کامپوننت هستند) اعمال شود، نه فقط داخل ریشه‌ی این کامپوننت.
-  علت اسکرول افقی: واحد vw معمولاً عرض اسکرول‌بار عمودی را هم حساب می‌کند،
-  در حالی که عرض واقعیِ قابل‌مشاهده‌ی صفحه چند پیکسل کمتر از 100vw است.
-  چون decor-layer از width: 100vw استفاده می‌کند، همیشه چند پیکسل از لبه‌ی
-  واقعی صفحه بیرون می‌زند و باعث یک اسکرول افقی نامرئی و آزاردهنده می‌شود.
-  با قراردادن overflow-x: hidden روی html/body، این چند پیکسل اضافه‌ی
-  نامرئی بی‌صدا کلیپ می‌شود بدون هیچ افت بصری (چون decor-layer صرفاً یک
-  پس‌زمینه‌ی تزئینی محو و بدون pointer-events است).
+  این استایل عمداً غیر scoped است تا روی html/body اعمال شود.
+  decor-layer با width: 100vw چند پیکسل از لبهٔ واقعی صفحه بیرون می‌زند
+  (به‌خاطر اسکرول‌بار) و اسکرول افقی نامرئی می‌سازد؛ این خط آن را کلیپ می‌کند.
 -->
 <style>
 html,
@@ -305,6 +355,11 @@ body {
 /* ── لایه‌ی تزئینی تمام‌عرض ────────────────────────────────── */
 .decor-layer {
   max-width: 100vw;
+}
+
+/* ── نسبت ابعاد مشترک اسکلتون و کارت واقعی (ضد پرش) ───────── */
+.banner-ratio {
+  aspect-ratio: var(--banner-ar, 16 / 7);
 }
 
 /* ── ورود هدر ─────────────────────────────────────────────── */
@@ -362,16 +417,16 @@ body {
   100% { opacity: 0; transform: translateY(-80px) scale(0.6); }
 }
 
-/* ── Scroll Reveal کارت‌ها: ورود منقطع (زیگزاگ) با کمی چرخش ── */
+/* ── Scroll Reveal کارت‌ها (فقط transform/opacity؛ بدون تأثیر روی layout) ── */
 .banner-card-wrap {
   opacity: 0;
-  filter: blur(3px); /* به‌جای 6px */
+  filter: blur(3px);
   transition:
-    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),   /* به‌جای 0.9s */
-    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), /* به‌جای 0.9s */
-    filter 0.5s cubic-bezier(0.22, 1, 0.36, 1);    /* به‌جای 0.9s */
+    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.banner-card-wrap.from-right { transform: translate(24px, 24px) rotate(1deg) scale(0.98); } /* کمتر از 40px/50px */
+.banner-card-wrap.from-right { transform: translate(24px, 24px) rotate(1deg) scale(0.98); }
 .banner-card-wrap.from-left  { transform: translate(-24px, 24px) rotate(-1deg) scale(0.98); }
 .banner-card-wrap.is-visible {
   opacity: 1;
@@ -379,7 +434,7 @@ body {
   transform: translate(0, 0) rotate(0deg) scale(1);
 }
 
-/* ── هاور کارت: کاملاً CSS، نرم ────────────────────────────── */
+/* ── هاور کارت ─────────────────────────────────────────────── */
 .banner-card {
   position: relative;
   transform: translateY(0) scale(1);
@@ -392,58 +447,52 @@ body {
   box-shadow: 0 30px 60px -28px rgba(63, 58, 53, 0.5);
 }
 
-/* ── پرده‌کشی تصویر هنگام ورود به دید ──────────────────────── */
+/* ── پرده‌کشی تصویر؛ حالا absolute تا ارتفاع کارت فقط از aspect-ratio بیاید ── */
 .img-reveal {
+  position: absolute;
+  inset: 0;
   clip-path: inset(0 0 0 100%);
   transition: clip-path 1.1s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .banner-card-wrap.is-visible .img-reveal {
   clip-path: inset(0 0 0 0%);
-  transition-delay: 0.12s;
+  transition-delay: 0.05s;
 }
+.banner-card-wrap.is-visible .glow-ring { animation-delay: 0.4s; }
+.banner-card-wrap.is-visible .peek-icon { transition-delay: 0.3s; }
+.banner-card-wrap.is-visible .peek-icon-pulse { animation-delay: 0.7s; }
 
-.banner-card-wrap.is-visible .img-reveal {
-  transition-delay: 0.05s; /* به‌جای 0.12s */
-}
-
-.banner-card-wrap.is-visible .glow-ring {
-  animation-delay: 0.4s; /* به‌جای 0.8s */
-}
-
-.banner-card-wrap.is-visible .peek-icon {
-  transition-delay: 0.3s; /* به‌جای 0.65s */
-}
-
-.banner-card-wrap.is-visible .peek-icon-pulse {
-  animation-delay: 0.7s; /* به‌جای 1.4s */
-}
-
-/* ── نفس‌کشیدن آرام تصویر (متوقف در هاور) ─────────────────── */
+/* ── نفس‌کشیدن آرام تصویر ─────────────────────────────────── */
 .img-breathe {
+  width: 100%;
+  height: 100%;
   animation: breathe 6s ease-in-out infinite;
   transform-origin: center center;
 }
-.banner-card:hover .img-breathe {
-  animation-play-state: paused;
-}
+.banner-card:hover .img-breathe { animation-play-state: paused; }
 @keyframes breathe {
   0%, 100% { transform: scale(1); }
   50%      { transform: scale(1.018); }
 }
 
-/* ── زوم تصویر روی هاور (روی خودِ img، جدا از breathing) ──── */
+/* ── تصویر: fade بعد از لود + زوم هاور ─────────────────────── */
 .banner-img {
+  opacity: 0;
   transform: scale(1);
-  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), filter 0.5s ease;
+  transition:
+    opacity 0.5s ease,
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.5s ease;
   will-change: transform;
   backface-visibility: hidden;
 }
+.banner-img.is-loaded { opacity: 1; }
 .banner-card:hover .banner-img {
   transform: scale(1.045);
   filter: brightness(1.02) saturate(1.06);
 }
 
-/* ── نور نرم دنبال‌کننده‌ی موس (خارج از reactivity ویو) ───── */
+/* ── نور نرم دنبال‌کننده‌ی موس ────────────────────────────── */
 .cursor-spot {
   position: absolute;
   inset: 0;
@@ -456,7 +505,7 @@ body {
 }
 .banner-card:hover .cursor-spot { opacity: 1; }
 
-/* ── شاین ورود + شاین هاور + شاین دوره‌ای خودکار ─────────── */
+/* ── شاین‌ها ───────────────────────────────────────────────── */
 .shine {
   position: absolute;
   inset: 0;
@@ -491,7 +540,7 @@ body {
   100% { transform: translateX(130%); opacity: 0; }
 }
 
-/* ── قاب نور دور کارت: هاور + یک چشمک خوشامدگویی ─────────── */
+/* ── قاب نور دور کارت ──────────────────────────────────────── */
 .glow-ring {
   position: absolute;
   inset: 0;
@@ -540,7 +589,7 @@ body {
 }
 @keyframes spinAngle { to { --angle: 360deg; } }
 
-/* ── آیکون کوچک ورود با پالس + جابجایی مغناطیسی ─────────── */
+/* ── آیکون ورود ────────────────────────────────────────────── */
 .peek-icon {
   position: absolute;
   bottom: 16px;
@@ -567,7 +616,7 @@ body {
 .banner-card-wrap.is-visible .peek-icon {
   opacity: 0.9;
   transform: translateY(0) scale(1);
-  transition-delay: 0.65s;
+  transition-delay: 0.3s;
 }
 .banner-card:hover .peek-icon {
   opacity: 1;
@@ -592,7 +641,7 @@ body {
   100% { opacity: 0; }
 }
 
-/* ── افکت Ripple هنگام کلیک/لمس ──────────────────────────── */
+/* ── Ripple ────────────────────────────────────────────────── */
 .banner-card :deep(.card-ripple) {
   position: absolute;
   z-index: 7;
@@ -607,9 +656,10 @@ body {
   to { transform: scale(1); opacity: 0; }
 }
 
-/* ── اسکلتون با شیمر ─────────────────────────────────────── */
+/* ── اسکلتون با شیمر (برای کارت‌ها و هدر) ─────────────────── */
 .skeleton-shimmer {
   position: relative;
+  overflow: hidden;
   background: theme('colors.ink / 6%');
 }
 .skeleton-shimmer::after {
@@ -655,6 +705,7 @@ body {
     transform: none;
     filter: none;
   }
+  .banner-img { opacity: 1; }
   .img-reveal { clip-path: none; }
 }
 
