@@ -199,7 +199,7 @@
         aria-labelledby="cart-modal-title"
         @keydown.esc="modalOpen = false"
       >
-        <div class="absolute inset-0 bg-ink/30 backdrop-blur-sm" @click="modalOpen = false" />
+        <div class="absolute inset-0 bg-ink/30" @click="modalOpen = false" />
 
         <div class="modal-card relative w-full max-w-sm bg-cream rounded-3xl p-6 text-center shadow-[0_24px_60px_rgba(63,58,53,0.18)]">
           <span
