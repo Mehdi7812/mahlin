@@ -7,7 +7,7 @@
     <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 px-5 pt-4 pb-4">
       <div class="min-w-0">
         <!-- نمایش تخفیف فقط در صورتی که نیاز به تماس نباشد -->
-        <div v-if="!isCallForPrice && hasDiscount" class="flex flex-wrap items-center gap-2 mb-1">
+        <div v-if="!hasNoPrice && hasDiscount" class="flex flex-wrap items-center gap-2 mb-1">
           <del class="text-sm text-ink/40 tabular-nums">
             <span class="sr-only">قیمت قبل:</span>{{ money(item.oldPrice) }}
           </del>
@@ -21,15 +21,14 @@
 
         <div class="flex flex-wrap items-center gap-x-4 gap-y-2.5">
           <div class="flex flex-col gap-0.5 m-0">
-            <!-- حالت قیمت صفر: متنی بسیار شیک و ترغیب‌کننده -->
-            <template v-if="isCallForPrice">
+            <!-- حالت ناموجود (قیمت صفر / فروش غیرفعال) -->
+            <template v-if="hasNoPrice">
               <span
                 class="text-xl sm:text-2xl font-bold leading-tight"
-                :style="{ color: accentDark }"
+                style="color:#A8453F"
               >
-                استعلام تلفنی و رزرو خرید
+                ناموجود
               </span>
-              <span class="text-[11px] text-ink/40 mt-0.5">به دلیل اتمام موقت موجودی یا نوسان قیمت</span>
             </template>
 
             <!-- حالت عادی دارای قیمت -->
@@ -49,7 +48,7 @@
 
           <!-- اطمینان‌بخشی حالت عادی -->
           <span
-            v-if="!isCallForPrice && item.inStock !== false"
+            v-if="!unavailable"
             class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium leading-5"
             style="background:#EEF5EF; color:#3F6B47"
           >
@@ -60,16 +59,17 @@
             قیمت و موجودی همیشه به‌روز است؛ با خیال راحت خرید کنید.
           </span>
 
-          <!-- اطمینان‌بخشی صمیمانه برای حالت بدون موجودی / نیاز به تماس -->
+          <!-- نشان ناموجود -->
           <span
-            v-if="isCallForPrice"
+            v-if="unavailable"
             class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium leading-5"
-            style="background:#FFF9E6; color:#8A6D1C"
+            style="background:#F7E6E4; color:#A8453F"
           >
-            <svg class="w-3.5 h-3.5 shrink-0 text-[#B89024] animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M9 9l6 6M15 9l-6 6" />
             </svg>
-            این محصول بسیار پرطرفدار است؛ جهت رزرو در پارت جدید با ما تماس بگیرید.
+            این محصول فعلاً موجود نیست
           </span>
         </div>
       </div>
@@ -85,26 +85,9 @@
     <div class="hidden md:block border-t border-ink/[0.06] px-5 py-4">
       <div class="flex items-center gap-3">
         
-        <!-- حالت تماس بگیرید (دکمه دعوت به تماس VIP با شماره شما) -->
-        <template v-if="isCallForPrice">
-          <a
-            href="tel:+989922655520"
-            class="cart-btn flex-1 h-12 rounded-full text-white text-sm font-bold flex items-center justify-center gap-2.5 transition-all duration-300 shadow-md hover:shadow-lg"
-            :style="{ backgroundColor: accentDark }"
-          >
-            <!-- آیکون تلفن با انیمیشن ملایم لرزش برای جذب نگاه کاربر -->
-            <svg class="w-5 h-5 phone-icon-animation" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            مشاوره تلفنی و ثبت سفارش سریع: ۰۹۹۲۲۶۵۵۵۲۰
-          </a>
-        </template>
-
-        <!-- حالت عادی خرید -->
-        <template v-else>
           <!-- تعداد -->
           <div
-            v-if="item.inStock !== false"
+            v-if="!unavailable"
             class="flex items-center h-12 rounded-full border border-ink/10 bg-cardLight shrink-0"
             role="group"
             aria-label="تعداد"
@@ -145,12 +128,16 @@
             type="button"
             class="cart-btn flex-1 h-12 rounded-full text-white text-sm font-bold flex items-center justify-center gap-2 transition-[background-color,filter] duration-200 disabled:cursor-not-allowed"
             :style="{ backgroundColor: btnColor }"
-            :disabled="item.inStock === false || loading"
+            :disabled="unavailable || loading"
             :aria-busy="loading"
             @click="$emit('add')"
           >
             <Transition name="swap" mode="out-in">
-              <span v-if="item.inStock === false" key="out" class="flex items-center gap-2">
+              <span v-if="unavailable" key="out" class="flex items-center gap-2">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M9 9l6 6M15 9l-6 6" />
+                </svg>
                 ناموجود
               </span>
 
@@ -179,10 +166,9 @@
               </span>
             </Transition>
           </button>
-        </template>
       </div>
 
-      <p v-if="!isCallForPrice && atMaxStock && item.inStock !== false" class="mt-2.5 mb-0 text-xs text-ink/55">
+      <p v-if="!unavailable && atMaxStock" class="mt-2.5 mb-0 text-xs text-ink/55">
         بیشترین تعداد مجاز برای این محصول را انتخاب کرده‌اید.
       </p>
     </div>
@@ -260,17 +246,20 @@ defineEmits(['increment', 'decrement', 'add']);
 const { loading, modalOpen, cartCount } = useAddToCart();
 
 // تشخیص هوشمند صفر بودن یا ناموجود بودن واقعی قیمت محصول
-const isCallForPrice = computed(() => {
+const hasNoPrice = computed(() => {
   const price = parseFloat(props.item.price);
   return isNaN(price) || price <= 0;
 });
+
+// ناموجود: قیمت معتبر ندارد یا فروش غیرفعال است
+const unavailable = computed(() => hasNoPrice.value || props.item.inStock === false);
 
 const currency = computed(() => props.item.currency || 'تومان');
 const accentDark = computed(() => props.catInfo.darkAccent || props.catInfo.accent);
 
 const hasDiscount = computed(
   () =>
-    !isCallForPrice.value &&
+    !hasNoPrice.value &&
     Number(props.item.oldPrice) > 0 &&
     Number(props.item.oldPrice) > Number(props.item.price),
 );
@@ -279,7 +268,7 @@ const savings = computed(() =>
 );
 
 const btnColor = computed(() => {
-  if (props.item.inStock === false) return 'rgba(63,58,53,0.3)';
+  if (unavailable.value) return 'rgba(63,58,53,0.3)';
   if (props.justAdded) return '#4F7F57';
   return accentDark.value;
 });
@@ -313,18 +302,6 @@ watch(modalOpen, async (open) => {
   outline-offset: 2px;
 }
 
-/* افکت ملایم برای تکان خوردن آیکون تلفن دکمه رزرو */
-@keyframes phone-wiggle {
-  0%, 100% { transform: rotate(0deg) scale(1); }
-  10%, 30% { transform: rotate(-8deg) scale(1.08); }
-  20%, 40% { transform: rotate(8deg) scale(1.08); }
-  50% { transform: rotate(0deg) scale(1); }
-}
-.phone-icon-animation {
-  animation: phone-wiggle 3s infinite ease-in-out;
-  transform-origin: center;
-}
-
 .swap-enter-active,
 .swap-leave-active { transition: opacity 150ms ease, transform 150ms ease; }
 .swap-enter-from   { opacity: 0; transform: translateY(4px); }
@@ -342,7 +319,6 @@ watch(modalOpen, async (open) => {
 @media (prefers-reduced-motion: reduce) {
   .swap-enter-active, .swap-leave-active,
   .modal-enter-active, .modal-leave-active,
-  .modal-enter-active .modal-card, .modal-leave-active .modal-card,
-  .phone-icon-animation { transition: none !important; animation: none !important; }
+  .modal-enter-active .modal-card, .modal-leave-active .modal-card { transition: none !important; animation: none !important; }
 }
 </style>

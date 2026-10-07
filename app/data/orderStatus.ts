@@ -36,6 +36,11 @@ const TEXT_STATUS: Record<string, OrderStatus> = {
 }
 
 export function resolveOrderStatus(invoice: any): OrderStatus {
+  // سفارشی که هنوز پرداخت نشده، حتی با status عددی 2 (یا هر کد دیگر)
+  // نباید «در حال آماده‌سازی» نمایش داده شود.
+  const text = String(invoice?.status_text ?? '').trim().toLowerCase()
+  if (text === 'awaiting_payment') return 'pending'
+
   const raw = invoice?.status ?? invoice?.status_code
 
   if (raw !== null && raw !== undefined && raw !== '') {

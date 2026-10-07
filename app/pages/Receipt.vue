@@ -114,7 +114,7 @@
           <!-- بازگشت به فروشگاه / سبد خرید -->
           <NuxtLink
             :to="PaymentStatus ? '/shop' : '/cart'"
-            class="inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-sm font-bold text-ink/55 hover:text-ink transition-colors duration-300"
+            class="inline-flex items-center gap-2 px-6 py-3.5 bg-ink/10 rounded-full text-sm font-bold text-ink/55 hover:text-ink transition-colors duration-300"
           >
             {{ PaymentStatus ? 'ادامه خرید' : 'بازگشت به سبد خرید' }}
           </NuxtLink>

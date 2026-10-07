@@ -15,6 +15,7 @@
       <AboutWhyMahlin />
       <AboutSkinFirst />
       <AboutCommitment />
+      <AboutLicense />
       <AboutConsultation />
     </div>
   </main>

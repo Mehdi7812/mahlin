@@ -164,7 +164,7 @@ import { ref, computed, onMounted } from 'vue';
 import { toast } from 'vue-sonner';
 import { ORDER_STATUS_META } from '~/data/account';
 import { resolveOrderStatus } from '~/data/orderStatus';
-import { money, faNumber, faDate, fa } from '~/utils/format.ts';
+import { money, faNumber, faDate, fa } from '~/utils/format';
 
 const { t } = useI18n();
 
@@ -248,7 +248,12 @@ function getPurchasesList(statusList = []) {
       }
 
       if (response?.code === 2000 || response?.Invoices) {
-        orders.value = (response.Invoices || []).map(normalizeOrder);
+        const normalized = (response.Invoices || []).map(normalizeOrder);
+        // کد عددی به‌تنهایی کافی نیست (مثلاً status 2 + awaiting_payment = در انتظار پرداخت)،
+        // پس بعد از نرمال‌سازی، بر اساس وضعیت نهایی فیلتر می‌کنیم.
+        orders.value = activeFilter.value === 'all'
+          ? normalized
+          : normalized.filter((order) => order.status === activeFilter.value);
       } else {
         throw new Error(response?.msg || response?.error || 'خطا در دریافت سفارش‌ها');
       }

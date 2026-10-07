@@ -12,9 +12,9 @@
       :style="{ background: `linear-gradient(to left, ${catInfo.stripeEnd}, ${catInfo.stripeStart})` }"
     />
 
-    <!-- بج تخفیف (فقط در صورتی که نیاز به تماس نباشد و تخفیف داشته باشد) -->
+    <!-- بج تخفیف (فقط برای محصول موجود و دارای تخفیف) -->
     <span
-      v-if="!isCallForPrice && discountPercent > 0"
+      v-if="!isUnavailable && discountPercent > 0"
       class="absolute top-3.5 start-3.5 z-20 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm"
       :style="{ backgroundColor: catInfo.accent }"
     >
@@ -41,7 +41,7 @@
 
         <!-- پوشش ناموجود -->
         <div
-          v-if="product.allow_sale === 0"
+          v-if="isUnavailable"
           class="absolute inset-0 bg-white/70 backdrop-blur-[2px] flex items-center justify-center"
         >
           <span class="bg-ink/85 text-white text-xs font-bold px-4 py-2 rounded-full">
@@ -102,17 +102,17 @@
           <span class="line-clamp-1">{{ productSubtitle }}</span>
         </div>
 
-        <!-- ═══════════ قیمت / تماس بگیرید ═══════════ -->
+        <!-- ═══════════ قیمت / ناموجود ═══════════ -->
         <div class="price-block relative mt-auto pt-3 flex items-end justify-between gap-2 border-t border-ink/[0.04]">
 
           <div class="flex flex-col gap-0.5 min-w-0">
-            <!-- حالت قیمت صفر (تماس بگیرید) -->
-            <template v-if="isCallForPrice">
+            <!-- حالت ناموجود -->
+            <template v-if="isUnavailable">
               <span
                 class="price-final text-[15px] font-bold tracking-tight leading-none whitespace-nowrap"
-                :style="{ color: catInfo.accent }"
+                style="color:#A8453F"
               >
-                تماس بگیرید
+                ناموجود
               </span>
             </template>
 
@@ -141,19 +141,22 @@
             </template>
           </div>
 
-          <!-- آیکون کوچک وضعیت قیمت: تخفیف یا قیمت عادی / تماس بگیرید -->
+          <!-- آیکون کوچک وضعیت: ناموجود / تخفیف / قیمت عادی -->
           <span
             class="flex-shrink-0 w-7 h-7 rounded-full grid place-items-center transition-transform duration-300 group-hover:scale-110"
-            :style="{ backgroundColor: catInfo.iconBg }"
+            :style="{ backgroundColor: isUnavailable ? '#F7E6E4' : catInfo.iconBg }"
           >
-            <!-- حالت تماس بگیرید: آیکون تلفن -->
+            <!-- حالت ناموجود: آیکون دایره با ضربدر -->
             <svg
-              v-if="isCallForPrice"
+              v-if="isUnavailable"
               class="w-4 h-4"
-              :style="{ color: catInfo.accent }"
+              style="color:#A8453F"
               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round"
+              aria-hidden="true"
             >
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="12" r="9" />
+              <path d="M9 9l6 6M15 9l-6 6" />
             </svg>
 
             <!-- حالت تخفیف: آیکون درصد -->
@@ -229,18 +232,19 @@ const productLink = computed(() =>
   `/product/${props.product.id}/${props.product.slug_fa}`
 );
 
-// مشخص کردن اینکه آیا محصول نیاز به تماس تلفنی دارد یا خیر (قیمت آن صفر یا خالی است)
-const isCallForPrice = computed(() => {
+// ناموجود: فروش غیرفعال است یا قیمت معتبر ندارد (صفر / خالی)
+const isUnavailable = computed(() => {
+  if (props.product.allow_sale === 0) return true;
   const price = parseFloat(props.product.final_price);
   return isNaN(price) || price <= 0;
 });
 
 const hasDiscount = computed(() =>
-  !isCallForPrice.value && props.product.final_price < props.product.price
+  !isUnavailable.value && props.product.final_price < props.product.price
 );
 
 const discountPercent = computed(() => {
-  if (isCallForPrice.value) return 0;
+  if (isUnavailable.value) return 0;
   if (props.product.discount_percent)
     return Math.round(parseFloat(props.product.discount_percent));
   const { price, final_price } = props.product;
@@ -250,7 +254,7 @@ const discountPercent = computed(() => {
 
 // ─── استایل قیمت نهایی ───
 const priceStyle = computed(() => {
-  if (isCallForPrice.value) return {};
+  if (isUnavailable.value) return {};
   if (!hasDiscount.value) {
     return { fontSize: '17px', color: catInfo.value.accent };
   }

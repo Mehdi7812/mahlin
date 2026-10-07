@@ -315,7 +315,8 @@
 import { computed, onMounted, ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { USER, ORDERS, ORDER_STATUS_META, LOYALTY } from '~/data/account';
-import { money, faNumber, faDate, faDateShort } from '~/utils/format.ts';
+import { resolveOrderStatus } from '~/data/orderStatus';
+import { money, faNumber, faDate, faDateShort } from '~/utils/format';
 const router = useRouter();
 
 const { t } = useI18n();
@@ -366,19 +367,9 @@ const userInitial = computed(() => (currentUser.value.full_name || 'م').trim().
 
 const recentOrders = ref([]);
 
-const statusByCode = {
-  6: 'delivered',
-  5: 'shipped',
-  4: 'processing',
-  3: 'pending',
-  2: 'pending',
-  1: 'pending',
-  0: 'pending',
-};
-
 function normalizeRecentOrder(invoice) {
   const details = invoice.invoice_details || invoice.details || invoice.items || [];
-  const normalizedStatus = statusByCode[invoice.status] || statusByCode[invoice.status_code] || 'pending';
+  const normalizedStatus = resolveOrderStatus(invoice);
 
   return {
     id: invoice.id || invoice.invoice_id,
@@ -470,7 +461,7 @@ async function loadOrderStats() {
     const invoices = response?.Invoices || [];
 
     totalOrdersCount.value = Number(response?.TotalCount ?? invoices.length ?? 0);
-    processingOrdersCount.value = invoices.filter((invoice) => [2, 3, 4, 5, 8].includes(Number(invoice.status))).length;
+    processingOrdersCount.value = invoices.filter((invoice) => ['preparing', 'shipped'].includes(resolveOrderStatus(invoice))).length;
   } catch (error) {
     console.error('[Account Dashboard] Could not load order stats', error);
     totalOrdersCount.value = 0;

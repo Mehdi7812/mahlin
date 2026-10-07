@@ -74,7 +74,7 @@
           <ProductRoutine :item="item" :category-tree="categoryTree" :cat-info="catInfo" />
         </div> -->
 
-        <div v-reveal="120">
+        <div>
           <ProductAccordion v-model="activeTab" :item="item" :cat-info="catInfo" />
         </div>
       </div>
@@ -129,7 +129,7 @@
       :qty="qty"
       :min-qty="item.minQty || 1"
       :at-max-stock="atMaxStock"
-      :in-stock="item.inStock"
+      :in-stock="item.inStock && Number(item.price) > 0"
       :just-added="justAdded"
       :cat-info="catInfo"
       :price="item.price"

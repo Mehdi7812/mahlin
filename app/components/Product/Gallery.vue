@@ -37,7 +37,7 @@
           <svg
             v-else
             class="w-4 h-4 transition-colors"
-            :class="isWishlisted ? 'text-blush' : 'text-ink/40'"
+            :class="isWishlisted ? 'text-red-500' : 'text-ink/40'"
             :fill="isWishlisted ? 'currentColor' : 'none'"
             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
           >
