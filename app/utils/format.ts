@@ -11,9 +11,10 @@ const FA = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
 export const fa = (n: number | string): string =>
   String(n).replace(/[0-9]/g, (d) => FA[+d]);
 
-export const money = (n: number | null | undefined): string => {
-  if (n === null || n === undefined || isNaN(n)) return fa('0');
-  return fa(n.toLocaleString('en-US')).replace(/,/g, '٬');
+export const money = (n: number | string | null | undefined): string => {
+  const num = Number(n);
+  if (n === null || n === undefined || n === '' || isNaN(num)) return fa('0');
+  return fa(num.toLocaleString('en-US')).replace(/,/g, '٬');
 };
 
 const numberFormatter = new Intl.NumberFormat('fa-IR');

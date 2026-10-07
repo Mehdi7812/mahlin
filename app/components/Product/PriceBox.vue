@@ -269,9 +269,14 @@ const currency = computed(() => props.item.currency || 'تومان');
 const accentDark = computed(() => props.catInfo.darkAccent || props.catInfo.accent);
 
 const hasDiscount = computed(
-  () => !isCallForPrice.value && !!props.item.oldPrice && props.item.oldPrice > props.item.price,
+  () =>
+    !isCallForPrice.value &&
+    Number(props.item.oldPrice) > 0 &&
+    Number(props.item.oldPrice) > Number(props.item.price),
 );
-const savings = computed(() => (hasDiscount.value ? props.item.oldPrice - props.item.price : 0));
+const savings = computed(() =>
+  hasDiscount.value ? Number(props.item.oldPrice) - Number(props.item.price) : 0,
+);
 
 const btnColor = computed(() => {
   if (props.item.inStock === false) return 'rgba(63,58,53,0.3)';

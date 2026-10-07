@@ -26,7 +26,7 @@
         </h1>
 
         <p class="mt-6 max-w-[44ch] text-inkSoft animate-fade-in-up" style="animation-delay:0.25s">
-          محصولات ماهلین با معیار دکتر پوست انتخاب می‌شوند؛ بدون توضیحات اغراق‌شده، فقط ترکیبات و کاربرد درست.
+          محصولات ماهلین با معیار درست و اصولی انتخاب می‌شوند؛ بدون توضیحات اغراق‌شده، فقط ترکیبات و کاربرد درست.
         </p>
 
         <div class="flex flex-wrap items-center gap-6 mt-10 animate-fade-in-up" style="animation-delay:0.35s">
