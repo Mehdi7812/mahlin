@@ -1322,10 +1322,11 @@ const primaryDisabled = computed(() => {
                 </div>
 
                 <TransitionGroup name="list" tag="div" class="divide-y divide-line">
-                  <div
+                  <NuxtLink
                     v-for="item in invoiceDetails"
                     :key="item.id"
                     class="group flex gap-3 p-4 transition-colors hover:bg-cream/30 sm:gap-4"
+                    :to="`/product/${item.products?.id}/${item.products?.slug_fa}`"
                   >
                     <div class="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-cream ring-1 ring-line/60 sm:h-20 sm:w-20">
                       <img
@@ -1347,7 +1348,7 @@ const primaryDisabled = computed(() => {
                         <button
                           class="grid h-7 w-7 shrink-0 place-items-center rounded-full text-ink-faint transition hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
                           :disabled="btnLoadingShop"
-                          @click="removeLine(item)"
+                          @click.stop.prevent="removeLine(item)"
                         >
                           <Icon name="tabler:trash" class="text-[15px]" />
                         </button>
@@ -1371,7 +1372,7 @@ const primaryDisabled = computed(() => {
                           <button
                             class="grid h-7 w-7 place-items-center rounded-full text-ink-muted transition hover:bg-cream hover:text-gold disabled:opacity-40"
                             :disabled="btnLoadingShop || item.amount <= 1"
-                            @click="decreaseAmount(item)"
+                            @click.stop.prevent="decreaseAmount(item)"
                           >
                             <Icon name="tabler:minus" class="text-[14px]" />
                           </button>
@@ -1379,7 +1380,7 @@ const primaryDisabled = computed(() => {
                           <button
                             class="grid h-7 w-7 place-items-center rounded-full text-ink-muted transition hover:bg-cream hover:text-gold disabled:opacity-40"
                             :disabled="btnLoadingShop || item.amount === item.products?.maximum_sale_quantity"
-                            @click="increaseAmount(item)"
+                            @click.stop.prevent="increaseAmount(item)"
                           >
                             <Icon name="tabler:plus" class="text-[14px]" />
                           </button>
@@ -1390,7 +1391,7 @@ const primaryDisabled = computed(() => {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </NuxtLink>
                 </TransitionGroup>
 
                 <!-- Coupon -->

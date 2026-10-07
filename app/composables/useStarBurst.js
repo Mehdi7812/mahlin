@@ -102,6 +102,32 @@ function bump(el) {
   );
 }
 
+
+// لرزش کوتاه سبد با هر ستاره‌ای که می‌رسه؛ انیمیشن قبلی کنسل می‌شه تا روی هم انباشته نشن
+const shakeAnims = new WeakMap();
+function shake(el, strength = 1) {
+  if (!el) return;
+  shakeAnims.get(el)?.cancel();
+  const r = 9 * strength;
+  const sc = 1 + 0.16 * strength;
+  const dir = Math.random() > 0.5 ? 1 : -1;
+  el.style.transformOrigin = 'center';
+  const a = el.animate(
+    [
+      { transform: 'translateX(0) rotate(0) scale(1)' },
+      { transform: `translateX(${dir * 2}px) rotate(${-r * dir}deg) scale(${sc})`, offset: 0.25 },
+      { transform: `translateX(${-dir * 2}px) rotate(${r * 0.7 * dir}deg) scale(${1 + 0.08 * strength})`, offset: 0.55 },
+      { transform: `rotate(${-r * 0.3 * dir}deg) scale(1.03)`, offset: 0.8 },
+      { transform: 'translateX(0) rotate(0) scale(1)' },
+    ],
+    { duration: 320, easing: 'cubic-bezier(.3,1.2,.5,1)' },
+  );
+  shakeAnims.set(el, a);
+}
+
+// نقطه‌ی روی منحنی بزیه‌ی درجه ۲
+const bez = (p0, p1, p2, t) => (1 - t) * (1 - t) * p0 + 2 * (1 - t) * t * p1 + t * t * p2;
+
 export function useStarBurst() {
   if (typeof window !== 'undefined') trackPointer();
 
@@ -140,8 +166,8 @@ export function useStarBurst() {
     }
   }
 
-  /** ستاره‌ها از مبدأ (دکمه) به آیکون سبد پرواز می‌کنن */
-  function toCart(originEl, { count = 8 } = {}) {
+  /** ستاره‌ها از مبدأ (دکمه) روی یک قوس نرم به آیکون سبد پرواز می‌کنن و با هر رسیدن، سبد می‌لرزه */
+  function toCart(originEl, { count = 12 } = {}) {
     if (typeof window === 'undefined') return;
     const cart = findCartIcon();
     if (reducedMotion()) { bump(cart); return; }
@@ -149,43 +175,69 @@ export function useStarBurst() {
     const from  = resolveOrigin(originEl);
     const to    = cart ? centerOf(cart) : { x: 32, y: 32 };
     const layer = makeLayer();
+    const STEPS = 16;                       // تعداد نمونه‌های منحنی برای حرکت نرم
     let pending = count;
+    let arrived = 0;
 
+    // پخش اولیه: مثل یک فواره‌ی کوچک بالای دکمه
     for (let i = 0; i < count; i++) {
       const size = rand(10, 22);
       const star = makeShape(STAR_PATH, size);
+      star.style.opacity = '0';             // تا قبل از شروع انیمیشن دیده نشه
       layer.appendChild(star);
 
       const h    = size / 2;
-      const ang  = rand(0, Math.PI * 2);
-      const dist = rand(28, 70);
-      const bx   = from.x + Math.cos(ang) * dist;          // پخش اولیه دور دکمه
+      const ang  = -Math.PI / 2 + rand(-1.5, 1.5);   // بیشتر رو به بالا
+      const dist = rand(30, 100);
+      const bx   = from.x + Math.cos(ang) * dist;
       const by   = from.y + Math.sin(ang) * dist;
-      const mx   = (bx + to.x) / 2 + rand(-60, 60);        // نقطه‌ی میانی قوس
-      const my   = Math.min(by, to.y) - rand(40, 120);
-      const spin = rand(-220, 220);
 
-      const anim = star.animate(
-        [
-          { transform: `translate(${from.x - h}px, ${from.y - h}px) scale(.2) rotate(0deg)`, opacity: 0 },
-          { transform: `translate(${bx - h}px, ${by - h}px) scale(1.1) rotate(${spin * 0.3}deg)`, opacity: 1, offset: 0.22 },
-          { transform: `translate(${mx - h}px, ${my - h}px) scale(.9) rotate(${spin * 0.7}deg)`, opacity: 1, offset: 0.62 },
-          { transform: `translate(${to.x - h}px, ${to.y - h}px) scale(.25) rotate(${spin}deg)`, opacity: 0.2 },
-        ],
-        {
-          duration: rand(820, 1100) + i * 40,
-          delay: i * 35,
-          easing: 'cubic-bezier(.45,0,.25,1)',
-          fill: 'forwards',
-        },
-      );
+      // نقطه‌ی کنترل قوس: بالاتر از خط مستقیم، با کمی انحراف تصادفی
+      const cx = (bx + to.x) / 2 + rand(-80, 80);
+      const cy = Math.min(by, to.y) - rand(50, 130);
+
+      const spin = rand(-260, 260);
+      const peak = rand(0.9, 1.25);
+
+      const frames = [
+        // شروع: کوچیک و نامرئی در مبدأ
+        { transform: `translate(${from.x - h}px, ${from.y - h}px) scale(.1) rotate(0deg)`, opacity: 0, offset: 0 },
+        // فواره: ستاره بزرگ می‌شه و به نقطه‌ی پخش می‌رسه
+        { transform: `translate(${bx - h}px, ${by - h}px) scale(${peak}) rotate(${spin * 0.25}deg)`, opacity: 1, offset: 0.2 },
+      ];
+      // پرواز: نمونه‌برداری از قوس بزیه تا سبد
+      for (let k = 1; k <= STEPS; k++) {
+        const t = k / STEPS;
+        const x = bez(bx, cx, to.x, t);
+        const y = bez(by, cy, to.y, t);
+        const sc = peak * (1 - t * 0.78) + 0.12;     // کوچیک‌شدن تدریجی تا رسیدن
+        frames.push({
+          transform: `translate(${x - h}px, ${y - h}px) scale(${sc}) rotate(${spin * (0.25 + 0.75 * t)}deg)`,
+          opacity: t > 0.9 ? 1 - (t - 0.9) * 6 : 1,
+          offset: 0.2 + 0.8 * t,
+        });
+      }
+
+      const anim = star.animate(frames, {
+        duration: rand(900, 1150),
+        delay: i * 70,
+        // شروع آروم، شتاب‌گرفتن به سمت سبد
+        easing: 'cubic-bezier(.4,0,.6,1)',
+        fill: 'both',                       // در زمان delay هم فریم اول (نامرئی) اعمال بشه
+      });
 
       anim.onfinish = () => {
         star.remove();
+        arrived++;
+        // لرزش سبد با هر ستاره؛ ستاره‌های آخر قوی‌تر
+        shake(cart, 0.7 + 0.6 * (arrived / count));
+        // هر چند ستاره یک جرقه‌ی کوچیک روی سبد
+        if (cart && arrived % 3 === 0) sparkle(cart, { count: 4, spread: 22, size: [5, 9] });
+
         if (--pending === 0) {
           layer.remove();
           bump(cart);
-          if (cart) sparkle(cart, { count: 6, spread: 26, size: [6, 11] });
+          if (cart) sparkle(cart, { count: 10, spread: 30, size: [6, 12] });
         }
       };
     }
