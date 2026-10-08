@@ -14,11 +14,10 @@
       <div class="aspect-[16/9] w-full">
         <img
           v-if="!missing"
-          :src="LICENSE_IMG"
+          src="/images/license.jpg"
           alt="پروانه کسب ماهلین"
           loading="lazy"
           class="h-full w-full object-cover"
-          @error="missing = true"
         />
         <div v-else class="grid h-full w-full place-items-center bg-ink/[0.03] text-ink/30">
           <Icon name="tabler:file-certificate" class="text-5xl" />
@@ -73,7 +72,7 @@
           <div class="rounded-2xl bg-white p-2 shadow-2xl">
             <img
               v-if="!missing"
-              :src="LICENSE_IMG"
+              src="/images/license.jpg"
               alt="پروانه کسب ماهلین"
               class="block max-h-[85vh] w-full rounded-xl object-contain"
             />
@@ -89,7 +88,7 @@
 
 <script setup>
 import { ref, watch, onBeforeUnmount } from 'vue'
-const LICENSE_IMG = "/license/license.jpg"
+const LICENSE_IMG = "/images/license.jpg"
 
 const open = ref(false)
 const missing = ref(false)

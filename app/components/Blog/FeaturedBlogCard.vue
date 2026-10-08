@@ -122,7 +122,7 @@
     </div>
 
     <!-- ───── محتوا ───── -->
-    <div class="relative flex flex-col justify-between p-6 sm:p-7 lg:p-8 overflow-hidden">
+    <div class="relative flex flex-col justify-between p-4 sm:p-5 lg:p-6 overflow-hidden">
 
       <!-- هاله تزئینی -->
       <div
@@ -134,24 +134,13 @@
       />
 
       <div class="relative space-y-4">
-
-        <!-- meta -->
-        <div class="flex items-center gap-2 flex-wrap">
-          <span
-            class="text-[9px] font-bold font-latin tracking-[0.12em] uppercase px-2.5 py-1 rounded-full"
-            :style="{ backgroundColor: catInfo.iconBg, color: catInfo.accent }"
-          >
-            FEATURED
-          </span>
-          <span class="w-px h-3 bg-ink/10" />
-          <span class="text-[11px] text-ink/35 flex items-center gap-1">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="4" width="18" height="18" rx="2"/>
-              <path d="M16 2v4M8 2v4M3 10h18" stroke-linecap="round"/>
-            </svg>
-            {{ formattedDate }}
-          </span>
-        </div>
+        <!-- عنوان -->
+        <h2
+          class="text-xl sm:text-2xl font-bold leading-[1.4] transition-colors duration-300"
+          :style="{ color: hovered ? catInfo.accent : '' }"
+        >
+          {{ blog.title_fa }}
+        </h2>
 
         <!-- خط تزئینی -->
         <div
@@ -162,23 +151,15 @@
           }"
         />
 
-        <!-- عنوان -->
-        <h2
-          class="text-xl sm:text-2xl font-bold leading-[1.4] transition-colors duration-300"
-          :style="{ color: hovered ? catInfo.accent : '' }"
-        >
-          {{ blog.title_fa }}
-        </h2>
-
         <!-- خلاصه -->
-        <p class="text-sm text-ink/50 leading-[1.85] line-clamp-3 sm:line-clamp-4">
+        <p class="text-sm text-ink/50 leading-[1.55] line-clamp-3 sm:line-clamp-4">
           {{ plainSummary }}
         </p>
 
       </div>
 
       <!-- فوتر -->
-      <div class="relative mt-6 pt-5 border-t border-ink/[0.05] flex items-center justify-between gap-3">
+      <div class="relative mt-6 pt-3 border-t border-ink/[0.05] flex items-center justify-between gap-3">
 
         <!-- دکمه خواندن -->
         <span
@@ -199,23 +180,37 @@
           </svg>
         </span>
 
-        <!-- اشتراک‌گذاری -->
-        <button
-          type="button"
-          class="w-7 h-7 rounded-full grid place-items-center border transition-all duration-300"
-          :style="{
-            borderColor: hovered ? catInfo.ringColor : 'rgba(63,58,53,0.06)',
-            color:       hovered ? catInfo.accent    : 'rgba(63,58,53,0.22)',
-          }"
-          @click.stop.prevent
-        >
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <circle cx="18" cy="5" r="3"/>
-            <circle cx="6" cy="12" r="3"/>
-            <circle cx="18" cy="19" r="3"/>
-            <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke-linecap="round"/>
-          </svg>
-        </button>
+        <div class="flex items-center gap-3">
+          <!-- اشتراک‌گذاری -->
+          <button
+            type="button"
+            class="w-7 h-7 rounded-full grid place-items-center border transition-all duration-300"
+            :style="{
+              borderColor: hovered ? catInfo.ringColor : 'rgba(63,58,53,0.06)',
+              color:       hovered ? catInfo.accent    : 'rgba(63,58,53,0.22)',
+            }"
+            @click.stop.prevent
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <circle cx="18" cy="5" r="3"/>
+              <circle cx="6" cy="12" r="3"/>
+              <circle cx="18" cy="19" r="3"/>
+              <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke-linecap="round"/>
+            </svg>
+          </button>
+          
+          <!-- meta -->
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="w-px h-3 bg-ink/10" />
+            <span class="text-[11px] text-ink/35 flex items-center gap-1">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <path d="M16 2v4M8 2v4M3 10h18" stroke-linecap="round"/>
+              </svg>
+              {{ formattedDate }}
+            </span>
+          </div>
+        </div>
 
       </div>
     </div>

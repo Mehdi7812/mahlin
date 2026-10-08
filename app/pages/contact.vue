@@ -167,7 +167,7 @@
             </div>
             <div>
               <span class="block text-xs font-bold text-ink/40 mb-1">ایمیل مکاتبات رسمی</span>
-              <a href="mailto:support@mahlin.com" class="text-sm font-bold text-ink hover:text-gold transition-colors font-latin">support@mahlin.com</a>
+              <a href="mailto:mahlinn404@gmail.com" class="text-sm font-bold text-ink hover:text-gold transition-colors font-latin">mahlinn404@gmail.com</a>
             </div>
           </div>
 
