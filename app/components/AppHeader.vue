@@ -138,10 +138,10 @@
                 </div>
                 <div class="text-left shrink-0">
                   <div v-if="r.discount > 0 && r.price != null" class="text-[10px] text-ink/35 line-through font-latin">
-                    {{ money(r.price) }}
+                    {{ money(withTax(r.price, r.taxable)) }}
                   </div>
                   <div v-if="r.final_price != null || r.price != null" class="text-xs font-bold font-latin text-gold">
-                    {{ money(r.final_price ?? r.price) }} <span class="text-[9px] text-ink/40 font-sans">تومان</span>
+                    {{ money(withTax(r.final_price ?? r.price, r.taxable)) }} <span class="text-[9px] text-ink/40 font-sans">تومان</span>
                   </div>
                   <div v-else class="text-[10px] font-bold text-accent">مشاهده جزئیات</div>
                 </div>
@@ -468,6 +468,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { fa, money } from '~/utils/format.ts';
+import { withTax } from '~/utils/tax.ts';
 
 const customizer = useCustomizerStore()
 

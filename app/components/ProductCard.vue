@@ -123,7 +123,7 @@
                 v-if="hasDiscount"
                 class="text-[12px] text-ink/40 line-through font-latin leading-none"
               >
-                {{ money(product.price) }}
+                {{ money(shownPrice) }}
               </span>
 
               <!-- قیمت نهایی -->
@@ -132,7 +132,7 @@
                   class="price-final font-black font-latin tracking-tight leading-none whitespace-nowrap"
                   :style="priceStyle"
                 >
-                  {{ money(product.final_price) }}
+                  {{ money(shownFinalPrice) }}
                 </span>
                 <span class="text-[10px] text-ink/45 font-medium leading-none whitespace-nowrap">
                   {{ product.currency_name || 'تومان' }}
@@ -209,6 +209,7 @@
 import { ref, computed } from 'vue';
 import { PLACEHOLDER_IMG } from '~/data/products';
 import { money } from '~/utils/format.ts';
+import { withTax } from '~/utils/tax.ts';
 
 const props = defineProps({
   product: {
@@ -238,6 +239,10 @@ const isUnavailable = computed(() => {
   const price = parseFloat(props.product.final_price);
   return isNaN(price) || price <= 0;
 });
+
+// ─── قیمت‌های نمایشی (با ۱۰٪ مالیات برای کالاهای taxable) ───
+const shownPrice      = computed(() => withTax(props.product.price, props.product.taxable));
+const shownFinalPrice = computed(() => withTax(props.product.final_price, props.product.taxable));
 
 const hasDiscount = computed(() =>
   !isUnavailable.value && props.product.final_price < props.product.price

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useCustomizerStore } from '~/stores/customizer'
 import { faPrice, faNumber, faDate } from '~/utils/format.ts'
+import { withTax, isTaxable } from '~/utils/tax.ts'
 import { nationalCodeSchema } from '~/utils/validation'
 import { toast } from 'vue-sonner';
 
@@ -85,16 +86,33 @@ const itemCount = computed(() =>
   invoiceDetails.value.reduce((s, l) => s + Number(l.amount || 0), 0),
 )
 
+/** قیمت واحد یک ردیف سبد؛ اگر کالا taxable باشد با ۱۰٪ مالیات */
+function itemUnitPrice(item: any) {
+  const base = Number(item.unit_price || item.products?.final_price || 0)
+  return Number(withTax(base, item.products?.taxable ?? item.taxable)) || 0
+}
+
+/** مالیات کل فاکتور؛ مالیات دیگر جداگانه نمایش داده نمی‌شود و داخل قیمت‌ها ادغام است */
+const invoiceTaxTotal = computed(() => {
+  if (invoice.value.tax_price != null) return Number(invoice.value.tax_price) || 0
+  return invoiceDetails.value.reduce((sum, item) => {
+    const base = (Number(item.unit_price || item.products?.final_price) || 0) * (Number(item.amount) || 0)
+    return sum + (isTaxable(item.products?.taxable ?? item.taxable) ? Math.round(base * 0.1) : 0)
+  }, 0)
+})
+
+// «جمع کالاها» شامل مالیات است تا با مبلغ نهایی فاکتور بخواند
 const invoiceSubtotal = computed(() => {
-  if (invoice.value.impure_price != null) return Number(invoice.value.impure_price) || 0
-  return invoiceDetails.value.reduce(
-    (sum, item) => sum + (Number(item.unit_price) || 0) * (Number(item.amount) || 0),
-    0,
-  )
+  const base = invoice.value.impure_price != null
+    ? Number(invoice.value.impure_price) || 0
+    : invoiceDetails.value.reduce(
+        (sum, item) => sum + (Number(item.unit_price) || 0) * (Number(item.amount) || 0),
+        0,
+      )
+  return base + invoiceTaxTotal.value
 })
 
 const invoiceDiscount = computed(() => Number(invoice.value.discount_price) || 0)
-const invoiceTax = computed(() => Number(invoice.value.tax_price) || 0)
 
 const shippingCost = computed(() => {
   if (!hasShippable.value || !selectedTimeSlot.value) return 0
@@ -1387,7 +1405,7 @@ const primaryDisabled = computed(() => {
                         </div>
 
                         <p class="text-[13.5px] font-black text-gold tabular-fa sm:text-[14px]">
-                          {{ faPrice((item.unit_price || item.products?.final_price || 0) * item.amount) }}
+                          {{ faPrice(itemUnitPrice(item) * item.amount) }}
                         </p>
                       </div>
                     </div>
@@ -1745,7 +1763,7 @@ const primaryDisabled = computed(() => {
                     <div class="min-w-0 flex-1">
                       <p class="line-clamp-1 text-[13px] font-bold text-gold">{{ item.products?.title_fa }}</p>
                       <p class="mt-0.5 text-micro text-ink-faint tabular-fa">
-                        {{ faNumber(item.amount) }} × {{ faPrice(item.unit_price || item.products?.final_price || 0) }}
+                        {{ faNumber(item.amount) }} × {{ faPrice(itemUnitPrice(item)) }}
                       </p>
                     </div>
                   </li>
@@ -1762,13 +1780,6 @@ const primaryDisabled = computed(() => {
                   <div v-if="invoiceDiscount" class="flex justify-between text-emerald-600">
                     <dt class="flex items-center gap-1"><Icon name="tabler:discount-2" class="text-body-lg" /> تخفیف</dt>
                     <dd class="tabular-fa font-bold">-{{ faPrice(invoiceDiscount) }}</dd>
-                  </div>
-                  <div v-if="invoiceTax" class="flex justify-between">
-                    <dt class="flex items-center gap-1.5 text-ink-muted">
-                      <Icon name="tabler:receipt-tax" class="text-[14px]" />
-                      مالیات
-                    </dt>
-                    <dd class="tabular-fa font-medium">{{ faPrice(invoiceTax) }}</dd>
                   </div>
                   <div v-if="hasShippable" class="flex justify-between">
                     <dt class="flex items-center gap-1.5 text-ink-muted">

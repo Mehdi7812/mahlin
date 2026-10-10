@@ -86,10 +86,10 @@
                     </div>
                     <div class="text-end shrink-0">
                       <div v-if="r.discount > 0" class="text-[10px] text-ink/35 line-through tabular-nums">
-                        {{ money(r.price) }}
+                        {{ money(withTax(r.price, r.taxable)) }}
                       </div>
                       <div class="text-xs font-bold text-gold tabular-nums">
-                        {{ money(r.final_price) }} <span class="text-[10px] text-ink/40 font-normal">تومان</span>
+                        {{ money(withTax(r.final_price, r.taxable)) }} <span class="text-[10px] text-ink/40 font-normal">تومان</span>
                       </div>
                     </div>
                   </button>
@@ -355,6 +355,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { fa, money } from '~/utils/format.ts';
+import { withTax } from '~/utils/tax.ts';
 
 const route  = useRoute();
 const router = useRouter();

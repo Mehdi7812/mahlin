@@ -147,6 +147,7 @@
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue';
 import { fa } from '~/utils/format';
+import { withTax } from '~/utils/tax';
 import { toast } from 'vue-sonner';
 
 const route  = useRoute();
@@ -252,8 +253,9 @@ const item = computed(() => {
     cat:       p.category_title_fa || categoryTree.value[0]?.text || '',
     catId:     p.category,
     brand:     p.brand_text || null,
-    price:     hasDiscount ? p.final_price : p.price,
-    oldPrice:  hasDiscount ? p.price : null,
+    // قیمت‌ها با ۱۰٪ مالیات اگر taxable باشد
+    price:     withTax(hasDiscount ? p.final_price : p.price, p.taxable),
+    oldPrice:  hasDiscount ? withTax(p.price, p.taxable) : null,
     size:      p.unit_text ? `${fa(p.capacity)} ${p.unit_text}` : null,
     img:       p.cover_image || PLACEHOLDER,
     images:    (p.product_images || []).map((im) => im.file),
@@ -519,6 +521,7 @@ function saveToRecentlyViewed() {
       cover_image:       Product.value.cover_image || PLACEHOLDER,
       price:             Product.value.price,
       final_price:       Product.value.final_price,
+      taxable:           Product.value.taxable,
       discount_percent:  Product.value.discount_percent,
       category_title_fa: Product.value.category_title_fa,
       usage_link:        Product.value.usage_link,
@@ -642,7 +645,7 @@ useHead(() => ({
           offers: {
             '@type': 'Offer',
             priceCurrency: 'IRR',
-            price: Product.value.final_price,
+            price: withTax(Product.value.final_price, Product.value.taxable),
             availability: (Product.value.stock > 0 && Product.value.allow_sale === 1)
               ? 'https://schema.org/InStock'
               : 'https://schema.org/OutOfStock',
