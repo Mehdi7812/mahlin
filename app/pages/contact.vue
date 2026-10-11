@@ -186,6 +186,65 @@
             </div>
           </div>
 
+          <!-- شبکه‌های اجتماعی: تلگرام، اینستاگرام، بله -->
+          <div class="flex items-start gap-4 p-5 bg-cardLight border border-ink/[0.02] rounded-2xl transition-all duration-300 hover:border-gold/20">
+            <div class="w-10 h-10 rounded-xl bg-gold/10 text-gold flex items-center justify-center shrink-0">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="18" cy="5" r="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="6" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="18" cy="19" r="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="block text-xs font-bold text-ink/40 mb-3">ما را در شبکه‌های اجتماعی دنبال کنید</span>
+              <div class="flex flex-wrap gap-2.5">
+
+                <!-- تلگرام -->
+                <a
+                  :href="SOCIAL.telegram"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="group inline-flex items-center gap-2 px-4 py-2 rounded-full border border-ink/10 bg-white/50 text-xs font-bold text-ink/70 transition-all duration-300 hover:border-[#229ED9]/40 hover:bg-[#229ED9]/10 hover:text-[#229ED9] hover:-translate-y-0.5"
+                >
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M22 4.5L2.5 12l6.2 2 2.3 6.5 3-3.5 5 3.5z"/>
+                  </svg>
+                  تلگرام
+                </a>
+
+                <!-- اینستاگرام -->
+                <a
+                  :href="SOCIAL.instagram"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="group inline-flex items-center gap-2 px-4 py-2 rounded-full border border-ink/10 bg-white/50 text-xs font-bold text-ink/70 transition-all duration-300 hover:border-[#E1306C]/40 hover:bg-[#E1306C]/10 hover:text-[#E1306C] hover:-translate-y-0.5"
+                >
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <rect x="3" y="3" width="18" height="18" rx="5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="12" r="4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="17.2" cy="6.8" r="0.9" fill="currentColor" stroke="none"/>
+                  </svg>
+                  اینستاگرام
+                </a>
+
+                <!-- بله -->
+                <a
+                  :href="SOCIAL.bale"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="group inline-flex items-center gap-2 px-4 py-2 rounded-full border border-ink/10 bg-white/50 text-xs font-bold text-ink/70 transition-all duration-300 hover:border-[#2BB5A0]/40 hover:bg-[#2BB5A0]/10 hover:text-[#2BB5A0] hover:-translate-y-0.5"
+                >
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.5A8 8 0 1121 12z" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9 11h6M9 14h3.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  بله
+                </a>
+              </div>
+            </div>
+          </div>
+
           <!-- آدرس فیزیکی -->
           <!-- <div class="flex items-start gap-4 p-5 bg-cardLight border border-ink/[0.02] rounded-2xl transition-all duration-300 hover:border-gold/20">
             <div class="w-10 h-10 rounded-xl bg-gold/10 text-gold flex items-center justify-center shrink-0">
@@ -229,6 +288,14 @@ const errors = ref({
 
 // ─── شناسه‌ی فرم (متناسب با فرم واقعی در پنل مدیریت) ────
 const FORM_ID = 1;
+
+// ─── لینک شبکه‌های اجتماعی ────────────────────────────────
+// ⚠️ آیدی/لینک‌های واقعی ماهلین را جایگزین کن (این‌ها نمونه‌اند)
+const SOCIAL = {
+  telegram: 'https://t.me/dr_mahlinn',
+  instagram: 'https://instagram.com/dr.mahlinn',
+  bale: 'https://ble.ir/09922655520',
+};
 
 // ─── محاسبه‌ی duration (زمان سپری‌شده از باز شدن فرم تا ارسال) ────
 let startTime = 0;
