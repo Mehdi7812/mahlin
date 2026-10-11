@@ -57,6 +57,11 @@ export function resolveOrderStatus(invoice: any): OrderStatus {
   return TEXT_STATUS[textual] || 'pending'
 }
 
+// سفارشی که واقعاً پرداخت شده (در انتظار پرداخت/لغو نیست) → «خرید موفق»
+export function isSuccessfulPurchase(invoice: any): boolean {
+  return ['preparing', 'shipped', 'delivered', 'returned'].includes(resolveOrderStatus(invoice))
+}
+
 export function getOrderProgressIndex(status: OrderStatus): number {
   if (status === 'delivered') return 3
   if (status === 'shipped') return 2

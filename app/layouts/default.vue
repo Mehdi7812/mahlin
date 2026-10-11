@@ -5,5 +5,8 @@
       <slot />
     </main>
     <AppFooter />
+    <ClientOnly>
+      <PromoCard />
+    </ClientOnly>
   </div>
 </template>

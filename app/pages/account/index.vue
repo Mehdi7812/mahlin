@@ -315,7 +315,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { USER, ORDERS, ORDER_STATUS_META, LOYALTY } from '~/data/account';
-import { resolveOrderStatus } from '~/data/orderStatus';
+import { resolveOrderStatus, isSuccessfulPurchase } from '~/data/orderStatus';
 import { money, faNumber, faDate, faDateShort } from '~/utils/format';
 const router = useRouter();
 
@@ -333,6 +333,8 @@ const greeting = hour >= 19 || hour < 2
       ? 'ظهر بخیر'
       : 'عصر بخیر';
 const customizer = useCustomizerStore();
+// کوکی «خرید موفق»؛ اگر کاربر سفارش پرداخت‌شده دارد، کارت تخفیف خوش‌آمدگویی (PromoCard) دیگر نمایش داده نشود
+const purchasedCookie = usePurchasedCookie();
 const currentUser = computed(() => customizer.userInfo && !Array.isArray(customizer.userInfo)
   ? customizer.userInfo
   : {});
@@ -462,6 +464,10 @@ async function loadOrderStats() {
 
     totalOrdersCount.value = Number(response?.TotalCount ?? invoices.length ?? 0);
     processingOrdersCount.value = invoices.filter((invoice) => ['preparing', 'shipped'].includes(resolveOrderStatus(invoice))).length;
+
+    if (!purchasedCookie.value && invoices.some(isSuccessfulPurchase)) {
+      purchasedCookie.value = '1';
+    }
   } catch (error) {
     console.error('[Account Dashboard] Could not load order stats', error);
     totalOrdersCount.value = 0;

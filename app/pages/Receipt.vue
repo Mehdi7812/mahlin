@@ -159,6 +159,12 @@ const successBtnLink       = ref('');
 const successBtnParameter  = ref(false);
 const bankFrom             = ref(null);
 
+// ─── خرید موفق → کوکی ۱ ساله تا کارت تخفیف خوش‌آمدگویی دیگر نمایش داده نشود ───
+const purchasedCookie = usePurchasedCookie();
+watch(PaymentStatus, (ok) => {
+  if (ok) purchasedCookie.value = '1';
+});
+
 watch(
   () => customizer.language,
   () => { language.value = customizer.language; }
