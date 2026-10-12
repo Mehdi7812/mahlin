@@ -126,8 +126,8 @@
 
               <!-- استان و شهر -->
               <div class="grid grid-cols-2 gap-3">
-                <UiBaseSelect v-model="provinceTitle" label="استان" :options="locationGroups.map((group) => group.title)" placeholder="انتخاب استان" />
-                <UiBaseSelect v-model="form.address_id" label="شهر" :options="cities.map((city) => ({ label: city.title, value: city.id }))" placeholder="انتخاب شهر" :disabled="!cities.length" :error="errors.address_id" />
+                <UiBaseSelect v-model="provinceTitle" label="استان" :options="locationGroups.map((group) => group.title)" placeholder="انتخاب استان" searchable search-placeholder="جستجوی استان..." />
+                <UiBaseSelect v-model="form.address_id" label="شهر" :options="cities.map((city) => ({ label: city.title, value: city.id }))" placeholder="انتخاب شهر" searchable search-placeholder="جستجوی شهر..." :disabled="!cities.length" :error="errors.address_id" />
               </div>
 
               <!-- آدرس کامل -->

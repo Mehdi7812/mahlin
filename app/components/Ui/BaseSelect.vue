@@ -17,10 +17,14 @@ const props = withDefaults(defineProps<{
   error?: string | boolean
   id?: string
   clearable?: boolean
+  searchable?: boolean
+  searchPlaceholder?: string
 }>(), {
   placeholder: 'انتخاب کنید',
   modelValue: null,
   clearable: true,
+  searchable: false,
+  searchPlaceholder: 'جستجو...',
 })
 
 const emit = defineEmits<{
@@ -40,6 +44,29 @@ const normalizedOptions = computed<SelectOption[]>(() => {
   })
 })
 
+// --- جستجو داخل گزینه‌ها (فقط وقتی searchable فعال باشد) ---
+const query = ref('')
+const searchInputRef = ref<HTMLInputElement>()
+
+// یکسان‌سازی حروف عربی/فارسی و حذف فاصله و نیم‌فاصله برای جستجوی دقیق‌تر
+const normalizeText = (v: string) =>
+  String(v ?? '')
+    .replace(/[يى]/g, 'ی')
+    .replace(/ك/g, 'ک')
+    .replace(/ة/g, 'ه')
+    .replace(/[\u200c\s]+/g, '')
+    .toLowerCase()
+
+const filteredOptions = computed<SelectOption[]>(() => {
+  if (!props.searchable || !query.value.trim()) return normalizedOptions.value
+  const q = normalizeText(query.value)
+  return normalizedOptions.value.filter(o => normalizeText(o.label).includes(q))
+})
+
+watch(query, () => {
+  highlightedIndex.value = filteredOptions.value.length ? 0 : -1
+})
+
 const selectedOption = computed(() =>
   normalizedOptions.value.find(o => o.value === props.modelValue) || null
 )
@@ -53,12 +80,14 @@ function toggle() {
 function open() {
   if (props.disabled) return
   isOpen.value = true
-  const idx = normalizedOptions.value.findIndex(o => o.value === props.modelValue)
+  query.value = ''
+  const idx = filteredOptions.value.findIndex(o => o.value === props.modelValue)
   highlightedIndex.value = idx >= 0 ? idx : 0
-  nextTick(() => buttonRef.value?.focus())
+  nextTick(() => (props.searchable ? searchInputRef.value : buttonRef.value)?.focus())
 }
 function close() {
   isOpen.value = false
+  query.value = ''
 }
 function select(option: SelectOption) {
   if (option.disabled) return
@@ -87,13 +116,14 @@ function onKeydown(e: KeyboardEvent) {
   }
   if (e.key === 'ArrowDown') {
     e.preventDefault()
-    highlightedIndex.value = Math.min(highlightedIndex.value + 1, normalizedOptions.value.length - 1)
+    highlightedIndex.value = Math.min(highlightedIndex.value + 1, filteredOptions.value.length - 1)
   } else if (e.key === 'ArrowUp') {
     e.preventDefault()
     highlightedIndex.value = Math.max(highlightedIndex.value - 1, 0)
   } else if (e.key === 'Enter') {
     e.preventDefault()
-    if (highlightedIndex.value >= 0) select(normalizedOptions.value[highlightedIndex.value])
+    const opt = filteredOptions.value[highlightedIndex.value]
+    if (opt) select(opt)
   } else if (e.key === 'Escape') {
     close()
   }
@@ -183,8 +213,24 @@ function onKeydown(e: KeyboardEvent) {
           class="absolute right-0 left-0 top-[calc(100%+6px)] z-50 max-h-60 overflow-y-auto rounded-2xl border border-ink/[0.07] bg-white p-1.5 shadow-[0_16px_40px_rgba(0,0,0,0.10)]"
           @mouseleave="highlightedIndex = -1"
         >
+          <!-- کادر جستجو -->
+          <li v-if="searchable" role="presentation" class="sticky top-0 z-10 bg-white pb-1.5">
+            <div class="relative">
+              <Icon name="tabler:search" class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-base text-ink/35" />
+              <input
+                ref="searchInputRef"
+                v-model="query"
+                type="text"
+                autocomplete="off"
+                :placeholder="searchPlaceholder"
+                class="w-full rounded-xl border border-ink/10 bg-cream/50 py-2 pl-3 pr-9 text-[13px] text-ink outline-none transition focus:border-gold focus:ring-2 focus:ring-gold/15"
+                @keydown="onKeydown"
+              />
+            </div>
+          </li>
+
           <li
-            v-for="(opt, idx) in normalizedOptions"
+            v-for="(opt, idx) in filteredOptions"
             :key="String(opt.value)"
             role="option"
             :aria-selected="modelValue === opt.value"
@@ -225,8 +271,8 @@ function onKeydown(e: KeyboardEvent) {
           </li>
 
           <!-- خالی بودن لیست -->
-          <li v-if="!normalizedOptions.length" class="py-6 text-center text-xs text-ink/35">
-            گزینه‌ای وجود ندارد
+          <li v-if="!filteredOptions.length" class="py-6 text-center text-xs text-ink/35">
+            {{ searchable && normalizedOptions.length ? 'موردی یافت نشد' : 'گزینه‌ای وجود ندارد' }}
           </li>
         </ul>
       </Transition>

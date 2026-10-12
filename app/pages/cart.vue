@@ -112,7 +112,18 @@ const invoiceSubtotal = computed(() => {
   return base + invoiceTaxTotal.value
 })
 
-const invoiceDiscount = computed(() => Number(invoice.value.discount_price) || 0)
+// تخفیف کد/پروموشن در پاسخ /invoices/show داخل other_price می‌آید و discount_price معمولاً صفر است
+// (total_price = impure_price - discount_price - other_price + tax_price)
+const invoiceDiscount = computed(
+  () => (Number(invoice.value.discount_price) || 0) + (Number(invoice.value.other_price) || 0),
+)
+
+// درصد تخفیف نسبت به جمع کالاها (بدون مالیات)، حداکثر یک رقم اعشار
+const invoiceDiscountPercent = computed(() => {
+  const base = Number(invoice.value.impure_price) || 0
+  if (!invoiceDiscount.value || !base) return 0
+  return Math.round((invoiceDiscount.value / base) * 1000) / 10
+})
 
 const shippingCost = computed(() => {
   if (!hasShippable.value || !selectedTimeSlot.value) return 0
@@ -253,7 +264,6 @@ function applyCoupon() {
       toast.error(t(error))
     })
 }
-
 function removeCoupon() {
   coupon.value = ''
   setCouponError(null)
@@ -1779,7 +1789,15 @@ const primaryDisabled = computed(() => {
                     <dd class="tabular-fa font-medium">{{ faPrice(invoiceSubtotal) }}</dd>
                   </div>
                   <div v-if="invoiceDiscount" class="flex justify-between text-emerald-600">
-                    <dt class="flex items-center gap-1"><Icon name="tabler:discount-2" class="text-body-lg" /> تخفیف</dt>
+                    <dt class="flex items-center gap-1.5">
+                      <Icon name="tabler:discount-2" class="text-body-lg" /> تخفیف
+                      <span
+                        v-if="invoice.discount_code && invoiceDiscountPercent"
+                        class="rounded-full bg-emerald-50 px-2 py-0.5 text-micro font-bold tabular-fa"
+                      >
+                        {{ faNumber(invoiceDiscountPercent) }}٪
+                      </span>
+                    </dt>
                     <dd class="tabular-fa font-bold">-{{ faPrice(invoiceDiscount) }}</dd>
                   </div>
                   <div v-if="hasShippable" class="flex justify-between">
@@ -2035,6 +2053,8 @@ const primaryDisabled = computed(() => {
                       label="استان"
                       :options="locationGroups.map((g) => g.title)"
                       placeholder="انتخاب استان"
+                      searchable
+                      search-placeholder="جستجوی استان..."
                       required
                     />
                     
@@ -2043,6 +2063,8 @@ const primaryDisabled = computed(() => {
                       label="شهر"
                       :options="citiesForSelectedProvince.map((c) => ({ label: c.title, value: c.id }))"
                       placeholder="انتخاب شهر"
+                      searchable
+                      search-placeholder="جستجوی شهر..."
                       :disabled="!citiesForSelectedProvince.length"
                       :error="addressErrors.address_id"
                       required
