@@ -133,7 +133,7 @@ import { toast } from 'vue-sonner';
 
 // ─── تنظیمات (اینجا تغییر بده) ─────────────────────────────
 const DISCOUNT_CODE = 'WELCOME';              // کد تخفیف
-const DISCOUNT_AMOUNT = 400000;              // مبلغ به تومان
+const DISCOUNT_AMOUNT = 300000;              // مبلغ به تومان
 const SHOW_DELAY_MS = 2500;                  // تأخیر نمایش بعد از لود
 const HIDE_FOR_MS = 24 * 60 * 60 * 1000;     // بعد از بستن دستی، چند وقت دوباره نشان داده نشود
 const STORAGE_KEY = 'mahlin-promo-card';

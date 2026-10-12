@@ -526,7 +526,7 @@
   "awaiting_payment": "در انتظار پرداخت",
   "awaiting_approval": "در حال بررسی",
   "mobile_not_exist": "برای این شماره موبایل حساب کاربری وجود ندارد",
-  "code_not_found": "کد پیدا نشد",
+  "code_not_found": "کد پیدا نشد یا شما مشمول دریافت تخفیف نیستید",
   "maximum_purchase_observed": "ظرفیت این محصول تکمیل شده است",
   "maximum_user_purchase_observed": "محدودیت تعداد خرید وجود دارد",
   "code_not_send": "در ارسال کد مشکلی پیش آمده است",
@@ -583,6 +583,7 @@
   "error_in_inquiry_gateway": "خطا در دریافت استعلام",
   "permanently_delete": "برای همیشه حذف میشود",
   "update_event": "ویرایش",
+  "just_first_purchase": "فقط برای اولین خرید",
   "ticketing": {
     "errors": {
       "title": "خطا",

@@ -242,7 +242,7 @@ function applyCoupon() {
         couponSuccess.value = true
         toast.success('کد تخفیف اعمال شد')
       } else {
-        setCouponError(response.msg)
+        setCouponError(t(response.msg))
         toast.error(t(response.msg))
       }
       getCart(false)
@@ -253,6 +253,7 @@ function applyCoupon() {
       toast.error(t(error))
     })
 }
+
 function removeCoupon() {
   coupon.value = ''
   setCouponError(null)

@@ -128,6 +128,26 @@ if (import.meta.client) {
   DatePicker.value = pickerModule.default;
 }
 
+// ارجاع به نمونه‌ی تقویم (برای انتخاب خودکار روز بعد از تغییر سال/ماه)
+const birthPicker = ref(null);
+
+/**
+ * در حالت simple با تغییر سال/ماه فقط ماهِ نمایشی عوض می‌شود و «روز انتخاب‌شده» همان قبلی می‌ماند؛
+ * برای همین دکمه‌ی تایید تاریخ را عوض نمی‌کرد. اینجا بعد از هر تغییر، یک روز را خودکار انتخاب می‌کنیم:
+ * همان شماره‌ی روزِ قبلی (اگر در ماه جدید وجود داشت و مجاز بود)، وگرنه اولین روز مجاز ماه.
+ */
+function selectBestDay() {
+  const vm = birthPicker.value;
+  if (!vm?.month) return;
+
+  const days = vm.month.flat().filter((d) => d.date && !d.disabled);
+  if (!days.length) return;
+
+  const prevDay = vm.selectedDates?.[0]?.xDate?.();
+  const target = (prevDay && days.find((d) => d.formatted === prevDay)) || days[0];
+  vm.selectDay(target);
+}
+
 /* =========================================================
  * Helpers: ارقام و نرمال‌سازی
  * ========================================================= */
@@ -1156,6 +1176,7 @@ const submitProfile = () => {
                   <Icon name="tabler:calendar-event" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-inkSoft/60" />
                   <DatePicker
                     v-if="DatePicker"
+                    ref="birthPicker"
                     v-model="profileForm.birth_date"
                     type="date"
                     locale="fa"
@@ -1166,6 +1187,10 @@ const submitProfile = () => {
                     display-format="jYYYY/jMM/jDD"
                     custom-input="#birth-date-input"
                     append-to="body"
+                    @year-change="selectBestDay"
+                    @month-change="selectBestDay"
+                    @next-month="selectBestDay"
+                    @prev-month="selectBestDay"
                   />
                 </div>
                 <template #fallback>

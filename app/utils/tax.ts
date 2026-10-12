@@ -3,7 +3,7 @@
  * هر جا قیمت یک محصول نمایش داده می‌شود، باید از withTax() عبور کند.
  */
 
-export const TAX_RATE = 0.1;
+export const TAX_RATE = 0;
 
 /** فیلد taxable از API ممکن است 1، '1' یا true باشد. */
 export function isTaxable(flag: unknown): boolean {
