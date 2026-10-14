@@ -690,10 +690,19 @@ const selectedShippingMethod = ref<any>(null)
 function getDeliveryProcedure() {
   useGarnetApiFetch('options/indexDeliveryProcedure').then((response: any) => {
     deliveryMethods.value = response.DeliveryProcedure || []
+
+    // انتخاب پیش‌فرض: اگر چیزی انتخاب نشده یا انتخاب قبلی دیگر در لیست نیست، اولین روش
+    const current = selectedShippingMethod.value
+      ? deliveryMethods.value.find((m: any) => m.id === selectedShippingMethod.value.id)
+      : null
+    selectedShippingMethod.value = current || deliveryMethods.value[0] || null
   })
 }
 function chooseShippingMethod(method: any) {
   selectedShippingMethod.value = method
+}
+function isShippingSelected(m: any) {
+  return !!selectedShippingMethod.value && selectedShippingMethod.value.id === m.id
 }
 
 const deliveryDays = ref<any[]>([])
@@ -749,6 +758,19 @@ const paymentProcedures = ref<any[]>([])
 const paymentMethod = ref<any>(null)
 const walletInfo = ref<any>({})
 
+// کلید پایدار برای مقایسه‌ی گزینه‌های پرداخت (به‌جای مقایسه‌ی reference آبجکت‌ها؛
+// چون با هر بار getPaymentProcedure آبجکت‌های جدید ساخته می‌شوند)
+function paymentKey(opt: any) {
+  if (!opt) return ''
+  return `${opt.pp_id}-${opt.gateway_id ?? ''}`
+}
+function isPaymentSelected(opt: any) {
+  return !!paymentMethod.value && paymentKey(paymentMethod.value) === paymentKey(opt)
+}
+function choosePayment(opt: any) {
+  paymentMethod.value = opt
+}
+
 function getPaymentProcedure() {
   useGarnetApiFetch('options/indexPaymentProcedure', { language_id: 1, currency_id: 1 })
     .then((response: any) => {
@@ -779,7 +801,11 @@ function getPaymentProcedure() {
 
       paymentProcedures.value = list
       if (walletItem) getWalletBalance()
-      if (list.length && !paymentMethod.value) paymentMethod.value = list[0]
+
+      // انتخاب قبلی را با کلید به آبجکت جدید وصل می‌کنیم؛ اگر نبود، اولین گزینه
+      const prevKey = paymentKey(paymentMethod.value)
+      const current = prevKey ? list.find((p) => paymentKey(p) === prevKey) : null
+      paymentMethod.value = current || list[0] || null
     })
     .catch((error: any) => toast.error(t(error)))
 }
@@ -810,6 +836,10 @@ const walletShortfall = computed(() => {
 const increaseBalanceDialog = ref(false)
 const paymentOption2 = ref<any>(null)
 const increasingBalance = ref(false)
+
+function isPaymentOption2Selected(opt: any) {
+  return !!paymentOption2.value && paymentKey(paymentOption2.value) === paymentKey(opt)
+}
 
 function openIncreaseBalanceDialog() {
   paymentOption2.value = paymentProcedures.value.find((p) => p.pp_d1 === 'onlinePayment') || null
@@ -1546,15 +1576,15 @@ const primaryDisabled = computed(() => {
                       :key="m.id"
                       class="flex cursor-pointer items-center gap-3 rounded-2xl border p-3.5 transition-all duration-200 sm:gap-4 sm:p-4"
                       :class="
-                        selectedShippingMethod?.id === m.id
+                        isShippingSelected(m)
                           ? 'border-gold bg-gold/8 ring-2 ring-gold/20'
                           : 'border-line hover:border-gold/40 hover:bg-cream/20'
                       "
                     >
-                      <input type="radio" class="sr-only" :value="m.id" :checked="selectedShippingMethod?.id === m.id" @change="chooseShippingMethod(m)" />
+                      <input type="radio" class="sr-only" name="shipping-method" :value="m.id" :checked="isShippingSelected(m)" @change="chooseShippingMethod(m)" />
                       <span
                         class="grid h-10 w-10 shrink-0 place-items-center rounded-xl transition-colors"
-                        :class="selectedShippingMethod?.id === m.id ? 'bg-gold text-white' : 'bg-cream text-ink-muted'"
+                        :class="isShippingSelected(m) ? 'bg-gold text-white' : 'bg-cream text-ink-muted'"
                       >
                         <Icon name="tabler:truck" class="text-h3" />
                       </span>
@@ -1563,9 +1593,9 @@ const primaryDisabled = computed(() => {
                       </div>
                       <span
                         class="grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition-colors"
-                        :class="selectedShippingMethod?.id === m.id ? 'border-gold bg-gold' : 'border-line'"
+                        :class="isShippingSelected(m) ? 'border-gold bg-gold' : 'border-line'"
                       >
-                        <Icon v-if="selectedShippingMethod?.id === m.id" name="tabler:check" class="text-[11px] text-white" />
+                        <Icon v-if="isShippingSelected(m)" name="tabler:check" class="text-[11px] text-white" />
                       </span>
                     </label>
                   </div>
@@ -1651,19 +1681,19 @@ const primaryDisabled = computed(() => {
                   <div class="space-y-3">
                     <label
                       v-for="opt in paymentProcedures"
-                      :key="opt.pp_id + '-' + (opt.gateway_id || '')"
+                      :key="paymentKey(opt)"
                       class="flex cursor-pointer items-center gap-3 rounded-2xl border p-3.5 transition-all duration-200 sm:gap-4 sm:p-4"
                       :class="
-                        paymentMethod === opt
+                        isPaymentSelected(opt)
                           ? 'border-gold bg-gold/8 ring-2 ring-gold/20'
                           : 'border-line hover:border-gold/40 hover:bg-cream/20'
                       "
                     >
-                      <input v-model="paymentMethod" type="radio" class="sr-only" :value="opt" />
+                      <input type="radio" class="sr-only" name="payment-method" :value="paymentKey(opt)" :checked="isPaymentSelected(opt)" @change="choosePayment(opt)" />
 
                       <span
                         class="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-xl transition-colors"
-                        :class="paymentMethod === opt ? 'bg-gold text-white' : 'bg-cream text-ink-muted'"
+                        :class="isPaymentSelected(opt) ? 'bg-gold text-white' : 'bg-cream text-ink-muted'"
                       >
                         <Icon
                           :name="
@@ -1689,9 +1719,9 @@ const primaryDisabled = computed(() => {
 
                       <span
                         class="grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition-colors"
-                        :class="paymentMethod === opt ? 'border-gold bg-gold' : 'border-line'"
+                        :class="isPaymentSelected(opt) ? 'border-gold bg-gold' : 'border-line'"
                       >
-                        <Icon v-if="paymentMethod === opt" name="tabler:check" class="text-[11px] text-white" />
+                        <Icon v-if="isPaymentSelected(opt)" name="tabler:check" class="text-[11px] text-white" />
                       </span>
                     </label>
                   </div>
@@ -1877,7 +1907,7 @@ const primaryDisabled = computed(() => {
       <Transition name="fade-slide">
         <div
           v-if="!emptyCart && !loading"
-          class="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm lg:hidden"
+          class="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm lg:hidden"
         >
           <div class="flex items-center justify-between gap-3">
             <div>
@@ -2173,16 +2203,16 @@ const primaryDisabled = computed(() => {
                 <div class="mt-4 space-y-2">
                   <label
                     v-for="opt in paymentProcedures.filter((p) => p.pp_d1 === 'onlinePayment')"
-                    :key="opt.pp_id + '-' + (opt.gateway_id || '')"
+                    :key="paymentKey(opt)"
                     class="flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition"
-                    :class="paymentOption2 === opt ? 'border-gold bg-gold/8' : 'border-line'"
+                    :class="isPaymentOption2Selected(opt) ? 'border-gold bg-gold/8' : 'border-line'"
                   >
-                    <input v-model="paymentOption2" type="radio" class="sr-only" :value="opt" />
+                    <input type="radio" class="sr-only" name="increase-payment-option" :value="paymentKey(opt)" :checked="isPaymentOption2Selected(opt)" @change="paymentOption2 = opt" />
                     <span class="text-[13px] font-bold text-gold">{{ opt.pp_title }}</span>
                     <span v-if="opt.gateway_title" class="text-meta text-ink-muted">({{ opt.gateway_title }})</span>
                     <span
                       class="mr-auto grid h-4 w-4 shrink-0 place-items-center rounded-full border-2"
-                      :class="paymentOption2 === opt ? 'border-gold bg-gold' : 'border-line'"
+                      :class="isPaymentOption2Selected(opt) ? 'border-gold bg-gold' : 'border-line'"
                     />
                   </label>
                 </div>
